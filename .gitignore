@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+electron-app/dist/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Local secrets
+.env
+.env.local
+*.pat
+*-token.txt
+
+# Dropbox conflicts
+*conflicted*
+*~*
