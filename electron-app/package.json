@@ -1,0 +1,94 @@
+{
+  "name": "crm-pro-courtage",
+  "version": "0.2.0",
+  "description": "TRI-ANGLE — CRM pour courtiers immobiliers québécois",
+  "main": "main.js",
+  "author": "CRM-Courtiers",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --publish never",
+    "publish": "electron-builder --publish always",
+    "release:patch": "npm version patch && electron-builder --publish always",
+    "release:minor": "npm version minor && electron-builder --publish always"
+  },
+  "build": {
+    "appId": "com.crmpro.courtage",
+    "productName": "TRI-ANGLE",
+    "copyright": "Copyright © 2026 CRM-Courtiers",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "google-calendar.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../crm-pro.html",
+        "to": "crm-pro.html"
+      },
+      {
+        "from": "../triangle-logo-full.png",
+        "to": "triangle-logo-full.png"
+      },
+      {
+        "from": "../triangle-logo-light.png",
+        "to": "triangle-logo-light.png"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TRI-ANGLE"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.business",
+      "icon": "build/icon.png"
+    },
+    "dmg": {
+      "title": "TRI-ANGLE Installation"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "CRM-Courtiers",
+      "repo": "CRM-Courtiers",
+      "private": true,
+      "releaseType": "release"
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3",
+    "googleapis": "^171.4.0",
+    "node-machine-id": "^1.1.12"
+  },
+  "devDependencies": {
+    "electron": "^41.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

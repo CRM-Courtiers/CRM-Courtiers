@@ -26,3 +26,13 @@ Thumbs.db
 # Dropbox conflicts
 *conflicted*
 *~*
+
+# Claude Code memory (local only — never push)
+.claude/
+
+# Données privées (licences avec noms perso) — KV Upstash est la vraie source
+license-server/data/keys.json
+
+# Dropbox metadata
+.dropbox
+.dropbox.cache

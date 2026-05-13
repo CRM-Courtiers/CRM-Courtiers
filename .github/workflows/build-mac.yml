@@ -1,0 +1,43 @@
+name: Build Mac
+
+# Cross-build .dmg pour Mac (x64 + arm64) sur un runner macOS GitHub Actions.
+# Trigger auto à chaque release publiée (Windows), OU manuel via workflow_dispatch.
+# Les artifacts sont uploadés au même release.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag de la release à builder (ex: v0.2.0)'
+        required: true
+        default: 'v0.2.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install electron-app dependencies
+        working-directory: electron-app
+        run: npm install
+
+      - name: Build Mac (.dmg x64 + arm64) + upload to GitHub release
+        working-directory: electron-app
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --mac --x64 --arm64 --publish always
