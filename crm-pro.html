@@ -159,7 +159,8 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-section-title{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em;padding:12px 4px 8px;display:flex;align-items:center;gap:8px}
 .dem-section-title .dem-pill{background:#F1F5F9;color:#475569;padding:2px 8px;border-radius:10px;font-size:10px}
 /* dem-tbl hérite des styles natifs table/th/td. On override juste l'édition et les cas spéciaux. */
-.dem-tbl{width:100%;table-layout:auto;margin:6px 0}
+.dem-tbl{width:100%;table-layout:auto;margin:6px 0;min-width:1100px}
+.dem-tbl-wrap{overflow-x:auto;margin:6px 0}
 .dem-tbl td.ei{cursor:cell;padding:9px 12px!important;outline:none!important;overflow:hidden!important;min-height:36px}
 .dem-tbl tbody tr:nth-child(even) td{background:#F8FAFC!important}
 .dem-tbl tbody tr:nth-child(odd) td{background:#fff!important}
@@ -3119,7 +3120,7 @@ function _demTable(dems,opts){
   var headers='<thead><tr><th>Statut</th><th>Prénom</th><th>Nom</th><th>Téléphone</th><th>Courriel</th><th>Date</th><th>Source</th><th>Notes</th><th>Actions</th></tr></thead>';
   if(!dems.length){
     var msg=archived?'Aucune demande archivée.':'Aucune demande pour cette propriété.';
-    return '<table class="dem-tbl">'+headers+'<tbody><tr class="dem-empty-row"><td colspan="9">'+msg+'</td></tr></tbody></table>';
+    return '<div class="dem-tbl-wrap"><table class="dem-tbl">'+headers+'<tbody><tr class="dem-empty-row"><td colspan="9">'+msg+'</td></tr></tbody></table></div>';
   }
   if(!archived){
     dems=dems.slice().sort(function(a,b){
@@ -3128,7 +3129,7 @@ function _demTable(dems,opts){
     });
   }
   var rows=dems.map(function(d){return _demRowHtml(d,d.status,archived);}).join('');
-  return '<table class="dem-tbl">'+headers+'<tbody>'+rows+'</tbody></table>';
+  return '<div class="dem-tbl-wrap"><table class="dem-tbl">'+headers+'<tbody>'+rows+'</tbody></table></div>';
 }
 
 function _demRowHtml(d,status,archived){
