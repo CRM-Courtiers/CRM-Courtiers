@@ -1655,6 +1655,7 @@ var COLS = {
     {lbl:"Test eau",f:"testEau",t:"cond",w:80,grp:"cond"},
     {lbl:"Notaire",f:"notaire",t:"cond",w:80,grp:"cond"},
     {lbl:"GED",f:"ged",t:"bool",w:50},
+    {lbl:"Échéance PA",f:"paEcheance",t:"cond",w:100,grp:"cond"},
     {lbl:"Actions",f:null,t:"action",w:340}
   ],
   vp: [
@@ -1710,7 +1711,7 @@ var COLS = {
     {lbl:"Montant ($)",f:"montant",t:"number",w:100},
     {lbl:"Comm. tot. (%)",f:"commTot",t:"number",w:100,u:"%"},
     {lbl:"Comm. autre (%)",f:"commAutre",t:"number",w:110,u:"%"},
-    {lbl:"PA ext. échéance",f:"paExterneEcheance",t:"cond",w:130},
+    {lbl:"Échéance PA",f:"paExterneEcheance",t:"cond",w:110},
     {lbl:"Actions",f:null,t:"action",w:340}
   ],
   ac: [
@@ -2414,7 +2415,17 @@ function ust(){
   document.getElementById("hdate").textContent=new Date().toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
 }
 
-function rall(){TABS_UI.forEach(function(t){renderTab(t);});ust();TABS_UI.forEach(function(t){updateStickyOffsets(t);});renderAccueil();renderPancartes();updatePancartesBadge();updateRelanceBadges();updateDemandesBadges();_rerenderActivePane();}
+// Sync auto : pa-en-vente.paEcheance → v.paExterneEcheance (one-way, ne touche pas si vide)
+function _syncDoubleRepPaToV(){
+  (db.pa||[]).forEach(function(p){
+    if(!p.propertyId||!p.paEcheance)return;
+    var v=_vById(p.propertyId);if(!v)return;
+    if(v.paExterneEcheance!==p.paEcheance){
+      v.paExterneEcheance=p.paEcheance;
+    }
+  });
+}
+function rall(){_syncDoubleRepPaToV();TABS_UI.forEach(function(t){renderTab(t);});ust();TABS_UI.forEach(function(t){updateStickyOffsets(t);});renderAccueil();renderPancartes();updatePancartesBadge();updateRelanceBadges();updateDemandesBadges();_rerenderActivePane();}
 
 // ─── PAGE ACCUEIL ─────────────────────────────────────────────
 // Labels lisibles pour les champs de condition
@@ -2422,7 +2433,7 @@ var COND_LABELS_FR={
   inspection:"Inspection",financement:"Financement",r21:"R2.1",r22:"R2.2",
   assurImm:"Assurance immeuble",fosseSept:"Fosse septique",testEau:"Test d'eau",
   notaire:"Notaire",photos:"Photos",mesures:"Mesures",evalVM:"Évaluation VM",
-  paExterneEcheance:"Échéance PA externe",paEcheance:"Échéance PA"
+  paExterneEcheance:"Échéance PA",paEcheance:"Échéance PA"
 };
 var COND_FIELDS_BY_TAB={
   pa:["inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire","paEcheance"],
@@ -2616,6 +2627,10 @@ function renderAccueil(){
     var isFut=_isFutureDateTime(v.paExterneEcheance);
     var isDone=v.paExterneEcheance==='done';
     if(!isFut&&!isDone)return;
+    // Dédoublon : si une double rep (db.pa avec propertyId) existe pour cette propriété, on skip le v
+    // (la double rep sera déjà affichée comme "Double rep.", la valeur v.paExterneEcheance est juste un sync)
+    var hasDoubleRep=(db.pa||[]).some(function(p){return p.propertyId===v.id;});
+    if(hasDoubleRep)return;
     var urg=Infinity;
     if(isFut){
       var s=String(v.paExterneEcheance);
