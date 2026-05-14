@@ -307,8 +307,10 @@ ipcMain.handle('install-update', async () => {
 });
 
 // ─── Auto-update : configuration ────────────────────────────
-autoUpdater.autoDownload = true;       // Télécharge automatiquement dès qu'une MAJ est dispo
-autoUpdater.autoInstallOnAppQuit = true; // Installe à la prochaine fermeture si pas déjà fait
+// Sur Mac, Squirrel ne peut pas installer une app non-signée Apple Dev ID — on bloque le download inutile
+// et on redirige l'utilisateur vers téléchargement manuel du .dmg côté UI
+autoUpdater.autoDownload = (process.platform !== 'darwin');
+autoUpdater.autoInstallOnAppQuit = (process.platform !== 'darwin');
 
 // Logs : capturer les événements et les relayer à la fenêtre
 function sendUpdateStatus(status, data) {

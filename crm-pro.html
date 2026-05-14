@@ -4941,7 +4941,24 @@ function checkForUpdatesManual(){
     else{_setUpdateStatus('À jour ✓');}
   });
 }
+// Workaround Mac (Étape 22+) : Squirrel.Mac refuse les updates non-signées Apple Dev ID.
+// Sur Mac, on redirige vers le .dmg GitHub Releases dans le navigateur (download manuel).
+var _isMacUpdate=(window.electronAPI&&window.electronAPI.platform==='darwin');
+var _macArch=(window.electronAPI&&window.electronAPI.arch)||'x64';
+var _pendingUpdateVersion=null;
+
 function installUpdate(){
+  if(_isMacUpdate){
+    var v=_pendingUpdateVersion;
+    var url=v
+      ? 'https://github.com/CRM-Courtiers/CRM-Courtiers/releases/download/v'+v+'/TRI-ANGLE-'+v+(_macArch==='arm64'?'-arm64':'')+'.dmg'
+      : 'https://github.com/CRM-Courtiers/CRM-Courtiers/releases/latest';
+    if(!confirm('Télécharger TRI-ANGLE v'+(v||'(dernière)')+' ?\n\nLa page de téléchargement va s\'ouvrir dans le navigateur. Ensuite :\n1. Ferme TRI-ANGLE complètement (⌘Q)\n2. Double-clique le fichier .dmg téléchargé\n3. Glisse TRI-ANGLE vers Applications (remplace l\'ancienne)\n4. Rouvre TRI-ANGLE\n\nTes données seront conservées.'))return;
+    if(window.electronAPI&&window.electronAPI.openExternal)window.electronAPI.openExternal(url);
+    else window.open(url,'_blank');
+    return;
+  }
+  // Windows : install auto standard
   if(!window.electronAPI||!window.electronAPI.installUpdate)return;
   if(!confirm('Installer la mise à jour maintenant ?\n\nL\'application va redémarrer.'))return;
   window.electronAPI.installUpdate();
@@ -4958,13 +4975,33 @@ if(window.electronAPI&&window.electronAPI.onUpdateStatus){
   window.electronAPI.onUpdateStatus(function(payload){
     var s=payload.status,d=payload.data||{};
     if(s==='checking')_setUpdateStatus('Vérification...');
-    else if(s==='available')_setUpdateStatus('Mise à jour v'+d.version+' disponible — téléchargement...');
+    else if(s==='available'){
+      _pendingUpdateVersion=d.version;
+      if(_isMacUpdate){
+        // Sur Mac, on ne télécharge pas via electron-updater (Squirrel ne pourra pas installer sans signature)
+        _setUpdateStatus('Mise à jour v'+d.version+' disponible — clique « Télécharger » ci-dessous');
+        var btn=document.getElementById('btnInstallUpdate');if(btn){btn.innerHTML='📥 Télécharger v'+d.version;btn.style.display='inline-flex';}
+        toast('📥 Mise à jour v'+d.version+' disponible — voir Paramètres');
+      } else {
+        _setUpdateStatus('Mise à jour v'+d.version+' disponible — téléchargement...');
+      }
+    }
     else if(s==='not-available')_setUpdateStatus('À jour ✓');
-    else if(s==='progress')_setUpdateStatus('Téléchargement... '+d.percent+'%');
+    else if(s==='progress'){
+      if(!_isMacUpdate)_setUpdateStatus('Téléchargement... '+d.percent+'%');
+      // Sur Mac on ignore le download progress car on ne va pas l'installer de toute façon
+    }
     else if(s==='downloaded'){
-      _setUpdateStatus('✅ Mise à jour v'+d.version+' téléchargée — prête à installer');
-      var btn=document.getElementById('btnInstallUpdate');if(btn)btn.style.display='inline-flex';
-      toast('✅ Mise à jour v'+d.version+' disponible — voir Paramètres');
+      _pendingUpdateVersion=d.version;
+      if(_isMacUpdate){
+        // Le téléchargement Squirrel s'est complété mais sera ignoré — on offre le téléchargement manuel
+        _setUpdateStatus('📥 Mise à jour v'+d.version+' disponible — clique « Télécharger »');
+        var btn=document.getElementById('btnInstallUpdate');if(btn){btn.innerHTML='📥 Télécharger v'+d.version;btn.style.display='inline-flex';}
+      } else {
+        _setUpdateStatus('✅ Mise à jour v'+d.version+' téléchargée — prête à installer');
+        var btn=document.getElementById('btnInstallUpdate');if(btn){btn.innerHTML='&#9989; Installer la mise à jour';btn.style.display='inline-flex';}
+        toast('✅ Mise à jour v'+d.version+' disponible — voir Paramètres');
+      }
     }
     else if(s==='error')_setUpdateStatus(_shortUpdateError(d.message),true);
   });

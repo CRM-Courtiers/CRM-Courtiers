@@ -33,5 +33,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Étape 22 — ouvrir URL externe (mailto:, https:, etc.) via shell.openExternal
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  // Platform/arch infos (pour adapter le comportement Mac vs Windows)
+  platform: process.platform, // 'darwin' (Mac), 'win32' (Windows), 'linux'
+  arch: process.arch,         // 'x64' (Intel) ou 'arm64' (Apple Silicon)
   isElectron: true
 });
