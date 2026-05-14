@@ -341,6 +341,7 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .acc-badge-info{background:#E0F2FE;color:#075985}
 .acc-badge-late{background:#FEE2E2;color:#B91C1C}
 .acc-badge-purple{background:#F3E8FF;color:#7E22CE}
+.acc-badge-warn{background:#FEF3C7;color:#92400E}
 .acc-row.urgent .acc-row-main{color:#B91C1C}
 .acc-section-divider{margin:10px -10px 6px;padding:6px 10px;font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.1em;border-top:1px solid #F1F5F9}
 .acc-section-divider:first-child{border-top:none;margin-top:0;padding-top:0}
@@ -466,6 +467,13 @@ tbody tr:hover .c-0,tbody tr:hover .c-1,tbody tr:hover .c-2{background:#E2E8F0!i
 .c-2{box-shadow:3px 0 6px rgba(0,0,0,.08)}
 tbody tr.pa-actif .c-0,tbody tr.pa-actif .c-1,tbody tr.pa-actif .c-2{background:#FEF3C7!important}
 tbody tr.pa-actif:hover .c-0,tbody tr.pa-actif:hover .c-1,tbody tr.pa-actif:hover .c-2{background:#FDE68A!important}
+tr.v-paext td{background:#FEF3C7!important;font-weight:600}
+tr.v-paext td:first-child{box-shadow:inset 5px 0 0 #F59E0B}
+tr.v-paext:hover td{background:#FDE68A!important}
+tbody tr.v-paext .c-0,tbody tr.v-paext .c-1,tbody tr.v-paext .c-2{background:#FEF3C7!important}
+tbody tr.v-paext:hover .c-0,tbody tr.v-paext:hover .c-1,tbody tr.v-paext:hover .c-2{background:#FDE68A!important}
+.tbtn[data-tab="v"] .sb-badge{background:#F59E0B !important}
+.tbtn[data-tab="pa"] .sb-badge{background:#EF4444 !important}
 tbody tr.rl .c-0,tbody tr.rl .c-1,tbody tr.rl .c-2{background:#F8FAFC!important}
 
 /* 4e colonne sticky (onglets Acheteurs, PA en cours et Vendeurs) */
@@ -1078,19 +1086,19 @@ body.app-readonly th .rz{pointer-events:none}
     </div>
     <div class="sb-section" data-color="cyan">
       <div class="sb-section-title">Prospects</div>
-      <button class="tbtn" data-tab="cp"><span class="sb-icon">&#128199;</span> Acheteurs pot. <span class="sb-badge zero" id="sb-cp-badge">0</span></button>
-      <button class="tbtn" data-tab="vp"><span class="sb-icon">&#127968;</span> Vendeurs pot. <span class="sb-badge zero" id="sb-vp-badge">0</span></button>
+      <button class="tbtn" data-tab="cp"><span class="sb-icon">&#128199;</span> Prospects acheteurs <span class="sb-badge zero" id="sb-cp-badge">0</span></button>
+      <button class="tbtn" data-tab="vp"><span class="sb-icon">&#127968;</span> Prospects vendeurs <span class="sb-badge zero" id="sb-vp-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="red">
       <div class="sb-section-title">Achats</div>
-      <button class="tbtn" data-tab="a"><span class="sb-icon">&#128273;</span> Acheteurs <span class="sb-badge zero" id="sb-a-badge">0</span></button>
-      <button class="tbtn" data-tab="pa" id="tbn-pa"><span class="sb-icon">&#128196;</span> PA Active</button>
+      <button class="tbtn" data-tab="a"><span class="sb-icon">&#128273;</span> Mes acheteurs <span class="sb-badge zero" id="sb-a-badge">0</span></button>
+      <button class="tbtn" data-tab="pa" id="tbn-pa"><span class="sb-icon">&#128196;</span> Promesses en cours <span class="sb-badge zero" id="sb-pa-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="green">
       <div class="sb-section-title">En vente</div>
-      <button class="tbtn" data-tab="v"><span class="sb-icon">&#127969;</span> En Vente</button>
-      <button class="tbtn" data-tab="demandes"><span class="sb-icon">&#128233;</span> Demandes <span class="sb-badge zero" id="sb-demandes-badge">0</span></button>
-      <button class="tbtn" data-tab="pa-en-vente"><span class="sb-icon">&#128196;</span> PA Active <span class="sb-badge zero" id="sb-paev-badge">0</span></button>
+      <button class="tbtn" data-tab="v"><span class="sb-icon">&#127969;</span> Mes inscriptions <span class="sb-badge zero" id="sb-v-badge">0</span></button>
+      <button class="tbtn" data-tab="demandes"><span class="sb-icon">&#128233;</span> Demandes reçues <span class="sb-badge zero" id="sb-demandes-badge">0</span></button>
+      <button class="tbtn" data-tab="pa-en-vente"><span class="sb-icon">&#128196;</span> Doubles représentations <span class="sb-badge zero" id="sb-paev-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="purple">
       <div class="sb-section-title">Pancartes</div>
@@ -1098,12 +1106,12 @@ body.app-readonly th .rz{pointer-events:none}
     </div>
     <div class="sb-section" data-color="amber">
       <div class="sb-section-title">Conclus</div>
-      <button class="tbtn" data-tab="ac" id="tbn-ac"><span class="sb-icon">&#9989;</span> Ach. conclus</button>
-      <button class="tbtn" data-tab="vc" id="tbn-vc"><span class="sb-icon">&#9989;</span> Vend. conclus</button>
+      <button class="tbtn" data-tab="ac" id="tbn-ac"><span class="sb-icon">&#9989;</span> Achats conclus</button>
+      <button class="tbtn" data-tab="vc" id="tbn-vc"><span class="sb-icon">&#9989;</span> Ventes conclues</button>
     </div>
     <div class="sb-section" data-color="gray">
       <div class="sb-section-title">Archives</div>
-      <button class="tbtn" data-tab="ca" id="tbn-ca"><span class="sb-icon">&#128100;</span> Contacts autre</button>
+      <button class="tbtn" data-tab="ca" id="tbn-ca"><span class="sb-icon">&#128100;</span> Autres contacts</button>
     </div>
     <div class="sb-section" data-color="gray">
       <div class="sb-section-title">Syst&egrave;me</div>
@@ -1130,7 +1138,7 @@ body.app-readonly th .rz{pointer-events:none}
 <div class="hero-dark">
   <div class="stats">
     <div class="stat stat-pale" id="rel-card"><div class="slbl">En relance</div><div class="sval" id="s-rel">0</div></div>
-    <div class="stat stat-purple"><div class="slbl">PA Active</div><div class="sval" id="s-cp">0</div><small class="smny" id="s-cp-mny"></small></div>
+    <div class="stat stat-purple"><div class="slbl">Promesses actives</div><div class="sval" id="s-cp">0</div><small class="smny" id="s-cp-mny"></small></div>
     <div class="stat stat-teal"><div class="slbl">En vente</div><div class="sval" id="s-act">0</div><small class="smny" id="s-act-mny"></small></div>
     <div class="stat stat-amber">
       <div class="slbl">Conclues <span id="s-done-yr" style="font-size:9px;opacity:.7;font-weight:400;color:#64748B"></span></div>
@@ -1187,6 +1195,20 @@ body.app-readonly th .rz{pointer-events:none}
               <div class="acc-card-count" id="acc-panc-total">0</div>
             </div>
             <div class="acc-list" id="acc-panc-list"></div>
+          </div>
+          <div class="acc-card" id="acc-pa-card">
+            <div class="acc-card-head">
+              <div class="acc-card-title"><span class="acc-dot" style="background:#EF4444"></span> &#128196; Promesses &agrave; suivre</div>
+              <div class="acc-card-count" id="acc-pa-count">0</div>
+            </div>
+            <div class="acc-list" id="acc-pa-list"></div>
+          </div>
+          <div class="acc-card" id="acc-dem-card">
+            <div class="acc-card-head">
+              <div class="acc-card-title"><span class="acc-dot" style="background:#F59E0B"></span> &#128233; Demandes &agrave; suivre</div>
+              <div class="acc-card-count" id="acc-dem-count">0</div>
+            </div>
+            <div class="acc-list" id="acc-dem-list"></div>
           </div>
         </div>
         <div class="acc-card full" id="acc-cond-card">
@@ -1608,6 +1630,7 @@ var COLS = {
     {lbl:"Test eau",f:"testEau",t:"cond",w:80,grp:"cond"},
     {lbl:"Notaire",f:"notaire",t:"cond",w:80,grp:"cond"},
     {lbl:"GED",f:"ged",t:"bool",w:50},
+    {lbl:"Échéance PA",f:"paEcheance",t:"cond",w:100,grp:"cond"},
     {lbl:"Montant ($)",f:"montant",t:"number",w:100},
     {lbl:"Comm. (%)",f:"commission",t:"number",w:90,u:"%"},
     {lbl:"Actions",f:null,t:"action",w:430}
@@ -2163,6 +2186,7 @@ function renderTab(tab){
     var clsArr=[];
     if(isRel)clsArr.push("rl");
     if(isLinked)clsArr.push("linked");
+    if(tab==="v"&&_isFutureDateTime(rec.paExterneEcheance))clsArr.push("v-paext");
     var trCls=clsArr.join(" ");
     h+='<tr data-rid="'+esc(rec.id)+'"'+(trCls?' class="'+trCls+'"':'')+'>';
     for(var j=0;j<cols.length;j++){
@@ -2399,10 +2423,10 @@ var COND_LABELS_FR={
   inspection:"Inspection",financement:"Financement",r21:"R2.1",r22:"R2.2",
   assurImm:"Assurance immeuble",fosseSept:"Fosse septique",testEau:"Test d'eau",
   notaire:"Notaire",photos:"Photos",mesures:"Mesures",evalVM:"Évaluation VM",
-  paExterneEcheance:"Échéance PA externe"
+  paExterneEcheance:"Échéance PA externe",paEcheance:"Échéance PA"
 };
 var COND_FIELDS_BY_TAB={
-  pa:["inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"],
+  pa:["inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire","paEcheance"],
   v:["evalVM","inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire","photos","mesures","paExterneEcheance"]
 };
 // Champs qui comptent comme "RDV du jour" (sous-ensemble des conditions)
@@ -2525,7 +2549,7 @@ function renderAccueil(){
           icon:e.time?"&#128337;":"&#128197;",
           main:e.name+" — "+e.cond,
           meta:e.time||"",
-          badge:e.tab==="pa"?"PA Active":"En Vente",
+          badge:e.tab==="pa"?"Promesse":"Inscription",
           badgeCls:e.tab==="pa"?"acc-badge-urgent":"acc-badge-info"
         });
       }).join("");
@@ -2560,6 +2584,57 @@ function renderAccueil(){
         });
       }).join("");
       if(rels.length>8)relList.innerHTML+='<div class="acc-empty">+ '+(rels.length-8)+' autres</div>';
+    }
+  }
+
+  // ─── Promesses à suivre (toutes db.pa : 'pa' standard + 'pa-en-vente' double rep.) ───
+  var allPas=(db.pa||[]).slice();
+  var paList=document.getElementById('acc-pa-list');
+  var paCount=document.getElementById('acc-pa-count');
+  if(paCount){paCount.textContent=allPas.length;paCount.classList.toggle('dim',allPas.length===0);}
+  if(paList){
+    if(allPas.length===0){
+      paList.innerHTML='<div class="acc-empty">Aucune promesse en cours &#10003;</div>';
+    } else {
+      paList.innerHTML=allPas.slice(0,8).map(function(p){
+        var isDouble=!!p.propertyId;
+        var who=((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)';
+        var addr='';
+        if(isDouble){var v=_vById(p.propertyId);addr=v?(v.adresse||'(adresse à compléter)'):'(propriété supprimée)';}
+        else addr=p.adresse||'(adresse à compléter)';
+        return _accRowHtml({
+          tab:isDouble?'pa-en-vente':'pa',id:p.id,
+          icon:'&#128196;',
+          main:who+' — '+addr,
+          badge:isDouble?'Double rep.':'En cours',
+          badgeCls:isDouble?'acc-badge-warn':'acc-badge-urgent'
+        });
+      }).join('');
+      if(allPas.length>8)paList.innerHTML+='<div class="acc-empty">+ '+(allPas.length-8)+' autres</div>';
+    }
+  }
+
+  // ─── Demandes à suivre (statut 'qualified') ───
+  var vIds={};(db.v||[]).forEach(function(v){vIds[v.id]=true;});
+  var demSuivre=(db.demandes||[]).filter(function(d){return d.status==='qualified'&&d.propertyId&&vIds[d.propertyId];});
+  var demList=document.getElementById('acc-dem-list');
+  var demCount=document.getElementById('acc-dem-count');
+  if(demCount){demCount.textContent=demSuivre.length;demCount.classList.toggle('dim',demSuivre.length===0);}
+  if(demList){
+    if(demSuivre.length===0){
+      demList.innerHTML='<div class="acc-empty">Aucune demande à suivre &#10003;</div>';
+    } else {
+      demList.innerHTML=demSuivre.slice(0,8).map(function(d){
+        var who=((d.prenom||'')+' '+(d.nom||'')).trim()||'(sans nom)';
+        var v=_vById(d.propertyId);
+        var addr=v?(v.adresse||'(adresse à compléter)'):'(propriété supprimée)';
+        return '<div class="acc-row" onclick="jumpToDemandes(\''+d.propertyId+'\')">'
+          +'<div class="acc-row-icon">&#128233;</div>'
+          +'<div class="acc-row-main">'+esc(who+' — '+addr)+'</div>'
+          +'<div class="acc-row-badge acc-badge-warn">À suivre</div>'
+          +'</div>';
+      }).join('');
+      if(demSuivre.length>8)demList.innerHTML+='<div class="acc-empty">+ '+(demSuivre.length-8)+' autres</div>';
     }
   }
 
@@ -2689,7 +2764,7 @@ function transferAToPa(id){
   var idsToRemove=toTransfer.map(function(r){return r.id;});
   db.a=db.a.filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
   sdb();rall();
-  toast('✓ '+noms.join(' + ')+' → PA Active');
+  toast('✓ '+noms.join(' + ')+' → Promesse en cours');
 }
 
 // Retour PA en cours → Acheteurs (PA refusée ou autre raison)
@@ -2737,7 +2812,7 @@ function transferAToCp(id){
   var idsToRemove=toTransfer.map(function(r){return r.id;});
   db.a=db.a.filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
   sdb();rall();
-  toast("\u2713 "+noms.join(" + ")+" \u2192 Acheteurs potentiels");
+  toast("\u2713 "+noms.join(" + ")+" \u2192 Prospects acheteurs");
 }
 
 // ─── Liaison de fiches (couples sur m\u00eame PA / m\u00eame propri\u00e9t\u00e9) ──────────────
@@ -2944,10 +3019,7 @@ function _demStatusInfo(s){
   return null;
 }
 function _countPaActiveFor(vId){
-  var paCount=(db.pa||[]).filter(function(p){return p.propertyId===vId;}).length;
-  var v=_vById(vId);
-  var ext=v&&_isFutureDateTime(v.paExterneEcheance)?1:0;
-  return paCount+ext;
+  return (db.pa||[]).filter(function(p){return p.propertyId===vId;}).length;
 }
 function _demSourceOptions(sel){
   var src=['Centris','Messenger','Courriel','Téléphone','SMS','Walk-in','Autre'];
@@ -3054,7 +3126,7 @@ function _demRowHtml(d,status,archived){
   var statusCell='',rowCls='';
   if(archived){
     var arcLabel='';
-    if(status==='converted-pa')arcLabel='<span class="dem-status-tag dem-status-converted">→ PA Active</span>';
+    if(status==='converted-pa')arcLabel='<span class="dem-status-tag dem-status-converted">→ Promesse</span>';
     else if(status==='converted-acheteur')arcLabel='<span class="dem-status-tag dem-status-converted">→ Acheteur</span>';
     else if(status==='lost')arcLabel='<span class="dem-status-tag dem-status-lost">Rejetée</span>';
     statusCell='<td>'+arcLabel+'</td>';
@@ -3211,8 +3283,8 @@ function convertDemandeToPa(id){
   var d=_findDemande(id);if(!d)return;
   var v=_vById(d.propertyId);if(!v){toast('⚠ Propriété introuvable');return;}
   var who=((d.prenom||'')+' '+(d.nom||'')).trim()||'cet acheteur';
-  if(!confirm('Créer une PA Active pour '+who+'\nsur '+(v.adresse||'cette propriété')+' ?\n\n→ Sophie représente les 2 côtés (scénario B).\nLa fiche apparaîtra dans "PA Active" sous EN VENTE.'))return;
-  pushUndo('Conversion demande → PA Active');
+  if(!confirm('Créer une promesse pour '+who+'\nsur '+(v.adresse||'cette propriété')+' ?\n\n→ Sophie représente les 2 côtés (scénario B).\nLa fiche apparaîtra dans "Doubles représentations" sous EN VENTE.'))return;
+  pushUndo('Conversion demande → Doubles représentations');
   db.pa.push({
     id:newId(),propertyId:d.propertyId,
     prenom:d.prenom||'',nom:d.nom||'',
@@ -3227,7 +3299,7 @@ function convertDemandeToPa(id){
   });
   d.status='converted-pa';d.statusDate=_todayStr();d.lastModified=_todayStr();
   sdb();rall();
-  toast('✓ PA créée dans "PA Active"');
+  toast('✓ Promesse créée dans "Doubles représentations"');
 }
 
 function convertDemandeToA(id){
@@ -3252,19 +3324,8 @@ function convertDemandeToA(id){
 // ─── Rendu : PA en cours (groupé par propriété, scénarios B + C) ───
 // Bandeau scénario C (PA externe via courtier externe) — affiché AU-DESSUS de la table pa-en-vente
 function renderPaExterneBanner(){
-  var w=document.getElementById('paev-ext-bar-wrap');if(!w)return;
-  var exts=(db.v||[]).filter(function(v){return _isFutureDateTime(v.paExterneEcheance);});
-  if(!exts.length){w.innerHTML='';return;}
-  var html=['<div class="paev-ext-banner-wrap">'];
-  exts.forEach(function(v){
-    var lbl=_vPropertyLabel(v);
-    html.push('<div class="paev-ext-bar">'
-      +'<span>📋 <strong>PA externe</strong> via un autre courtier sur <strong>'+esc(lbl.addr)+'</strong> — échéance : <strong>'+esc(_fmtDateTime(v.paExterneEcheance))+'</strong></span>'
-      +'<button class="dem-btn muted" onclick="doEdit(\'v\',\''+v.id+'\')">Ouvrir fiche En Vente</button>'
-      +'</div>');
-  });
-  html.push('</div>');
-  w.innerHTML=html.join('');
+  // PA externe désormais signalé par row tint + badge sb-v-badge sur "Mes inscriptions"
+  var w=document.getElementById('paev-ext-bar-wrap');if(w)w.innerHTML='';
 }
 
 // Retour scénario B → Demandes (PA refusée). Garde la trace côté demande comme "qualified"
@@ -3284,7 +3345,7 @@ function transferPaevToDemande(id){
     telephone:rec.telephone||'',courriel:rec.courriel||'',
     source:'Autre',
     date:_todayStr(),
-    notes:(rec.notes||'')+(rec.notes?'\n\n':'')+'(Retour depuis PA Active)',
+    notes:(rec.notes||'')+(rec.notes?'\n\n':'')+'(Retour depuis Promesse)',
     status:'qualified',statusDate:_todayStr(),lastModified:_todayStr()
   });
   db.pa=db.pa.filter(function(x){return x.id!==id;});
@@ -3300,11 +3361,14 @@ function updateDemandesBadges(){
     var nDem=(db.demandes||[]).filter(function(d){
       return (d.status==='new'||d.status==='qualified')&&d.propertyId&&vIds[d.propertyId];
     }).length;
-    var nPaev=(db.pa||[]).filter(function(p){return p.propertyId&&vIds[p.propertyId];}).length
-      +(db.v||[]).filter(function(v){return _isFutureDateTime(v.paExterneEcheance);}).length;
+    var nPaev=(db.pa||[]).filter(function(p){return p.propertyId&&vIds[p.propertyId];}).length;
+    var nPa=(db.pa||[]).filter(function(p){return !p.propertyId;}).length;
+    var nVPaext=(db.v||[]).filter(function(v){return _isFutureDateTime(v.paExterneEcheance);}).length;
     var setBadge=function(id,n){var b=document.getElementById(id);if(b){b.textContent=n;b.classList.toggle("zero",n===0);}};
     setBadge('sb-demandes-badge',nDem);
     setBadge('sb-paev-badge',nPaev);
+    setBadge('sb-pa-badge',nPa);
+    setBadge('sb-v-badge',nVPaext);
   }catch(e){console.warn('[demandes badges]',e.message);}
 }
 
@@ -3312,13 +3376,13 @@ function updateDemandesBadges(){
 // ─── Étape 22 : Templates de courriels
 // ═══════════════════════════════════════════════════════════════
 var TPL_SECTIONS=[
-  {key:'cp',         label:'Acheteurs potentiels',       icon:'📇', color:'#06B6D4', group:'prospects'},
-  {key:'vp',         label:'Vendeurs potentiels',        icon:'🏠', color:'#06B6D4', group:'prospects'},
-  {key:'a',          label:'Acheteurs',                  icon:'🔑', color:'#0EA5E9', group:'achats'},
-  {key:'pa',         label:'PA Active (acheteur seul)',  icon:'📄', color:'#EF4444', group:'achats'},
-  {key:'v',          label:'En Vente',                   icon:'🏡', color:'#84CC16', group:'envente'},
-  {key:'demandes',   label:'Demandes entrantes',         icon:'📩', color:'#F59E0B', group:'envente'},
-  {key:'pa-en-vente',label:'PA Active (mes propriétés)', icon:'📄', color:'#DC2626', group:'envente'}
+  {key:'cp',         label:'Prospects acheteurs',        icon:'📇', color:'#06B6D4', group:'prospects'},
+  {key:'vp',         label:'Prospects vendeurs',         icon:'🏠', color:'#06B6D4', group:'prospects'},
+  {key:'a',          label:'Mes acheteurs',              icon:'🔑', color:'#0EA5E9', group:'achats'},
+  {key:'pa',         label:'Promesses en cours',         icon:'📄', color:'#EF4444', group:'achats'},
+  {key:'v',          label:'Mes inscriptions',           icon:'🏡', color:'#84CC16', group:'envente'},
+  {key:'demandes',   label:'Demandes reçues',            icon:'📩', color:'#F59E0B', group:'envente'},
+  {key:'pa-en-vente',label:'Doubles représentations',    icon:'📄', color:'#DC2626', group:'envente'}
 ];
 var TPL_GROUPS=[
   {key:'prospects', label:'Prospects',  color:'#06B6D4'},
@@ -3874,7 +3938,7 @@ function jumpToPaEnVente(vId){
       if(rec&&rec.propertyId===vId&&!target)target=tr;
     });
     if(target){target.scrollIntoView({behavior:'smooth',block:'center'});target.style.background='#FEE2E2';setTimeout(function(){target.style.background='';},1400);}
-    else{toast('Pas de PA Active sur cette propriété');}
+    else{toast('Pas de promesse en cours sur cette propriété');}
   },150);
 }
 
@@ -4065,7 +4129,7 @@ var GCAL_LABELS={
   dateRefus:'Refus'
 };
 // Dur\u00e9e en heures par champ (Inspection 3h, autres 2h)
-function _gcalDuration(field){return field==='inspection'?3:2;}
+function _gcalDuration(field){return field==='inspection'?3:0.5;}
 // Couleur : rose pour Acheteurs, ambre pour Vendeurs
 function _gcalColor(tab){return(tab==='v'||tab==='vp'||tab==='vc')?'ambre':'rose';}
 
@@ -4078,11 +4142,11 @@ function _gcalDescription(rec){
   return lines.join('\n');
 }
 
-// Construit le titre : "(CRM) Label \u2014 Pr\u00e9nom Nom"
+// Construit le titre : "(Tri-Angle) Label \u2014 Pr\u00e9nom Nom"
 function _gcalTitle(rec,field){
   var lbl=GCAL_LABELS[field]||field;
   var name=((rec.prenom||'')+' '+(rec.nom||'')).trim();
-  return '(CRM) '+lbl+(name?' \u2014 '+name:'');
+  return '(Tri-Angle) '+lbl+(name?' \u2014 '+name:'');
 }
 
 // Pr\u00e9pare startISO/endISO depuis une valeur de champ (date ou datetime)
@@ -4107,6 +4171,8 @@ var _gcalSyncQueue={};
 function syncCalendarField(rec,tab,field,oldVal,newVal){
   if(!window.electronAPI||!window.electronAPI.gcalStatus)return;
   if(!rec||!rec.id)return;
+  var allowed=GCAL_FIELDS_BY_TAB[tab]||[];
+  if(allowed.indexOf(field)===-1)return;
   var key=rec.id+':'+field;
   var prev=_gcalSyncQueue[key]||Promise.resolve();
   var next=prev.then(function(){
@@ -4229,7 +4295,7 @@ var GCAL_FIELDS_BY_TAB={
   cp:[],
   vp:[],
   a:[],
-  pa:['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'],
+  pa:['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire','paEcheance'],
   v:['evalVM','inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire','photos'],
   ac:['dateConclusion'],
   vc:['dateConclusion'],
@@ -4499,8 +4565,8 @@ function renderDashboard(){
   html+='<div class="dash-section dash-funnel">'
     +'<div class="dash-section-head"><div class="dash-section-title">Progression du pipeline</div><div class="dash-section-period">Du premier contact &agrave; la transaction conclue</div></div>'
     +'<div class="dash-funnel">'
-    +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#127919; Prospects (Acheteurs pot. + Vendeurs pot. + Acheteurs)</div><div class="dash-funnel-count">'+nbProspects+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-cyan" style="width:'+(nbProspects/maxFunnel*100)+'%">'+nbProspects+'</div></div>'+(nbProspects>0?'<div class="dash-funnel-conv">&#8595; '+convPros+' % passent en pipeline actif</div>':'')+'</div>'
-    +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#128296; Pipeline actif (PA Active + En Vente)</div><div class="dash-funnel-count">'+nbActifs+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-red" style="width:'+(nbActifs/maxFunnel*100)+'%">'+nbActifs+'</div></div>'+(nbActifs>0?'<div class="dash-funnel-conv">&#8595; '+convAct+' % concluent ('+curYear+')</div>':'')+'</div>'
+    +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#127919; Pipeline (Prospects acheteurs + Prospects vendeurs + Mes acheteurs)</div><div class="dash-funnel-count">'+nbProspects+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-cyan" style="width:'+(nbProspects/maxFunnel*100)+'%">'+nbProspects+'</div></div>'+(nbProspects>0?'<div class="dash-funnel-conv">&#8595; '+convPros+' % passent en pipeline actif</div>':'')+'</div>'
+    +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#128296; Pipeline actif (Promesses + Mes inscriptions)</div><div class="dash-funnel-count">'+nbActifs+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-red" style="width:'+(nbActifs/maxFunnel*100)+'%">'+nbActifs+'</div></div>'+(nbActifs>0?'<div class="dash-funnel-conv">&#8595; '+convAct+' % concluent ('+curYear+')</div>':'')+'</div>'
     +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#9989; Transactions conclues '+curYear+'</div><div class="dash-funnel-count">'+nbConclus+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-amber" style="width:'+(nbConclus/maxFunnel*100)+'%">'+nbConclus+'</div></div></div>'
     +'</div></div>';
 
@@ -4793,7 +4859,7 @@ function formForTab(tab,e){
   return '';
 }
 
-var TAB_LABELS={cp:"Acheteur potentiel",a:"Acheteur",pa:"PA Active",vp:"Vendeur potentiel",v:"En Vente",ac:"Acheteur conclu",vc:"Vendeur conclu",ca:"Contact autre","pa-en-vente":"PA Active (mes propriétés)"};
+var TAB_LABELS={cp:"Prospect acheteur",a:"Acheteur",pa:"Promesse en cours",vp:"Prospect vendeur",v:"Inscription",ac:"Achat conclu",vc:"Vente conclue",ca:"Autre contact","pa-en-vente":"Double représentation"};
 function openAdd(){eid=null;document.getElementById("mt").textContent="Nouveau "+TAB_LABELS[ctab];document.getElementById("mb").innerHTML=formForTab(ctab,null);document.getElementById("ov").style.display="block";setTimeout(function(){var fi=document.getElementById("fprenom");if(fi)fi.focus();},50);}
 function doEdit(tab,id){var _st=_storeTab(tab);var entry=null;for(var i=0;i<db[_st].length;i++){if(db[_st][i].id===id){entry=db[_st][i];break;}}if(!entry)return;eid=id;ctab=tab;document.querySelectorAll(".tbtn").forEach(function(b){b.classList.remove("on");});document.querySelectorAll(".pane").forEach(function(p){p.classList.remove("on");});var btn=document.querySelector('[data-tab="'+tab+'"]');if(btn)btn.classList.add("on");var pn=document.getElementById("pane-"+tab);if(pn)pn.classList.add("on");setCardTitle(tab);document.querySelector(".card").classList.remove("settings-mode","accueil-mode","pancartes-mode");document.getElementById("mt").textContent="Modifier "+(TAB_LABELS[tab]||TAB_LABELS[_st]||"fiche");document.getElementById("mb").innerHTML=formForTab(tab,entry);document.getElementById("ov").style.display="block";}
 function closeModal(){document.getElementById("ov").style.display="none";eid=null;var btnSave=document.getElementById("btns");if(btnSave)btnSave.style.display="";}
@@ -4918,7 +4984,7 @@ function _migrateImportedData(payload){
     } else { aFiltered.push(rec); }
   });
   payload.a=aFiltered;payload.pa=paIn;
-  if(migrPa>0)notes.push(migrPa+' Acheteur(s) "PA Actif" → PA Active');
+  if(migrPa>0)notes.push(migrPa+' Acheteur(s) "PA Actif" → Promesse en cours');
   // 2. Dedup ca par (prenom + nom + telephone)
   var caIn=payload.ca||[],caSeen={},caDeduped=[],caDups=0;
   caIn.forEach(function(rec){
@@ -4927,7 +4993,7 @@ function _migrateImportedData(payload){
     caSeen[sig]=true;caDeduped.push(rec);
   });
   payload.ca=caDeduped;
-  if(caDups>0)notes.push(caDups+' doublon(s) supprime(s) dans Contacts autre');
+  if(caDups>0)notes.push(caDups+' doublon(s) supprime(s) dans Autres contacts');
   // 3. Nettoyer anciens IDs webhook
   var oldEvtCount=0;
   function cleanOldEvt(rec){
@@ -4985,7 +5051,7 @@ function checkExportWarning(){try{var last=localStorage.getItem("sc-lastexport")
 function dismissExportWarn(){var warn=document.getElementById("exportWarn");if(warn)warn.style.display='none';try{localStorage.setItem("sc-lastexport",Date.now().toString());}catch(e){}}
 
 // ─── Tabs ────────────────────────────────────────────────────
-var CARD_TITLES={cp:"Acheteurs potentiels",vp:"Vendeurs potentiels",a:"Acheteurs",pa:"PA Active",v:"En Vente",ac:"Acheteurs conclus",vc:"Vendeurs conclus",ca:"Contacts autre",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes entrantes","pa-en-vente":"PA Active (mes propriétés)",templates:"Templates de courriels"};
+var CARD_TITLES={cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Doubles représentations",templates:"Templates de courriels"};
 function setCardTitle(tab){var el=document.getElementById("cardTitle");if(el)el.textContent=CARD_TITLES[tab]||"";}
 document.getElementById("tbar").addEventListener("click",function(e){
   var btn=e.target.closest(".tbtn");if(!btn)return;
