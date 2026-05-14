@@ -1180,6 +1180,13 @@ body.app-readonly th .rz{pointer-events:none}
             </div>
             <div class="acc-list" id="acc-pa-list"></div>
           </div>
+          <div class="acc-card" id="acc-paok-card">
+            <div class="acc-card-head">
+              <div class="acc-card-title"><span class="acc-dot" style="background:#10B981"></span> &#9989; PA Accept&eacute;e &mdash; Conditions &agrave; finaliser</div>
+              <div class="acc-card-count" id="acc-paok-count">0</div>
+            </div>
+            <div class="acc-list" id="acc-paok-list"></div>
+          </div>
           <div class="acc-card" id="acc-rel-card">
             <div class="acc-card-head">
               <div class="acc-card-title"><span class="acc-dot" id="acc-rel-dot" style="background:#06B6D4"></span> &Agrave; relancer</div>
@@ -2581,7 +2588,7 @@ function renderAccueil(){
     }
   }
 
-  // ─── Promesses à suivre (3 types : acheteur, double rep., PA externe) ───
+  // ─── Promesses à suivre + PA Acceptée (3 types : acheteur, double rep., PA externe) ───
   var _paUrgency=function(p){
     var fields=['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire','paEcheance'];
     var dates=fields.map(function(f){
@@ -2591,49 +2598,85 @@ function renderAccueil(){
     }).filter(function(t){return t!==null;});
     return dates.length?Math.min.apply(null,dates):Infinity;
   };
-  var paItems=[];
+  var _paIsAccepted=function(rec,type){
+    if(type==='externe')return rec.paExterneEcheance==='done';
+    return rec.paEcheance==='done'||rec.statutPa==='Acceptée';
+  };
+  var _paHasPendingConditions=function(rec){
+    var fields=['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'];
+    return fields.some(function(f){var x=rec[f];return x&&x!=='done';});
+  };
+  var paAllItems=[];
   (db.pa||[]).forEach(function(p){
-    paItems.push({type:p.propertyId?'double':'acheteur',rec:p,urgency:_paUrgency(p)});
+    var type=p.propertyId?'double':'acheteur';
+    paAllItems.push({type:type,rec:p,urgency:_paUrgency(p),accepted:_paIsAccepted(p,type)});
   });
   (db.v||[]).forEach(function(v){
-    if(!_isFutureDateTime(v.paExterneEcheance))return;
-    var s=String(v.paExterneEcheance);
-    var d=new Date(s.length===10?s+'T12:00':s.substring(0,16));
-    paItems.push({type:'externe',rec:v,urgency:isNaN(d.getTime())?Infinity:d.getTime()});
+    var isFut=_isFutureDateTime(v.paExterneEcheance);
+    var isDone=v.paExterneEcheance==='done';
+    if(!isFut&&!isDone)return;
+    var urg=Infinity;
+    if(isFut){
+      var s=String(v.paExterneEcheance);
+      var d=new Date(s.length===10?s+'T12:00':s.substring(0,16));
+      urg=isNaN(d.getTime())?Infinity:d.getTime();
+    } else {
+      urg=_paUrgency(v); // acceptée → urgence selon conditions restantes
+    }
+    paAllItems.push({type:'externe',rec:v,urgency:urg,accepted:isDone});
   });
-  paItems.sort(function(a,b){return a.urgency-b.urgency;});
+  // Split en 2 listes : en négo (non acceptées) + acceptées avec conditions pending
+  var paNegoItems=paAllItems.filter(function(it){return !it.accepted;});
+  var paOkItems=paAllItems.filter(function(it){return it.accepted&&_paHasPendingConditions(it.rec);});
+  paNegoItems.sort(function(a,b){return a.urgency-b.urgency;});
+  paOkItems.sort(function(a,b){return a.urgency-b.urgency;});
+  // Helper de rendu commun
+  var _renderPaItem=function(item){
+    if(item.type==='externe'){
+      var v=item.rec;
+      var addr=v.adresse||'(adresse à compléter)';
+      return '<div class="acc-row" onclick="doEdit(\'v\',\''+v.id+'\')">'
+        +'<div class="acc-row-icon">&#128196;</div>'
+        +'<div class="acc-row-main">'+esc(addr)+'</div>'
+        +'<div class="acc-row-badge acc-badge-orange">PA externe</div>'
+        +'</div>';
+    }
+    var p=item.rec;
+    var isDouble=item.type==='double';
+    var who=((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)';
+    var addr2='';
+    if(isDouble){var vp=_vById(p.propertyId);addr2=vp?(vp.adresse||'(adresse à compléter)'):'(propriété supprimée)';}
+    else addr2=p.adresse||'(adresse à compléter)';
+    return _accRowHtml({
+      tab:isDouble?'pa-en-vente':'pa',id:p.id,
+      icon:'&#128196;',
+      main:who+' — '+addr2,
+      badge:isDouble?'Double rep.':'Acheteur',
+      badgeCls:isDouble?'acc-badge-warn':'acc-badge-urgent'
+    });
+  };
+  // Widget "Promesses à suivre" (en négo)
   var paList=document.getElementById('acc-pa-list');
   var paCount=document.getElementById('acc-pa-count');
-  if(paCount){paCount.textContent=paItems.length;paCount.classList.toggle('dim',paItems.length===0);}
+  if(paCount){paCount.textContent=paNegoItems.length;paCount.classList.toggle('dim',paNegoItems.length===0);}
   if(paList){
-    if(paItems.length===0){
-      paList.innerHTML='<div class="acc-empty">Aucune promesse en cours &#10003;</div>';
+    if(paNegoItems.length===0){
+      paList.innerHTML='<div class="acc-empty">Aucune promesse en n&eacute;gociation &#10003;</div>';
     } else {
-      paList.innerHTML=paItems.slice(0,8).map(function(item){
-        if(item.type==='externe'){
-          var v=item.rec;
-          var addr=v.adresse||'(adresse à compléter)';
-          return '<div class="acc-row" onclick="doEdit(\'v\',\''+v.id+'\')">'
-            +'<div class="acc-row-icon">&#128196;</div>'
-            +'<div class="acc-row-main">'+esc(addr)+'</div>'
-            +'<div class="acc-row-badge acc-badge-orange">PA externe</div>'
-            +'</div>';
-        }
-        var p=item.rec;
-        var isDouble=item.type==='double';
-        var who=((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)';
-        var addr2='';
-        if(isDouble){var vp=_vById(p.propertyId);addr2=vp?(vp.adresse||'(adresse à compléter)'):'(propriété supprimée)';}
-        else addr2=p.adresse||'(adresse à compléter)';
-        return _accRowHtml({
-          tab:isDouble?'pa-en-vente':'pa',id:p.id,
-          icon:'&#128196;',
-          main:who+' — '+addr2,
-          badge:isDouble?'Double rep.':'Acheteur',
-          badgeCls:isDouble?'acc-badge-warn':'acc-badge-urgent'
-        });
-      }).join('');
-      if(paItems.length>8)paList.innerHTML+='<div class="acc-empty">+ '+(paItems.length-8)+' autres</div>';
+      paList.innerHTML=paNegoItems.slice(0,8).map(_renderPaItem).join('');
+      if(paNegoItems.length>8)paList.innerHTML+='<div class="acc-empty">+ '+(paNegoItems.length-8)+' autres</div>';
+    }
+  }
+  // Widget "PA Acceptée — Conditions à finaliser"
+  var paokList=document.getElementById('acc-paok-list');
+  var paokCount=document.getElementById('acc-paok-count');
+  if(paokCount){paokCount.textContent=paOkItems.length;paokCount.classList.toggle('dim',paOkItems.length===0);}
+  if(paokList){
+    if(paOkItems.length===0){
+      paokList.innerHTML='<div class="acc-empty">Aucune PA accept&eacute;e en cours &#10003;</div>';
+    } else {
+      paokList.innerHTML=paOkItems.slice(0,8).map(_renderPaItem).join('');
+      if(paOkItems.length>8)paokList.innerHTML+='<div class="acc-empty">+ '+(paOkItems.length-8)+' autres</div>';
     }
   }
 
