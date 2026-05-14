@@ -3138,8 +3138,12 @@ function transferPaevToDemande(id){
 // ─── Badges sidebar (étape 19) ─────────────────────────────
 function updateDemandesBadges(){
   try{
-    var nDem=(db.demandes||[]).filter(function(d){return d.status==='new'||d.status==='qualified';}).length;
-    var nPaev=(db.pa||[]).filter(function(p){return p.propertyId;}).length
+    // Set des v.id existants pour exclure les demandes orphelines (propriété supprimée)
+    var vIds={};(db.v||[]).forEach(function(v){vIds[v.id]=true;});
+    var nDem=(db.demandes||[]).filter(function(d){
+      return (d.status==='new'||d.status==='qualified')&&d.propertyId&&vIds[d.propertyId];
+    }).length;
+    var nPaev=(db.pa||[]).filter(function(p){return p.propertyId&&vIds[p.propertyId];}).length
       +(db.v||[]).filter(function(v){return _isFutureDateTime(v.paExterneEcheance);}).length;
     var setBadge=function(id,n){var b=document.getElementById(id);if(b){b.textContent=n;b.classList.toggle("zero",n===0);}};
     setBadge('sb-demandes-badge',nDem);
