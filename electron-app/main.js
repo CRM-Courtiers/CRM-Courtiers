@@ -307,10 +307,8 @@ ipcMain.handle('install-update', async () => {
 });
 
 // ─── Auto-update : configuration ────────────────────────────
-// Sur Mac, Squirrel ne peut pas installer une app non-signée Apple Dev ID — on bloque le download inutile
-// et on redirige l'utilisateur vers téléchargement manuel du .dmg côté UI
-autoUpdater.autoDownload = (process.platform !== 'darwin');
-autoUpdater.autoInstallOnAppQuit = (process.platform !== 'darwin');
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
 
 // Logs : capturer les événements et les relayer à la fenêtre
 function sendUpdateStatus(status, data) {
@@ -323,7 +321,12 @@ function sendUpdateStatus(status, data) {
 autoUpdater.on('checking-for-update', () => sendUpdateStatus('checking'));
 autoUpdater.on('update-available', (info) => sendUpdateStatus('available', { version: info.version }));
 autoUpdater.on('update-not-available', (info) => sendUpdateStatus('not-available', { version: info.version }));
-autoUpdater.on('download-progress', (progress) => sendUpdateStatus('progress', { percent: Math.round(progress.percent) }));
+autoUpdater.on('download-progress', (progress) => sendUpdateStatus('progress', {
+  percent: Math.round(progress.percent),
+  transferred: progress.transferred,
+  total: progress.total,
+  bytesPerSecond: progress.bytesPerSecond
+}));
 autoUpdater.on('update-downloaded', (info) => sendUpdateStatus('downloaded', { version: info.version }));
 autoUpdater.on('error', (err) => sendUpdateStatus('error', { message: err && err.message }));
 
