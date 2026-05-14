@@ -1031,7 +1031,7 @@ body.app-readonly th .rz{pointer-events:none}
     </div>
     <div class="sb-section" data-color="cyan">
       <div class="sb-section-title">Prospects</div>
-      <button class="tbtn" data-tab="cp"><span class="sb-icon">&#128199;</span> Clients pot. <span class="sb-badge zero" id="sb-cp-badge">0</span></button>
+      <button class="tbtn" data-tab="cp"><span class="sb-icon">&#128199;</span> Acheteurs pot. <span class="sb-badge zero" id="sb-cp-badge">0</span></button>
       <button class="tbtn" data-tab="vp"><span class="sb-icon">&#127968;</span> Vendeurs pot. <span class="sb-badge zero" id="sb-vp-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="red">
@@ -1151,7 +1151,7 @@ body.app-readonly th .rz{pointer-events:none}
         </div>
       </div>
     </div>
-    <!-- ── PANE : Clients potentiels ── -->
+    <!-- ── PANE : Acheteurs potentiels ── -->
     <div class="pane" id="pane-cp">
       <div class="thbar"><label>Seuil de relance&nbsp;: <input type="number" id="thr-cp" min="1" max="365" value="14"> jours sans contact</label></div>
       <div class="sortbar2" id="sortbar-cp"></div>
@@ -2122,7 +2122,7 @@ function renderTab(tab){
           var linkBtn=rec.linkId
             ?'<button class="bsm bdl" onclick="unlinkRecord(\'a\',\''+rec.id+'\')" title="Annuler la liaison">&#128274; D&eacute;lier</button>'
             :'<button class="bsm bret" onclick="openLinkModal(\'a\',\''+rec.id+'\')" title="Lier &agrave; un autre acheteur">&#128279; Lier</button>';
-          extraBtns=linkBtn+' <button class="bsm bdl" onclick="transferAToCp(\''+rec.id+'\')" title="Renvoyer aux clients potentiels">&#8617; Client pot.</button>';
+          extraBtns=linkBtn+' <button class="bsm bdl" onclick="transferAToCp(\''+rec.id+'\')" title="Renvoyer aux acheteurs potentiels">&#8617; Acheteur pot.</button>';
         }
         if(tab==="pa"){
           var linkBtnPa=rec.linkId
@@ -2671,7 +2671,7 @@ function transferPaToA(id){
 
 function transferAToCp(id){
   var rec=null;for(var i=0;i<db.a.length;i++){if(db.a[i].id===id){rec=db.a[i];break;}}if(!rec)return;
-  pushUndo("Retour clients potentiels");
+  pushUndo("Retour acheteurs potentiels");
   // Si li\u00e9, transf\u00e9rer aussi la partenaire (lien pr\u00e9serv\u00e9 dans la nouvelle tab)
   var toTransfer=[rec];
   if(rec.linkId){toTransfer=db.a.filter(function(x){return x.linkId===rec.linkId;});}
@@ -2684,7 +2684,7 @@ function transferAToCp(id){
   var idsToRemove=toTransfer.map(function(r){return r.id;});
   db.a=db.a.filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
   sdb();rall();
-  toast("\u2713 "+noms.join(" + ")+" \u2192 Clients potentiels");
+  toast("\u2713 "+noms.join(" + ")+" \u2192 Acheteurs potentiels");
 }
 
 // ─── Liaison de fiches (couples sur m\u00eame PA / m\u00eame propri\u00e9t\u00e9) ──────────────
@@ -3155,7 +3155,7 @@ function updateDemandesBadges(){
 // ─── Étape 22 : Templates de courriels
 // ═══════════════════════════════════════════════════════════════
 var TPL_SECTIONS=[
-  {key:'cp',         label:'Clients potentiels',         icon:'📇', color:'#06B6D4', group:'prospects'},
+  {key:'cp',         label:'Acheteurs potentiels',       icon:'📇', color:'#06B6D4', group:'prospects'},
   {key:'vp',         label:'Vendeurs potentiels',        icon:'🏠', color:'#06B6D4', group:'prospects'},
   {key:'a',          label:'Acheteurs',                  icon:'🔑', color:'#0EA5E9', group:'achats'},
   {key:'pa',         label:'PA Active (acheteur seul)',  icon:'📄', color:'#EF4444', group:'achats'},
@@ -4342,7 +4342,7 @@ function renderDashboard(){
   html+='<div class="dash-section dash-funnel">'
     +'<div class="dash-section-head"><div class="dash-section-title">Progression du pipeline</div><div class="dash-section-period">Du premier contact &agrave; la transaction conclue</div></div>'
     +'<div class="dash-funnel">'
-    +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#127919; Prospects (Clients pot. + Vendeurs pot. + Acheteurs)</div><div class="dash-funnel-count">'+nbProspects+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-cyan" style="width:'+(nbProspects/maxFunnel*100)+'%">'+nbProspects+'</div></div>'+(nbProspects>0?'<div class="dash-funnel-conv">&#8595; '+convPros+' % passent en pipeline actif</div>':'')+'</div>'
+    +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#127919; Prospects (Acheteurs pot. + Vendeurs pot. + Acheteurs)</div><div class="dash-funnel-count">'+nbProspects+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-cyan" style="width:'+(nbProspects/maxFunnel*100)+'%">'+nbProspects+'</div></div>'+(nbProspects>0?'<div class="dash-funnel-conv">&#8595; '+convPros+' % passent en pipeline actif</div>':'')+'</div>'
     +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#128296; Pipeline actif (PA Active + En Vente)</div><div class="dash-funnel-count">'+nbActifs+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-red" style="width:'+(nbActifs/maxFunnel*100)+'%">'+nbActifs+'</div></div>'+(nbActifs>0?'<div class="dash-funnel-conv">&#8595; '+convAct+' % concluent ('+curYear+')</div>':'')+'</div>'
     +'<div class="dash-funnel-stage"><div class="dash-funnel-head"><div class="dash-funnel-name">&#9989; Transactions conclues '+curYear+'</div><div class="dash-funnel-count">'+nbConclus+'</div></div><div class="dash-funnel-bar-track"><div class="dash-funnel-bar color-amber" style="width:'+(nbConclus/maxFunnel*100)+'%">'+nbConclus+'</div></div></div>'
     +'</div></div>';
@@ -4636,7 +4636,7 @@ function formForTab(tab,e){
   return '';
 }
 
-var TAB_LABELS={cp:"Client potentiel",a:"Acheteur",pa:"PA Active",vp:"Vendeur potentiel",v:"En Vente",ac:"Acheteur conclu",vc:"Vendeur conclu",ca:"Contact autre","pa-en-vente":"PA Active (mes propriétés)"};
+var TAB_LABELS={cp:"Acheteur potentiel",a:"Acheteur",pa:"PA Active",vp:"Vendeur potentiel",v:"En Vente",ac:"Acheteur conclu",vc:"Vendeur conclu",ca:"Contact autre","pa-en-vente":"PA Active (mes propriétés)"};
 function openAdd(){eid=null;document.getElementById("mt").textContent="Nouveau "+TAB_LABELS[ctab];document.getElementById("mb").innerHTML=formForTab(ctab,null);document.getElementById("ov").style.display="block";setTimeout(function(){var fi=document.getElementById("fprenom");if(fi)fi.focus();},50);}
 function doEdit(tab,id){var _st=_storeTab(tab);var entry=null;for(var i=0;i<db[_st].length;i++){if(db[_st][i].id===id){entry=db[_st][i];break;}}if(!entry)return;eid=id;ctab=tab;document.querySelectorAll(".tbtn").forEach(function(b){b.classList.remove("on");});document.querySelectorAll(".pane").forEach(function(p){p.classList.remove("on");});var btn=document.querySelector('[data-tab="'+tab+'"]');if(btn)btn.classList.add("on");var pn=document.getElementById("pane-"+tab);if(pn)pn.classList.add("on");setCardTitle(tab);document.querySelector(".card").classList.remove("settings-mode","accueil-mode","pancartes-mode");document.getElementById("mt").textContent="Modifier "+(TAB_LABELS[tab]||TAB_LABELS[_st]||"fiche");document.getElementById("mb").innerHTML=formForTab(tab,entry);document.getElementById("ov").style.display="block";}
 function closeModal(){document.getElementById("ov").style.display="none";eid=null;var btnSave=document.getElementById("btns");if(btnSave)btnSave.style.display="";}
@@ -4828,7 +4828,7 @@ function checkExportWarning(){try{var last=localStorage.getItem("sc-lastexport")
 function dismissExportWarn(){var warn=document.getElementById("exportWarn");if(warn)warn.style.display='none';try{localStorage.setItem("sc-lastexport",Date.now().toString());}catch(e){}}
 
 // ─── Tabs ────────────────────────────────────────────────────
-var CARD_TITLES={cp:"Clients potentiels",vp:"Vendeurs potentiels",a:"Acheteurs",pa:"PA Active",v:"En Vente",ac:"Acheteurs conclus",vc:"Vendeurs conclus",ca:"Contacts autre",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes entrantes","pa-en-vente":"PA Active (mes propriétés)",templates:"Templates de courriels"};
+var CARD_TITLES={cp:"Acheteurs potentiels",vp:"Vendeurs potentiels",a:"Acheteurs",pa:"PA Active",v:"En Vente",ac:"Acheteurs conclus",vc:"Vendeurs conclus",ca:"Contacts autre",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes entrantes","pa-en-vente":"PA Active (mes propriétés)",templates:"Templates de courriels"};
 function setCardTitle(tab){var el=document.getElementById("cardTitle");if(el)el.textContent=CARD_TITLES[tab]||"";}
 document.getElementById("tbar").addEventListener("click",function(e){
   var btn=e.target.closest(".tbtn");if(!btn)return;
