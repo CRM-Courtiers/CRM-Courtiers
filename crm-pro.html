@@ -330,6 +330,7 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .acc-badge-late{background:#FEE2E2;color:#B91C1C}
 .acc-badge-purple{background:#F3E8FF;color:#7E22CE}
 .acc-badge-warn{background:#FEF3C7;color:#92400E}
+.acc-badge-orange{background:#FFEDD5;color:#9A3412}
 .acc-row.urgent .acc-row-main{color:#B91C1C}
 .acc-section-divider{margin:10px -10px 6px;padding:6px 10px;font-size:9px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.1em;border-top:1px solid #F1F5F9}
 .acc-section-divider:first-child{border-top:none;margin-top:0;padding-top:0}
@@ -380,6 +381,7 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 /* Badge compteur sur les items sidebar */
 .sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:#A855F7;color:#fff;letter-spacing:.02em;min-width:18px;text-align:center}
 .sb-badge:empty,.sb-badge.zero{display:none}
+.sb-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sb-section[data-color="cyan"] .sb-badge{background:#06B6D4}
 .sb-section[data-color="red"] .sb-badge{background:#EF4444}
 .sb-section[data-color="green"] .sb-badge{background:#84CC16}
@@ -1074,37 +1076,37 @@ body.app-readonly th .rz{pointer-events:none}
     </div>
     <div class="sb-section" data-color="cyan">
       <div class="sb-section-title">Prospects</div>
-      <button class="tbtn" data-tab="cp"><span class="sb-icon">&#128199;</span> Prospects acheteurs <span class="sb-badge zero" id="sb-cp-badge">0</span></button>
-      <button class="tbtn" data-tab="vp"><span class="sb-icon">&#127968;</span> Prospects vendeurs <span class="sb-badge zero" id="sb-vp-badge">0</span></button>
+      <button class="tbtn" data-tab="cp"><span class="sb-icon">&#128199;</span><span class="sb-label">Prospects acheteurs</span><span class="sb-badge zero" id="sb-cp-badge">0</span></button>
+      <button class="tbtn" data-tab="vp"><span class="sb-icon">&#127968;</span><span class="sb-label">Prospects vendeurs</span><span class="sb-badge zero" id="sb-vp-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="red">
       <div class="sb-section-title">Achats</div>
-      <button class="tbtn" data-tab="a"><span class="sb-icon">&#128273;</span> Mes acheteurs <span class="sb-badge zero" id="sb-a-badge">0</span></button>
-      <button class="tbtn" data-tab="pa" id="tbn-pa"><span class="sb-icon">&#128196;</span> Promesses en cours <span class="sb-badge zero" id="sb-pa-badge">0</span></button>
+      <button class="tbtn" data-tab="a"><span class="sb-icon">&#128273;</span><span class="sb-label">Mes acheteurs</span><span class="sb-badge zero" id="sb-a-badge">0</span></button>
+      <button class="tbtn" data-tab="pa" id="tbn-pa"><span class="sb-icon">&#128196;</span><span class="sb-label">Promesses en cours</span><span class="sb-badge zero" id="sb-pa-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="green">
       <div class="sb-section-title">En vente</div>
-      <button class="tbtn" data-tab="v"><span class="sb-icon">&#127969;</span> Mes inscriptions <span class="sb-badge zero" id="sb-v-badge">0</span></button>
-      <button class="tbtn" data-tab="demandes"><span class="sb-icon">&#128233;</span> Demandes reçues <span class="sb-badge zero" id="sb-demandes-badge">0</span></button>
-      <button class="tbtn" data-tab="pa-en-vente"><span class="sb-icon">&#128196;</span> Doubles représentations <span class="sb-badge zero" id="sb-paev-badge">0</span></button>
+      <button class="tbtn" data-tab="v"><span class="sb-icon">&#127969;</span><span class="sb-label">Mes inscriptions</span><span class="sb-badge zero" id="sb-v-badge">0</span></button>
+      <button class="tbtn" data-tab="demandes"><span class="sb-icon">&#128233;</span><span class="sb-label">Demandes reçues</span><span class="sb-badge zero" id="sb-demandes-badge">0</span></button>
+      <button class="tbtn" data-tab="pa-en-vente"><span class="sb-icon">&#128196;</span><span class="sb-label">Doubles représentations</span><span class="sb-badge zero" id="sb-paev-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="purple">
       <div class="sb-section-title">Pancartes</div>
-      <button class="tbtn" data-tab="pancartes"><span class="sb-icon">&#128681;</span> Pancartes <span class="sb-badge zero" id="sb-pancartes-badge">0</span></button>
+      <button class="tbtn" data-tab="pancartes"><span class="sb-icon">&#128681;</span><span class="sb-label">Pancartes</span><span class="sb-badge zero" id="sb-pancartes-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="amber">
       <div class="sb-section-title">Conclus</div>
-      <button class="tbtn" data-tab="ac" id="tbn-ac"><span class="sb-icon">&#9989;</span> Achats conclus</button>
-      <button class="tbtn" data-tab="vc" id="tbn-vc"><span class="sb-icon">&#9989;</span> Ventes conclues</button>
+      <button class="tbtn" data-tab="ac" id="tbn-ac"><span class="sb-icon">&#9989;</span><span class="sb-label">Achats conclus</span></button>
+      <button class="tbtn" data-tab="vc" id="tbn-vc"><span class="sb-icon">&#9989;</span><span class="sb-label">Ventes conclues</span></button>
     </div>
     <div class="sb-section" data-color="gray">
       <div class="sb-section-title">Archives</div>
-      <button class="tbtn" data-tab="ca" id="tbn-ca"><span class="sb-icon">&#128100;</span> Autres contacts</button>
+      <button class="tbtn" data-tab="ca" id="tbn-ca"><span class="sb-icon">&#128100;</span><span class="sb-label">Autres contacts</span></button>
     </div>
     <div class="sb-section" data-color="gray">
       <div class="sb-section-title">Syst&egrave;me</div>
-      <button class="tbtn" data-tab="settings" id="tbn-settings"><span class="sb-icon">&#9881;</span> Param&egrave;tres</button>
-      <button class="tbtn" data-tab="templates" id="tbn-templates"><span class="sb-icon">&#9993;</span> Templates</button>
+      <button class="tbtn" data-tab="settings" id="tbn-settings"><span class="sb-icon">&#9881;</span><span class="sb-label">Param&egrave;tres</span></button>
+      <button class="tbtn" data-tab="templates" id="tbn-templates"><span class="sb-icon">&#9993;</span><span class="sb-label">Templates</span></button>
     </div>
   </nav>
   <div class="sb-foot">v0.1 &middot; local</div>
@@ -1170,6 +1172,13 @@ body.app-readonly th .rz{pointer-events:none}
             </div>
             <div class="acc-list" id="acc-rdv-list"></div>
           </div>
+          <div class="acc-card" id="acc-pa-card">
+            <div class="acc-card-head">
+              <div class="acc-card-title"><span class="acc-dot" style="background:#EF4444"></span> &#128196; Promesses &agrave; suivre</div>
+              <div class="acc-card-count" id="acc-pa-count">0</div>
+            </div>
+            <div class="acc-list" id="acc-pa-list"></div>
+          </div>
           <div class="acc-card" id="acc-rel-card">
             <div class="acc-card-head">
               <div class="acc-card-title"><span class="acc-dot" id="acc-rel-dot" style="background:#06B6D4"></span> &Agrave; relancer</div>
@@ -1177,19 +1186,21 @@ body.app-readonly th .rz{pointer-events:none}
             </div>
             <div class="acc-list" id="acc-rel-list"></div>
           </div>
+        </div>
+        <div class="acc-card full" id="acc-cond-card" style="margin-bottom:16px">
+          <div class="acc-card-head">
+            <div class="acc-card-title"><span class="acc-dot" style="background:#F59E0B"></span> Conditions &agrave; surveiller (≤ 7 jours)</div>
+            <div class="acc-card-count" id="acc-cond-count">0</div>
+          </div>
+          <div class="acc-list" id="acc-cond-list"></div>
+        </div>
+        <div class="accueil-grid">
           <div class="acc-card" id="acc-panc-card">
             <div class="acc-card-head">
               <div class="acc-card-title"><span class="acc-dot" style="background:#A855F7"></span> &#128681; Pancartes</div>
               <div class="acc-card-count" id="acc-panc-total">0</div>
             </div>
             <div class="acc-list" id="acc-panc-list"></div>
-          </div>
-          <div class="acc-card" id="acc-pa-card">
-            <div class="acc-card-head">
-              <div class="acc-card-title"><span class="acc-dot" style="background:#EF4444"></span> &#128196; Promesses &agrave; suivre</div>
-              <div class="acc-card-count" id="acc-pa-count">0</div>
-            </div>
-            <div class="acc-list" id="acc-pa-list"></div>
           </div>
           <div class="acc-card" id="acc-dem-card">
             <div class="acc-card-head">
@@ -1198,13 +1209,6 @@ body.app-readonly th .rz{pointer-events:none}
             </div>
             <div class="acc-list" id="acc-dem-list"></div>
           </div>
-        </div>
-        <div class="acc-card full" id="acc-cond-card">
-          <div class="acc-card-head">
-            <div class="acc-card-title"><span class="acc-dot" style="background:#F59E0B"></span> Conditions &agrave; surveiller (≤ 7 jours)</div>
-            <div class="acc-card-count" id="acc-cond-count">0</div>
-          </div>
-          <div class="acc-list" id="acc-cond-list"></div>
         </div>
       </div>
     </div>
@@ -2476,10 +2480,12 @@ function getRelancesList(){
 // Conditions arrivant à échéance dans les 7 prochains jours (PA + V) — inclut aussi les en retard
 function getConditionsDue(){
   var out=[];
+  // paExterneEcheance affiché dans "Promesses à suivre" — exclu pour éviter doublon
   ["pa","v"].forEach(function(tab){
     var fields=COND_FIELDS_BY_TAB[tab]||[];
     (db[tab]||[]).forEach(function(r){
       fields.forEach(function(f){
+        if(f==='paExterneEcheance')return;
         var v=r[f];if(!v||v==="done")return;
         var ds=String(v).substring(0,10);
         if(!/^\d{4}-\d{2}-\d{2}$/.test(ds))return;
@@ -2574,30 +2580,59 @@ function renderAccueil(){
     }
   }
 
-  // ─── Promesses à suivre (toutes db.pa : 'pa' standard + 'pa-en-vente' double rep.) ───
-  var allPas=(db.pa||[]).slice();
+  // ─── Promesses à suivre (3 types : acheteur, double rep., PA externe) ───
+  var _paUrgency=function(p){
+    var fields=['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire','paEcheance'];
+    var dates=fields.map(function(f){
+      var x=p[f];if(!x||x==='done')return null;
+      var s=String(x);var d=new Date(s.length===10?s+'T12:00':s.substring(0,16));
+      return isNaN(d.getTime())?null:d.getTime();
+    }).filter(function(t){return t!==null;});
+    return dates.length?Math.min.apply(null,dates):Infinity;
+  };
+  var paItems=[];
+  (db.pa||[]).forEach(function(p){
+    paItems.push({type:p.propertyId?'double':'acheteur',rec:p,urgency:_paUrgency(p)});
+  });
+  (db.v||[]).forEach(function(v){
+    if(!_isFutureDateTime(v.paExterneEcheance))return;
+    var s=String(v.paExterneEcheance);
+    var d=new Date(s.length===10?s+'T12:00':s.substring(0,16));
+    paItems.push({type:'externe',rec:v,urgency:isNaN(d.getTime())?Infinity:d.getTime()});
+  });
+  paItems.sort(function(a,b){return a.urgency-b.urgency;});
   var paList=document.getElementById('acc-pa-list');
   var paCount=document.getElementById('acc-pa-count');
-  if(paCount){paCount.textContent=allPas.length;paCount.classList.toggle('dim',allPas.length===0);}
+  if(paCount){paCount.textContent=paItems.length;paCount.classList.toggle('dim',paItems.length===0);}
   if(paList){
-    if(allPas.length===0){
+    if(paItems.length===0){
       paList.innerHTML='<div class="acc-empty">Aucune promesse en cours &#10003;</div>';
     } else {
-      paList.innerHTML=allPas.slice(0,8).map(function(p){
-        var isDouble=!!p.propertyId;
+      paList.innerHTML=paItems.slice(0,8).map(function(item){
+        if(item.type==='externe'){
+          var v=item.rec;
+          var addr=v.adresse||'(adresse à compléter)';
+          return '<div class="acc-row" onclick="doEdit(\'v\',\''+v.id+'\')">'
+            +'<div class="acc-row-icon">&#128196;</div>'
+            +'<div class="acc-row-main">'+esc(addr)+'</div>'
+            +'<div class="acc-row-badge acc-badge-orange">PA externe</div>'
+            +'</div>';
+        }
+        var p=item.rec;
+        var isDouble=item.type==='double';
         var who=((p.prenom||'')+' '+(p.nom||'')).trim()||'(sans nom)';
-        var addr='';
-        if(isDouble){var v=_vById(p.propertyId);addr=v?(v.adresse||'(adresse à compléter)'):'(propriété supprimée)';}
-        else addr=p.adresse||'(adresse à compléter)';
+        var addr2='';
+        if(isDouble){var vp=_vById(p.propertyId);addr2=vp?(vp.adresse||'(adresse à compléter)'):'(propriété supprimée)';}
+        else addr2=p.adresse||'(adresse à compléter)';
         return _accRowHtml({
           tab:isDouble?'pa-en-vente':'pa',id:p.id,
           icon:'&#128196;',
-          main:who+' — '+addr,
-          badge:isDouble?'Double rep.':'En cours',
+          main:who+' — '+addr2,
+          badge:isDouble?'Double rep.':'Acheteur',
           badgeCls:isDouble?'acc-badge-warn':'acc-badge-urgent'
         });
       }).join('');
-      if(allPas.length>8)paList.innerHTML+='<div class="acc-empty">+ '+(allPas.length-8)+' autres</div>';
+      if(paItems.length>8)paList.innerHTML+='<div class="acc-empty">+ '+(paItems.length-8)+' autres</div>';
     }
   }
 
