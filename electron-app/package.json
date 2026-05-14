@@ -1,6 +1,6 @@
 {
   "name": "crm-pro-courtage",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "TRI-ANGLE — CRM pour courtiers immobiliers québécois",
   "main": "main.js",
   "author": "CRM-Courtiers",
@@ -63,6 +63,13 @@
       "target": [
         {
           "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
           "arch": [
             "x64",
             "arm64"
