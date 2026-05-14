@@ -2604,7 +2604,8 @@ function renderAccueil(){
   };
   var _paHasPendingConditions=function(rec){
     var fields=['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'];
-    return fields.some(function(f){var x=rec[f];return x&&x!=='done';});
+    // Vide = condition à planifier (donc pending). Seul 'done' = complétée.
+    return fields.some(function(f){return rec[f]!=='done';});
   };
   var paAllItems=[];
   (db.pa||[]).forEach(function(p){
