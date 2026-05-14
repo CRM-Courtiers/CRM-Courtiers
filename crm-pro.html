@@ -158,8 +158,6 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-section:last-child{border-bottom:none}
 .dem-section-title{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em;padding:12px 4px 8px;display:flex;align-items:center;gap:8px}
 .dem-section-title .dem-pill{background:#F1F5F9;color:#475569;padding:2px 8px;border-radius:10px;font-size:10px}
-.dem-row{display:flex;flex-direction:column;gap:6px;padding:10px 4px;border-bottom:1px solid #F1F5F9}
-.dem-row:last-child{border-bottom:none}
 /* dem-tbl hérite des styles natifs table/th/td. On override juste l'édition et les cas spéciaux. */
 .dem-tbl{width:100%;table-layout:auto;margin:6px 0}
 .dem-tbl td.ei{cursor:cell;padding:9px 12px!important;outline:none!important;overflow:hidden!important;min-height:36px}
@@ -194,12 +192,6 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-prop-badge-empty{background:#F1F5F9;color:#94A3B8}
 .dem-prop-badge-arch{background:#E2E8F0;color:#64748B}
 .dem-prop-body{padding:14px}
-.dem-row-line1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.dem-row-name{font-size:13px;font-weight:700;color:#0F172A}
-.dem-row-meta{font-size:11px;color:#64748B}
-.dem-row-source{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:#F1F5F9;color:#475569;text-transform:uppercase;letter-spacing:.04em}
-.dem-row-notes{font-size:12px;color:#475569;font-style:italic;padding:2px 4px 0;line-height:1.4}
-.dem-row-actions{display:flex;gap:6px;flex-wrap:wrap;padding-top:4px}
 .dem-btn{font-size:11px;padding:5px 11px;background:#fff;border:1px solid #CBD5E1;border-radius:6px;color:#0F172A;cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s;white-space:nowrap}
 .dem-btn:hover{background:#F1F5F9;border-color:#64748B}
 .dem-btn.primary{background:#F59E0B;color:#fff;border-color:#F59E0B}
@@ -221,7 +213,6 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-archive-toggle{font-size:11px;padding:8px 18px;color:#64748B;cursor:pointer;text-align:center;background:#FAFAFC;border-top:1px solid #F1F5F9;font-weight:600}
 .dem-archive-toggle:hover{background:#F1F5F9;color:#0F172A}
 .dem-archived-row{opacity:.6}
-.dem-archived-row .dem-row-name{text-decoration:line-through}
 .dem-status-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 .dem-status-converted{background:#DCFCE7;color:#166534}
 .dem-status-lost{background:#FEE2E2;color:#991B1B}
@@ -235,9 +226,6 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-tbl tbody tr.dem-tint-suivre td{background:#FFEDD5!important}
 .dem-tbl tbody tr.dem-tint-suivre:hover td{background:#FED7AA!important}
 .dem-prop-badge-attente{background:#F59E0B;color:#fff}
-.paev-ext-bar{padding:12px 18px;background:#FEF3C7;border:1px solid #FDE68A;border-left:3px solid #F59E0B;border-radius:6px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:#78350F;flex-wrap:wrap;margin-bottom:8px}
-.paev-ext-bar strong{color:#92400E}
-.paev-ext-banner-wrap{padding:14px 16px 6px}
 
 /* ── PAGE TEMPLATES DE COURRIELS (Étape 22) ─────────── */
 .tpl-wrap{padding:24px 26px}
@@ -1220,7 +1208,7 @@ body.app-readonly th .rz{pointer-events:none}
         </div>
       </div>
     </div>
-    <!-- ── PANE : Acheteurs potentiels ── -->
+    <!-- ── PANE : Prospects acheteurs ── -->
     <div class="pane" id="pane-cp">
       <div class="thbar"><label>Seuil de relance&nbsp;: <input type="number" id="thr-cp" min="1" max="365" value="14"> jours sans contact</label></div>
       <div class="sortbar2" id="sortbar-cp"></div>
@@ -1237,7 +1225,7 @@ body.app-readonly th .rz{pointer-events:none}
       <div class="sortbar2" id="sortbar-pa"></div>
       <div class="tw"><table id="tbl-pa"><colgroup id="cg-pa"></colgroup><thead id="th-pa"></thead><tbody id="tb-pa"></tbody></table></div>
     </div>
-    <!-- ── PANE : Vendeurs potentiels ── -->
+    <!-- ── PANE : Prospects vendeurs ── -->
     <div class="pane" id="pane-vp">
       <div class="thbar"><label>Seuil de relance&nbsp;: <input type="number" id="thr-vp" min="1" max="365" value="14"> jours sans contact</label></div>
       <div class="sortbar2" id="sortbar-vp"></div>
@@ -1252,9 +1240,8 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="pane" id="pane-demandes">
       <div class="dem-wrap" id="dem-wrap"></div>
     </div>
-    <!-- ── PANE : PA Active sur mes propriétés (Étape 19, scénarios B+C) ── -->
+    <!-- ── PANE : Doubles représentations (Étape 19, scénarios B+C) ── -->
     <div class="pane" id="pane-pa-en-vente">
-      <div class="paev-ext-bar-wrap" id="paev-ext-bar-wrap"></div>
       <div class="sortbar2" id="sortbar-pa-en-vente"></div>
       <div class="tw"><table id="tbl-pa-en-vente"><colgroup id="cg-pa-en-vente"></colgroup><thead id="th-pa-en-vente"></thead><tbody id="tb-pa-en-vente"></tbody></table></div>
     </div>
@@ -2415,7 +2402,7 @@ function ust(){
   document.getElementById("hdate").textContent=new Date().toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
 }
 
-function rall(){TABS_UI.forEach(function(t){renderTab(t);});ust();TABS_UI.forEach(function(t){updateStickyOffsets(t);});renderAccueil();renderPancartes();updatePancartesBadge();updateRelanceBadges();updateDemandesBadges();renderPaExterneBanner();_rerenderActivePane();}
+function rall(){TABS_UI.forEach(function(t){renderTab(t);});ust();TABS_UI.forEach(function(t){updateStickyOffsets(t);});renderAccueil();renderPancartes();updatePancartesBadge();updateRelanceBadges();updateDemandesBadges();_rerenderActivePane();}
 
 // ─── PAGE ACCUEIL ─────────────────────────────────────────────
 // Labels lisibles pour les champs de condition
@@ -3319,13 +3306,6 @@ function convertDemandeToA(id){
   d.status='converted-acheteur';d.statusDate=_todayStr();d.lastModified=_todayStr();
   sdb();rall();
   toast('✓ Fiche Acheteur créée');
-}
-
-// ─── Rendu : PA en cours (groupé par propriété, scénarios B + C) ───
-// Bandeau scénario C (PA externe via courtier externe) — affiché AU-DESSUS de la table pa-en-vente
-function renderPaExterneBanner(){
-  // PA externe désormais signalé par row tint + badge sb-v-badge sur "Mes inscriptions"
-  var w=document.getElementById('paev-ext-bar-wrap');if(w)w.innerHTML='';
 }
 
 // Retour scénario B → Demandes (PA refusée). Garde la trace côté demande comme "qualified"
@@ -5069,7 +5049,7 @@ document.getElementById("tbar").addEventListener("click",function(e){
   if(tab==="calendar"){card.classList.add("calendar-mode");renderCalendar();return;}
   if(tab==="dashboard"){card.classList.add("dashboard-mode");renderDashboard();return;}
   if(tab==="demandes"){card.classList.add("demandes-mode");renderDemandes();return;}
-  if(tab==="pa-en-vente"){card.classList.add("paev-mode");renderPaExterneBanner();}
+  if(tab==="pa-en-vente"){card.classList.add("paev-mode");}
   ctab=tab;
   // Vider la recherche des autres onglets (\u00e9vite les filtres fant\u00f4mes)
   TABS_UI.forEach(function(t){if(t!==tab&&SEARCH[t]){SEARCH[t]='';var inp=document.getElementById('srch-'+t);if(inp)inp.value='';saveFltState();rall();}});
