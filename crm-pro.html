@@ -160,6 +160,40 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-section-title .dem-pill{background:#F1F5F9;color:#475569;padding:2px 8px;border-radius:10px;font-size:10px}
 .dem-row{display:flex;flex-direction:column;gap:6px;padding:10px 4px;border-bottom:1px solid #F1F5F9}
 .dem-row:last-child{border-bottom:none}
+/* dem-tbl hérite des styles natifs table/th/td. On override juste l'édition et les cas spéciaux. */
+.dem-tbl{width:100%;table-layout:auto;margin:6px 0}
+.dem-tbl td.ei{cursor:cell;padding:9px 12px!important;outline:none!important;overflow:hidden!important;min-height:36px}
+.dem-tbl tbody tr:nth-child(even) td{background:#F8FAFC!important}
+.dem-tbl tbody tr:nth-child(odd) td{background:#fff!important}
+.dem-tbl tbody tr:hover td{background:#E2E8F0!important}
+.dem-tbl td.ei:hover{outline:1px solid #CBD5E1!important;outline-offset:-1px}
+.dem-tbl td.ei.editing{padding:2px 4px!important;overflow:visible!important;outline:2px solid #10B981!important;background:#F8FAFC!important}
+.dem-tbl td.ei input,.dem-tbl td.ei textarea,.dem-tbl td.ei select{width:100%;padding:4px 6px;border:1.5px solid #0EA5E9;border-radius:4px;font-family:inherit;font-size:12px;outline:none;background:#fff;color:#0F172A;box-sizing:border-box}
+.dem-tbl td.ei textarea{min-height:50px;resize:vertical}
+.dem-tbl tr.dem-archived-row td{opacity:.55}
+.dem-tbl tr.dem-archived-row td.dem-actions-cell{opacity:1}
+.dem-tbl .dem-actions-cell{white-space:nowrap;overflow:visible;text-align:right}
+.dem-tbl .dem-actions-cell .dem-btn{margin-right:3px}
+.dem-tbl .dem-empty-row td{font-size:11px;color:#94A3B8;font-style:italic;text-align:center;padding:8px;background:#FAFBFC!important}
+.dem-prop{border:1px solid #E2E8F0;border-radius:8px;background:#fff;margin-bottom:8px;overflow:hidden;transition:box-shadow .15s}
+.dem-prop:hover{box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.dem-prop.expanded{box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.dem-prop-head{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;user-select:none;background:#F8FAFC;transition:background .12s}
+.dem-prop-head:hover{background:#F1F5F9}
+.dem-prop.expanded .dem-prop-head{background:#0F172A;color:#fff;border-bottom:1px solid #1E293B}
+.dem-prop.expanded .dem-prop-head .dem-prop-meta{color:#94A3B8}
+.dem-prop-chevron{font-size:14px;color:#64748B;width:14px;flex-shrink:0;transition:transform .15s}
+.dem-prop.expanded .dem-prop-chevron{color:#fff}
+.dem-prop-info{flex:1;min-width:0}
+.dem-prop-addr{font-size:14px;font-weight:700}
+.dem-prop-meta{font-size:11px;color:#64748B;margin-top:2px}
+.dem-prop-badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.dem-prop-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;letter-spacing:.04em;white-space:nowrap}
+.dem-prop-badge-new{background:#F59E0B;color:#fff}
+.dem-prop-badge-suivi{background:#0EA5E9;color:#fff}
+.dem-prop-badge-empty{background:#F1F5F9;color:#94A3B8}
+.dem-prop-badge-arch{background:#E2E8F0;color:#64748B}
+.dem-prop-body{padding:14px}
 .dem-row-line1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dem-row-name{font-size:13px;font-weight:700;color:#0F172A}
 .dem-row-meta{font-size:11px;color:#64748B}
@@ -191,6 +225,16 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-status-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 .dem-status-converted{background:#DCFCE7;color:#166534}
 .dem-status-lost{background:#FEE2E2;color:#991B1B}
+.dem-status-new{background:#FECDD3;color:#9F1239}
+.dem-status-attente{background:#FEF3C7;color:#92400E}
+.dem-status-suivre{background:#FFEDD5;color:#9A3412}
+.dem-tbl tbody tr.dem-tint-new td{background:#FFE4E6!important}
+.dem-tbl tbody tr.dem-tint-new:hover td{background:#FECDD3!important}
+.dem-tbl tbody tr.dem-tint-attente td{background:#FEF9C3!important}
+.dem-tbl tbody tr.dem-tint-attente:hover td{background:#FEF08A!important}
+.dem-tbl tbody tr.dem-tint-suivre td{background:#FFEDD5!important}
+.dem-tbl tbody tr.dem-tint-suivre:hover td{background:#FED7AA!important}
+.dem-prop-badge-attente{background:#F59E0B;color:#fff}
 .paev-ext-bar{padding:12px 18px;background:#FEF3C7;border:1px solid #FDE68A;border-left:3px solid #F59E0B;border-radius:6px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:#78350F;flex-wrap:wrap;margin-bottom:8px}
 .paev-ext-bar strong{color:#92400E}
 .paev-ext-banner-wrap{padding:14px 16px 6px}
@@ -852,6 +896,9 @@ body.app-readonly th .rz{pointer-events:none}
   .cal-event{font-size:9.5px}
   .cal-title{font-size:17px;min-width:140px}
 }
+/* Auto-zoom selon taille écran (ultrawide / 4K) — texte plus lisible sur grand écran */
+@media (min-width:2000px){body{zoom:1.15}}
+@media (min-width:2800px){body{zoom:1.3}}
 </style>
 <style id="covis-sty"></style></head>
 <body>
@@ -1596,7 +1643,7 @@ var COLS = {
     {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
     {lbl:"Type propri\u00e9t\u00e9",f:"typeProp",t:"select",o:"TYPE_PROP",w:110},
     {lbl:"Prix demand\u00e9",f:"prix",t:"number",w:100},
-    {lbl:"1er contact",f:"dateContact",t:"date",w:100,cls:"mu"},
+    {lbl:"Dernier contact",f:"dateContact",t:"date",w:110,cls:"mu"},
     {lbl:"Jours",f:null,t:"calc",w:52},
     {lbl:"Relance",f:null,t:"calc",w:72},
     {lbl:"Notes",f:"notes",t:"text",w:160,cls:"nc"},
@@ -2364,7 +2411,7 @@ var RDV_FIELDS_BY_TAB={
   v:["inspection","notaire","mesures","photos"]
 };
 
-function _todayStr(){return new Date().toISOString().substring(0,10);}
+function _todayStr(){var d=new Date(),m=d.getMonth()+1,dd=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd;}
 function _daysBetween(dateStr){
   var d=new Date(dateStr+"T12:00:00");
   var today=new Date(_todayStr()+"T12:00:00");
@@ -2888,7 +2935,13 @@ function _vPropertyLabel(v){
   return {addr:addr,name:name,prix:prix};
 }
 function _countDemandesOpenFor(vId){
-  return (db.demandes||[]).filter(function(d){return d.propertyId===vId&&(d.status==='new'||d.status==='qualified');}).length;
+  return (db.demandes||[]).filter(function(d){return d.propertyId===vId&&(d.status==='new'||d.status==='en-attente'||d.status==='qualified');}).length;
+}
+function _demStatusInfo(s){
+  if(s==='new')return{label:'À traiter',cls:'dem-tint-new',tagCls:'dem-status-new',order:0};
+  if(s==='en-attente')return{label:'En attente',cls:'dem-tint-attente',tagCls:'dem-status-attente',order:1};
+  if(s==='qualified')return{label:'À suivre',cls:'dem-tint-suivre',tagCls:'dem-status-suivre',order:2};
+  return null;
 }
 function _countPaActiveFor(vId){
   var paCount=(db.pa||[]).filter(function(p){return p.propertyId===vId;}).length;
@@ -2901,7 +2954,9 @@ function _demSourceOptions(sel){
   return src.map(function(s){return '<option value="'+s+'"'+(sel===s?' selected':'')+'>'+s+'</option>';}).join('');
 }
 
-// ─── Rendu : Demandes entrantes ─────────────────────────────
+// ─── Rendu : Demandes entrantes (accordion par propriété + tableau éditable) ─
+var _demExpanded={}; // état par propriété (true = expanded, false = collapsed, undefined = défaut)
+
 function renderDemandes(){
   var w=document.getElementById('dem-wrap');if(!w)return;
   var vs=db.v||[];
@@ -2912,104 +2967,199 @@ function renderDemandes(){
     return;
   }
   var html=['<div class="dem-head"><h3>📩 Demandes entrantes</h3></div>',
-    '<div class="dem-sub">Toute demande reçue pour une de tes propriétés en vente (Messenger, Centris, courriel, téléphone, SMS...). Garde le suivi sans perdre les leads sérieux dans le bruit.</div>'];
+    '<div class="dem-sub">Clique une propriété pour voir et gérer ses demandes.</div>'];
   vs.forEach(function(v){
     var lbl=_vPropertyLabel(v);
     var dems=(db.demandes||[]).filter(function(d){return d.propertyId===v.id;});
     var aTraiter=dems.filter(function(d){return d.status==='new';});
-    var enSuivi=dems.filter(function(d){return d.status==='qualified';});
+    var enAttente=dems.filter(function(d){return d.status==='en-attente';});
+    var aSuivre=dems.filter(function(d){return d.status==='qualified';});
+    var actives=dems.filter(function(d){return d.status==='new'||d.status==='en-attente'||d.status==='qualified';});
     var archived=dems.filter(function(d){return d.status==='converted-pa'||d.status==='converted-acheteur'||d.status==='lost';});
-    html.push('<div class="dem-group" id="dem-group-'+v.id+'">');
-    html.push('<div class="dem-group-head">'
-      +'<div class="dem-group-head-main">'
-      +'<div class="dem-group-addr">🏡 '+esc(lbl.addr)+'</div>'
-      +'<div class="dem-group-meta">'+esc(lbl.name)+(lbl.prix?' · '+esc(lbl.prix):'')+'</div>'
+    var isExpanded=_demExpanded[v.id]===true||(_demExpanded[v.id]===undefined&&actives.length>0);
+    var badges='';
+    if(aTraiter.length)badges+='<span class="dem-prop-badge dem-prop-badge-new">'+aTraiter.length+' à traiter</span>';
+    if(enAttente.length)badges+='<span class="dem-prop-badge dem-prop-badge-attente">'+enAttente.length+' en attente</span>';
+    if(aSuivre.length)badges+='<span class="dem-prop-badge dem-prop-badge-suivi">'+aSuivre.length+' à suivre</span>';
+    if(!actives.length)badges+='<span class="dem-prop-badge dem-prop-badge-empty">— Aucune demande</span>';
+    if(archived.length)badges+='<span class="dem-prop-badge dem-prop-badge-arch">'+archived.length+' archivée'+(archived.length>1?'s':'')+'</span>';
+    html.push('<div class="dem-prop'+(isExpanded?' expanded':'')+'" id="dem-prop-'+v.id+'">');
+    html.push('<div class="dem-prop-head" onclick="toggleDemProp(\''+v.id+'\')">'
+      +'<div class="dem-prop-chevron">'+(isExpanded?'▾':'▸')+'</div>'
+      +'<div class="dem-prop-info">'
+      +'<div class="dem-prop-addr">🏡 '+esc(lbl.addr)+'</div>'
+      +'<div class="dem-prop-meta">'+esc(lbl.name)+(lbl.prix?' · '+esc(lbl.prix):'')+'</div>'
       +'</div>'
-      +'<button class="dem-btn muted" onclick="doEdit(\'v\',\''+v.id+'\')">Ouvrir fiche</button>'
+      +'<div class="dem-prop-badges">'+badges+'</div>'
+      +'<button class="dem-btn muted" onclick="event.stopPropagation();doEdit(\'v\',\''+v.id+'\')">Ouvrir fiche</button>'
       +'</div>');
-    html.push('<div class="dem-section">');
-    html.push('<div class="dem-section-title">📩 À traiter <span class="dem-pill">'+aTraiter.length+'</span></div>');
-    if(aTraiter.length===0){
-      html.push('<div style="font-size:11px;color:#94A3B8;font-style:italic;padding:4px 4px 12px">Aucune demande en attente.</div>');
-    } else {
-      aTraiter.forEach(function(d){html.push(_demRowHtml(d,'new'));});
-    }
-    html.push('</div>');
-    if(enSuivi.length){
-      html.push('<div class="dem-section">');
-      html.push('<div class="dem-section-title">🔍 En suivi <span class="dem-pill">'+enSuivi.length+'</span></div>');
-      enSuivi.forEach(function(d){html.push(_demRowHtml(d,'qualified'));});
+    if(isExpanded){
+      html.push('<div class="dem-prop-body">');
+      html.push(_demTable(actives,{archived:false}));
+      html.push('<div class="dem-add-bar" style="margin-top:12px">');
+      if(_demAddOpen[v.id])html.push(_demAddFormHtml(v.id));
+      else html.push('<button class="dem-add-btn" onclick="showAddDemandeForm(\''+v.id+'\')">+ Nouvelle demande</button>');
       html.push('</div>');
-    }
-    html.push('<div class="dem-section"><div class="dem-add-bar">');
-    if(_demAddOpen[v.id]){
-      html.push(_demAddFormHtml(v.id));
-    } else {
-      html.push('<button class="dem-add-btn" onclick="showAddDemandeForm(\''+v.id+'\')">+ Nouvelle demande</button>');
-    }
-    html.push('</div></div>');
-    if(archived.length){
-      html.push('<div class="dem-archive-toggle" onclick="toggleDemArchive(\''+v.id+'\')">'
-        +(_demShowArchive[v.id]?'▴ Masquer historique':'▾ Voir historique ('+archived.length+')')
-        +'</div>');
-      if(_demShowArchive[v.id]){
-        html.push('<div class="dem-section">');
-        archived.forEach(function(d){html.push(_demRowHtml(d,d.status,true));});
-        html.push('</div>');
+      if(archived.length){
+        html.push('<div class="dem-archive-toggle" onclick="toggleDemArchive(\''+v.id+'\')">'
+          +(_demShowArchive[v.id]?'▴ Masquer historique':'▾ Voir historique ('+archived.length+')')
+          +'</div>');
+        if(_demShowArchive[v.id])html.push(_demTable(archived,{archived:true}));
       }
+      html.push('</div>');
     }
     html.push('</div>');
   });
   w.innerHTML=html.join('');
 }
 
-function _demRowHtml(d,status,archived){
-  var statusTag='';
-  if(status==='converted-pa')statusTag='<span class="dem-status-tag dem-status-converted">→ PA Active</span>';
-  else if(status==='converted-acheteur')statusTag='<span class="dem-status-tag dem-status-converted">→ Acheteur</span>';
-  else if(status==='lost')statusTag='<span class="dem-status-tag dem-status-lost">Dismissé</span>';
-  var contact=[];
-  if(d.telephone)contact.push(esc(d.telephone));
-  if(d.courriel)contact.push(esc(d.courriel));
-  var metaBits=[];
-  if(d.date)metaBits.push(fd(d.date));
-  var meta=metaBits.join(' · ');
-  var sourceTag=d.source?'<span class="dem-row-source">'+esc(d.source)+'</span>':'';
-  var actions='';
-  // Étape 22 — bouton ✉ courriel (toujours présent sauf si archivé)
-  var mailBtn=archived?'':'<button class="dem-btn" style="color:#0EA5E9;border-color:#BAE6FD" onclick="openMailPicker(\'demandes\',\''+d.id+'\')" title="Envoyer un courriel à partir d\'un template">✉</button>';
-  if(status==='new'){
-    actions='<div class="dem-row-actions">'
-      +mailBtn
-      +'<button class="dem-btn success" onclick="qualifyDemande(\''+d.id+'\')" title="Marquer comme en suivi">✓ Qualifier</button>'
-      +'<button class="dem-btn primary" onclick="convertDemandeToPa(\''+d.id+'\')" title="Scénario B : Sophie représente les 2 côtés">→ PA Active</button>'
-      +'<button class="dem-btn" onclick="convertDemandeToA(\''+d.id+'\')" title="La personne cherche au-delà de cette propriété">→ Acheteur général</button>'
-      +'<button class="dem-btn danger" onclick="dismissDemande(\''+d.id+'\')">Dismiss</button>'
-      +'</div>';
-  } else if(status==='qualified'){
-    actions='<div class="dem-row-actions">'
-      +mailBtn
-      +'<button class="dem-btn primary" onclick="convertDemandeToPa(\''+d.id+'\')">→ PA Active</button>'
-      +'<button class="dem-btn" onclick="convertDemandeToA(\''+d.id+'\')">→ Acheteur général</button>'
-      +'<button class="dem-btn danger" onclick="dismissDemande(\''+d.id+'\')">Dismiss</button>'
-      +'</div>';
-  } else {
-    actions='<div class="dem-row-actions">'
-      +'<button class="dem-btn muted" onclick="restoreDemande(\''+d.id+'\')">↺ Restaurer en À traiter</button>'
-      +'<button class="dem-btn muted" onclick="deleteDemande(\''+d.id+'\')" title="Supprimer définitivement">🗑</button>'
-      +'</div>';
+function toggleDemProp(vId){
+  var currentlyExpanded=_demExpanded[vId]===true||(_demExpanded[vId]===undefined&&(db.demandes||[]).filter(function(d){return d.propertyId===vId&&(d.status==='new'||d.status==='en-attente'||d.status==='qualified');}).length>0);
+  _demExpanded[vId]=!currentlyExpanded;
+  renderDemandes();
+}
+
+function _demTable(dems,opts){
+  opts=opts||{};
+  var archived=!!opts.archived;
+  var headers='<thead><tr><th>Statut</th><th>Prénom</th><th>Nom</th><th>Téléphone</th><th>Courriel</th><th>Date</th><th>Source</th><th>Notes</th><th>Actions</th></tr></thead>';
+  if(!dems.length){
+    var msg=archived?'Aucune demande archivée.':'Aucune demande pour cette propriété.';
+    return '<table class="dem-tbl">'+headers+'<tbody><tr class="dem-empty-row"><td colspan="9">'+msg+'</td></tr></tbody></table>';
   }
-  return '<div class="dem-row'+(archived?' dem-archived-row':'')+'">'
-    +'<div class="dem-row-line1">'
-    +'<span class="dem-row-name">'+esc(((d.prenom||'')+' '+(d.nom||'')).trim()||'(sans nom)')+'</span>'
-    +sourceTag
-    +(contact.length?'<span class="dem-row-meta">'+contact.join(' · ')+'</span>':'')
-    +(meta?'<span class="dem-row-meta" style="margin-left:auto">'+meta+'</span>':'')
-    +statusTag
-    +'</div>'
-    +(d.notes?'<div class="dem-row-notes">« '+esc(d.notes)+' »</div>':'')
-    +actions
-    +'</div>';
+  if(!archived){
+    dems=dems.slice().sort(function(a,b){
+      var oa=_demStatusInfo(a.status),ob=_demStatusInfo(b.status);
+      return (oa?oa.order:99)-(ob?ob.order:99);
+    });
+  }
+  var rows=dems.map(function(d){return _demRowHtml(d,d.status,archived);}).join('');
+  return '<table class="dem-tbl">'+headers+'<tbody>'+rows+'</tbody></table>';
+}
+
+function _demRowHtml(d,status,archived){
+  var did=esc(d.id);
+  var ei=function(field,val,type){
+    type=type||'text';
+    var disp;
+    if(type==='date')disp=val?esc(fd(val)):'<span style="color:#CBD5E1">—</span>';
+    else if(type==='textarea'){
+      var raw=val||'';
+      disp=raw?esc(raw.length>50?raw.substring(0,50)+'…':raw):'<span style="color:#CBD5E1">—</span>';
+    }
+    else disp=val?esc(val):'<span style="color:#CBD5E1">—</span>';
+    var titleAttr=(type==='textarea'&&val)?' title="'+esc(val)+'"':'';
+    return '<td class="ei" onclick="editDemandeCell(event,\''+did+'\',\''+field+'\',\''+type+'\')"'+titleAttr+'>'+disp+'</td>';
+  };
+  var statusCell='',rowCls='';
+  if(archived){
+    var arcLabel='';
+    if(status==='converted-pa')arcLabel='<span class="dem-status-tag dem-status-converted">→ PA Active</span>';
+    else if(status==='converted-acheteur')arcLabel='<span class="dem-status-tag dem-status-converted">→ Acheteur</span>';
+    else if(status==='lost')arcLabel='<span class="dem-status-tag dem-status-lost">Rejetée</span>';
+    statusCell='<td>'+arcLabel+'</td>';
+    rowCls='dem-archived-row';
+  } else {
+    var info=_demStatusInfo(status);
+    if(info){
+      statusCell='<td><span class="dem-status-tag '+info.tagCls+'">'+info.label+'</span></td>';
+      rowCls=info.cls;
+    } else {
+      statusCell='<td>—</td>';
+    }
+  }
+  var mailBtn=archived?'':'<button class="dem-btn" style="color:#0EA5E9;border-color:#BAE6FD" onclick="openMailPicker(\'demandes\',\''+d.id+'\')" title="Envoyer un courriel à partir d\'un template">✉</button>';
+  var actions='';
+  if(status==='new'){
+    actions=mailBtn
+      +'<button class="dem-btn" onclick="markDemandeEnAttente(\''+d.id+'\')" title="Mettre en attente">⏸ Attente</button>'
+      +'<button class="dem-btn success" onclick="qualifyDemande(\''+d.id+'\')" title="Marquer à suivre">✓ Suivre</button>'
+      +'<button class="dem-btn primary" onclick="convertDemandeToPa(\''+d.id+'\')" title="Scénario B : Sophie représente les 2 côtés">→ PA</button>'
+      +'<button class="dem-btn" onclick="convertDemandeToA(\''+d.id+'\')" title="La personne cherche au-delà de cette propriété">→ Acheteur</button>'
+      +'<button class="dem-btn danger" onclick="dismissDemande(\''+d.id+'\')">Rejeter</button>';
+  } else if(status==='en-attente'){
+    actions=mailBtn
+      +'<button class="dem-btn success" onclick="qualifyDemande(\''+d.id+'\')" title="Marquer à suivre">✓ Suivre</button>'
+      +'<button class="dem-btn primary" onclick="convertDemandeToPa(\''+d.id+'\')">→ PA</button>'
+      +'<button class="dem-btn" onclick="convertDemandeToA(\''+d.id+'\')">→ Acheteur</button>'
+      +'<button class="dem-btn danger" onclick="dismissDemande(\''+d.id+'\')">Rejeter</button>';
+  } else if(status==='qualified'){
+    actions=mailBtn
+      +'<button class="dem-btn" onclick="markDemandeEnAttente(\''+d.id+'\')" title="Remettre en attente">⏸ Attente</button>'
+      +'<button class="dem-btn primary" onclick="convertDemandeToPa(\''+d.id+'\')">→ PA</button>'
+      +'<button class="dem-btn" onclick="convertDemandeToA(\''+d.id+'\')">→ Acheteur</button>'
+      +'<button class="dem-btn danger" onclick="dismissDemande(\''+d.id+'\')">Rejeter</button>';
+  } else {
+    actions='<button class="dem-btn muted" onclick="restoreDemande(\''+d.id+'\')">↺ Restaurer</button>'
+      +'<button class="dem-btn muted" onclick="deleteDemande(\''+d.id+'\')" title="Supprimer définitivement">🗑</button>';
+  }
+  return '<tr'+(rowCls?' class="'+rowCls+'"':'')+'>'
+    +statusCell
+    +ei('prenom',d.prenom)
+    +ei('nom',d.nom)
+    +ei('telephone',d.telephone)
+    +ei('courriel',d.courriel)
+    +ei('date',d.date,'date')
+    +ei('source',d.source,'select-source')
+    +ei('notes',d.notes,'textarea')
+    +'<td class="dem-actions-cell">'+actions+'</td>'
+    +'</tr>';
+}
+
+function editDemandeCell(ev,demandeId,field,type){
+  var td=ev.currentTarget;
+  if(td.classList.contains('editing'))return;
+  var d=_findDemande(demandeId);
+  if(!d)return;
+  var val=d[field]||'';
+  var oldHtml=td.innerHTML;
+  td.classList.add('editing');
+  var input;
+  if(type==='select-source'){
+    input=document.createElement('select');
+    input.innerHTML=_demSourceOptions(val);
+  } else if(type==='textarea'){
+    input=document.createElement('textarea');
+    input.value=val;
+  } else if(type==='date'){
+    input=document.createElement('input');
+    input.type='date';
+    input.value=String(val||'').substring(0,10);
+  } else {
+    input=document.createElement('input');
+    input.type=field==='courriel'?'email':'text';
+    input.value=val;
+  }
+  td.innerHTML='';
+  td.appendChild(input);
+  input.focus();
+  if(input.select)input.select();
+  var committed=false;
+  var commit=function(){
+    if(committed)return;
+    committed=true;
+    var newVal=input.value;
+    if(newVal!==String(val)){
+      pushUndo('Édition demande');
+      d[field]=newVal;
+      d.lastModified=_todayStr();
+      sdb();
+      renderDemandes();
+    } else {
+      td.innerHTML=oldHtml;
+      td.classList.remove('editing');
+    }
+  };
+  var cancel=function(){
+    committed=true;
+    td.innerHTML=oldHtml;
+    td.classList.remove('editing');
+  };
+  input.addEventListener('blur',commit);
+  input.addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&type!=='textarea'){e.preventDefault();input.blur();}
+    else if(e.key==='Escape'){input.removeEventListener('blur',commit);cancel();}
+  });
 }
 
 function _demAddFormHtml(vId){
@@ -3051,8 +3201,9 @@ function saveDemande(vId){
 
 function _findDemande(id){for(var i=0;i<(db.demandes||[]).length;i++){if(db.demandes[i].id===id)return db.demandes[i];}return null;}
 
-function qualifyDemande(id){var d=_findDemande(id);if(!d)return;pushUndo('Qualifier demande');d.status='qualified';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('✓ Demande qualifiée — passée en suivi');}
-function dismissDemande(id){var d=_findDemande(id);if(!d)return;if(!confirm('Marquer cette demande comme perdue ?'))return;pushUndo('Dismiss demande');d.status='lost';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('Demande dismissée');}
+function qualifyDemande(id){var d=_findDemande(id);if(!d)return;pushUndo('Marquer à suivre');d.status='qualified';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('✓ Demande passée à suivre');}
+function markDemandeEnAttente(id){var d=_findDemande(id);if(!d)return;pushUndo('Mettre en attente');d.status='en-attente';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('⏸ Demande mise en attente');}
+function dismissDemande(id){var d=_findDemande(id);if(!d)return;if(!confirm('Rejeter cette demande ?'))return;pushUndo('Rejet demande');d.status='lost';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('Demande rejetée');}
 function deleteDemande(id){if(!confirm('Supprimer définitivement cette demande ?'))return;pushUndo('Suppression demande');db.demandes=db.demandes.filter(function(x){return x.id!==id;});sdb();rall();toast('🗑 Demande supprimée');}
 function restoreDemande(id){var d=_findDemande(id);if(!d)return;pushUndo('Restaurer demande');d.status='new';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('↺ Demande restaurée');}
 
@@ -4075,8 +4226,8 @@ async function _doSyncCalendarField(recId,tab,field,oldVal,newVal){
 
 // Liste des champs date \u00e0 synchroniser par tab
 var GCAL_FIELDS_BY_TAB={
-  cp:['dateContact'],
-  vp:['dateContact'],
+  cp:[],
+  vp:[],
   a:[],
   pa:['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'],
   v:['evalVM','inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire','photos'],
@@ -4573,7 +4724,7 @@ function ie(td){
   }
   var el;
   if(type==="select"){el=document.createElement("select");el.className="iinp";getOpts(ok).forEach(function(o){var opt=document.createElement("option");opt.value=o;opt.textContent=o;if(o===val)opt.selected=true;el.appendChild(opt);});}
-  else{el=document.createElement("input");el.className="iinp";el.type=type==="date"?"datetime-local":type==="number"?"number":"text";if(type==="date")el.step="900";el.value=type==="date"?_toDtLocal(val):(val||"");}
+  else{el=document.createElement("input");el.className="iinp";el.type=type==="date"?"date":type==="number"?"number":"text";el.value=type==="date"?String(val||"").substring(0,10):(val||"");}
   td.innerHTML="";td.appendChild(el);td.classList.add("ei");
   el.focus();if(el.type!=="datetime-local"&&el.select)el.select();
   var done=false;
@@ -4593,7 +4744,7 @@ function selOpts(arr,sel){return arr.map(function(o){return"<option"+(o===sel?" 
 function formForTab(tab,e){
   e=e||{};
   var ck=function(id,v){return'<input type="checkbox" id="'+id+'"'+(v?' checked':'')+' style="width:auto">';};
-  if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Type b\u00e2timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact</label><input type="datetime-local" id="fdate" value="'+esc(_toDtLocal(e.dateContact))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
+  if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Type b\u00e2timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact</label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="a"){
     return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>\u00c9tat</label><select id="fetat"><option value="">\u2014</option>'+selOpts(ETAT_ACH,e.etat)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>CCA</label><br>'+ck("fcca",e.cca)+'</div><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div></div><div class="g4"><div class="fg"><label>Pr\u00e9qualif.</label><br>'+ck("fprequal2",e.prequal2)+'</div><div class="fg"><label>Alerte</label><br>'+ck("falerte",e.alerte)+'</div><div class="fg"></div><div class="fg"></div></div>';
   }
@@ -4627,7 +4778,7 @@ function formForTab(tab,e){
     };
     return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>Statut PA</label><select id="fstatutpa"><option value="">\u2014</option>'+selOpts(STATUT_PA,e.statutPa)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Documents PA</div><div class="g4"><div class="fg"><label>Fiche MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFpa("finsp","Inspection",e.inspection)+condFpa("ffin","Financement",e.financement)+'</div><div class="g2">'+condFpa("fr21","R2.1",e.r21)+condFpa("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFpa("fassur","Assur. immeuble",e.assurImm)+condFpa("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFpa("feau","Test eau",e.testEau)+condFpa("fnot","Notaire",e.notaire)+'</div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant promesse ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div>';
   }
-  if(tab==="vp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>Type propri\u00e9t\u00e9</label><select id="ftypeprop"><option value="">\u2014</option>'+selOpts(TYPE_PROP,e.typeProp)+'</select></div><div class="fg"><label>Prix demand\u00e9 ($)</label><input type="number" id="fprix" value="'+esc(e.prix)+'"></div></div><div class="fg"><label>Date 1er contact</label><input type="datetime-local" id="fdate" value="'+esc(_toDtLocal(e.dateContact))+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
+  if(tab==="vp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>Type propri\u00e9t\u00e9</label><select id="ftypeprop"><option value="">\u2014</option>'+selOpts(TYPE_PROP,e.typeProp)+'</select></div><div class="fg"><label>Prix demand\u00e9 ($)</label><input type="number" id="fprix" value="'+esc(e.prix)+'"></div></div><div class="fg"><label>Dernier contact</label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10))+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="v"){
     var condFv=function(id,lbl,val){
       var isDone=(val===true||val==='done');
@@ -5089,20 +5240,20 @@ async function _wizPrepareFolderStep(){
   }
   cloudList.innerHTML=html;
   localSection.innerHTML='<div class="wiz-section-title">Autre option</div>'
+    +'<button class="wiz-option" onclick="onboardingCustom()">'
+    +'<div class="wiz-option-icon">&#128193;</div>'
+    +'<div class="wiz-option-content">'
+    +'<div class="wiz-option-name">Choisir un autre emplacement...</div>'
+    +'<div class="wiz-option-path">S&eacute;lectionnez manuellement un dossier sur votre ordinateur</div>'
+    +'</div>'
+    +'<div class="wiz-option-arrow">&rarr;</div>'
+    +'</button>'
     +'<button class="wiz-option local" onclick="onboardingPick(\''+res.localPath.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'
     +'<div class="wiz-option-icon">&#128190;</div>'
     +'<div class="wiz-option-content">'
     +'<div class="wiz-option-name">Stockage local seulement</div>'
     +'<div class="wiz-option-path">'+esc(res.localPath)+'</div>'
     +'<div class="wiz-option-warn">&#9888; Pas de sauvegarde externe — si l\'ordinateur tombe en panne, les donn&eacute;es seront perdues.</div>'
-    +'</div>'
-    +'<div class="wiz-option-arrow">&rarr;</div>'
-    +'</button>'
-    +'<button class="wiz-option" onclick="onboardingCustom()">'
-    +'<div class="wiz-option-icon">&#128193;</div>'
-    +'<div class="wiz-option-content">'
-    +'<div class="wiz-option-name">Choisir un autre emplacement...</div>'
-    +'<div class="wiz-option-path">S&eacute;lectionnez manuellement un dossier sur votre ordinateur</div>'
     +'</div>'
     +'<div class="wiz-option-arrow">&rarr;</div>'
     +'</button>';
