@@ -375,7 +375,6 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .tbtn[data-tab="cp"].on .sb-icon,.tbtn[data-tab="vp"].on .sb-icon{color:#06B6D4}
 .tbtn[data-tab="a"].on{box-shadow:inset 3px 0 0 #0EA5E9}
 .tbtn[data-tab="a"].on .sb-icon{color:#0EA5E9}
-.tbtn[data-tab="a"] .sb-badge{background:#0EA5E9 !important}
 .tbtn[data-tab="pa"].on{box-shadow:inset 3px 0 0 #EF4444}
 .tbtn[data-tab="pa"].on .sb-icon{color:#EF4444}
 .tbtn[data-tab="v"].on{box-shadow:inset 3px 0 0 #84CC16}
@@ -384,8 +383,6 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .tbtn[data-tab="demandes"].on .sb-icon{color:#F59E0B}
 .tbtn[data-tab="pa-en-vente"].on{box-shadow:inset 3px 0 0 #EF4444}
 .tbtn[data-tab="pa-en-vente"].on .sb-icon{color:#EF4444}
-.tbtn[data-tab="demandes"] .sb-badge{background:#F59E0B !important}
-.tbtn[data-tab="pa-en-vente"] .sb-badge{background:#EF4444 !important}
 .tbtn[data-tab="ac"].on,.tbtn[data-tab="vc"].on{box-shadow:inset 3px 0 0 #F59E0B}
 .tbtn[data-tab="ac"].on .sb-icon,.tbtn[data-tab="vc"].on .sb-icon{color:#F59E0B}
 .tbtn[data-tab="ca"].on{box-shadow:inset 3px 0 0 #64748B}
@@ -403,6 +400,11 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .sb-section[data-color="green"] .sb-badge{background:#84CC16}
 .sb-section[data-color="amber"] .sb-badge{background:#F59E0B}
 .sb-section[data-color="gray"] .sb-badge{background:#64748B}
+.tbtn[data-tab="a"] .sb-badge{background:#0EA5E9 !important}
+.tbtn[data-tab="demandes"] .sb-badge{background:#F59E0B !important}
+.tbtn[data-tab="pa-en-vente"] .sb-badge{background:#EF4444 !important}
+.tbtn[data-tab="v"] .sb-badge{background:#F59E0B !important}
+.tbtn[data-tab="pa"] .sb-badge{background:#EF4444 !important}
 /* Titres de section : petit point coloré devant pour rappeler la couleur */
 .sb-section-title{position:relative}
 .sb-section[data-color="cyan"] .sb-section-title::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#06B6D4;margin-right:7px;vertical-align:middle}
@@ -481,8 +483,6 @@ tr.v-paext td:first-child{box-shadow:inset 5px 0 0 #F59E0B}
 tr.v-paext:hover td{background:#FDE68A!important}
 tbody tr.v-paext .c-0,tbody tr.v-paext .c-1,tbody tr.v-paext .c-2{background:#FEF3C7!important}
 tbody tr.v-paext:hover .c-0,tbody tr.v-paext:hover .c-1,tbody tr.v-paext:hover .c-2{background:#FDE68A!important}
-.tbtn[data-tab="v"] .sb-badge{background:#F59E0B !important}
-.tbtn[data-tab="pa"] .sb-badge{background:#EF4444 !important}
 tbody tr.rl .c-0,tbody tr.rl .c-1,tbody tr.rl .c-2{background:#F8FAFC!important}
 
 /* 4e colonne sticky (onglets Acheteurs, PA en cours et Vendeurs) */

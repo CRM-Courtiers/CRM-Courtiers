@@ -43,3 +43,12 @@ license-server/.env.prod
 license-server/.env*
 # Scripts temporaires
 license-server/_*.js
+
+# Assets de design sources (gardés localement, pas dans le repo)
+electron-app/build/Versions antérieures/
+electron-app/build/ChatGPT Image*.png
+electron-app/build/Pastille*.png
+electron-app/build/Icone*.png
+electron-app/build/Logo*.png
+# Pastilles redimensionnées non utilisées (revert au design rond pleins)
+pastille-*.png
