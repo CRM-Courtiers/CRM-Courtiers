@@ -13,7 +13,7 @@
 // On répond avec un TwiML vide (200 OK) — pas de reply auto-TwiML, on envoie via API séparée
 // pour avoir plus de flexibilité (ex: déléguer en background si parsing prend > 10s).
 
-const { findLicenseByPhone, pushPending, logSms, parseSmsViaLlm, sendTwilioReply, normalizePhone } = require('../lib/sms');
+const { findLicenseByPhone, pushPending, logSms, parseSmsViaLlm, parseImageViaLlm, downloadTwilioMedia, sendTwilioReply, normalizePhone } = require('../lib/sms');
 
 // Génère un ID court pour la queue entry
 function _shortId() {
@@ -71,9 +71,12 @@ module.exports = async (req, res) => {
   const toRaw = body.To || '';
   const text = (body.Body || '').toString().trim();
   const msgSid = body.MessageSid || '';
+  const numMedia = parseInt(body.NumMedia || '0', 10) || 0;
+  const hasImage = numMedia > 0 && body.MediaUrl0;
 
-  if (!fromRaw || !text) {
-    console.warn('[sms-webhook] payload incomplet:', { from: fromRaw, body: text.substring(0, 40) });
+  // Doit avoir un sender ET (du texte OU une image)
+  if (!fromRaw || (!text && !hasImage)) {
+    console.warn('[sms-webhook] payload incomplet:', { from: fromRaw, body: text.substring(0, 40), numMedia });
     _twimlEmpty(res);
     return;
   }
@@ -99,19 +102,28 @@ module.exports = async (req, res) => {
   }
 
   // Log SMS reçu (avant LLM, pour debug si parser plante)
-  try { await logSms(licenseKey, { from: fromNorm, text: text.substring(0, 500), msgSid, stage: 'received' }); }
+  try { await logSms(licenseKey, { from: fromNorm, text: text.substring(0, 500), msgSid, hasImage, numMedia, stage: 'received' }); }
   catch (e) { /* non-fatal */ }
 
-  // Parser via LLM
+  // Parser via LLM — vision si image, texte sinon
   let parsed;
+  let imageBase64Preview = ''; // Pour stocker un thumbnail (optionnel, futur usage)
   try {
-    parsed = await parseSmsViaLlm(text);
+    if (hasImage) {
+      const dl = await downloadTwilioMedia(body.MediaUrl0);
+      parsed = await parseImageViaLlm(dl.base64, dl.contentType, text);
+      // On garde une référence à l'image pour le UI (thumbnail base64 si petite)
+      if (dl.base64.length < 200000) imageBase64Preview = dl.base64;
+    } else {
+      parsed = await parseSmsViaLlm(text);
+    }
   } catch (e) {
     console.error('[sms-webhook] LLM parse error:', e.message);
     // Fallback : push avec needs_review=true, le user éditera dans l'app
     parsed = {
-      prenom: '', nom: '', telephone: '', courriel: '', source: 'Autre',
-      address_hint: '', notes: text.substring(0, 200), confidence: 'low'
+      prenom: '', nom: '', telephone: '', courriel: '', source: hasImage ? 'Autre' : 'SMS',
+      address_hint: '', notes: text.substring(0, 200) || '(screenshot non parsable)',
+      screenshot_type: hasImage ? 'unknown' : '', confidence: 'low'
     };
   }
 
@@ -122,7 +134,10 @@ module.exports = async (req, res) => {
     rawText: text.substring(0, 500),
     senderPhone: fromNorm,
     needs_review: parsed.confidence === 'low',
-    parsed: parsed
+    parsed: parsed,
+    isImage: hasImage,
+    mediaContentType: hasImage ? (body.MediaContentType0 || '') : '',
+    imagePreview: imageBase64Preview // base64, peut être '' si trop gros
   };
 
   try { await pushPending(licenseKey, entry); }
@@ -134,13 +149,14 @@ module.exports = async (req, res) => {
   }
 
   // Reply SMS de confirmation
-  const who = (parsed.prenom + ' ' + parsed.nom).trim() || '(à compléter)';
+  const who = ((parsed.prenom || '') + ' ' + (parsed.nom || '')).trim() || '(à compléter)';
   const where = parsed.address_hint || '(propriété à confirmer)';
+  const sourceLabel = hasImage ? '📸 screenshot' : 'SMS';
   let confirmMsg;
   if (parsed.confidence === 'low') {
-    confirmMsg = `🟡 TRI-ANGLE: capté mais à réviser. Ouvre l'app à la prochaine occasion pour compléter. (${_truncate(text, 60)})`;
+    confirmMsg = `🟡 TRI-ANGLE (${sourceLabel}): capté mais à réviser. Ouvre l'app pour compléter.`;
   } else {
-    confirmMsg = `✓ TRI-ANGLE: capté · ${_truncate(who, 40)} · ${_truncate(where, 50)}. Confirme à la prochaine ouverture app.`;
+    confirmMsg = `✓ TRI-ANGLE (${sourceLabel}): ${_truncate(who, 40)} · ${_truncate(where, 50)}. Confirme dans l'app.`;
   }
   try { await sendTwilioReply(fromRaw, confirmMsg); } catch (e) { /* swallow */ }
 

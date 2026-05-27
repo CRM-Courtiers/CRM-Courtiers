@@ -171,6 +171,117 @@ Règles :
   }
 }
 
+// ─── LLM parser (image / screenshot via Claude vision) ───
+// Le courtier prend un screenshot d'une demande (Messenger, Centris, courriel,
+// SMS, Marketplace, etc.) et l'envoie en MMS à notre numéro. On extrait les
+// infos du lead via vision.
+async function parseImageViaLlm(imageBase64, mediaType, additionalText) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY manquante dans Vercel');
+
+  const sysPrompt = `Tu es un assistant qui extrait des informations de demandes immobilières à partir d'un screenshot envoyé par un courtier au Québec.
+
+Le screenshot peut venir de :
+- Messenger / Facebook
+- Centris.ca ou DuProprio
+- Courriel (Gmail, Outlook, Apple Mail)
+- SMS / iMessage
+- Realtor.ca / MLS
+- Facebook Marketplace
+- Instagram DM
+- Tout autre canal
+
+Ton job : analyser l'image et retourner UN SEUL objet JSON, sans markdown, avec ces champs :
+{
+  "prenom": "...",                  // prénom du potentiel acheteur (chaîne vide si inconnu)
+  "nom": "...",                     // nom de famille (chaîne vide si inconnu)
+  "telephone": "...",               // téléphone trouvé (format quelconque, chaîne vide si aucun)
+  "courriel": "...",                // courriel trouvé (chaîne vide si aucun)
+  "source": "Centris" | "Messenger" | "Courriel" | "Téléphone" | "SMS" | "Walk-in" | "Autre",
+  "address_hint": "...",            // adresse / propriété mentionnée (chaîne vide si aucune)
+  "notes": "...",                   // ce que la personne veut/demande, max 250 caractères
+  "screenshot_type": "...",         // un mot court décrivant la source détectée (ex: "Messenger conversation", "Centris listing inquiry", "Email")
+  "confidence": "high" | "medium" | "low"
+}
+
+Règles :
+- Le NOM est ce qui apparaît dans l'en-tête de la conversation (Messenger), le "From:" du courriel, ou le profil. Ce n'est PAS toi le destinataire — c'est l'expéditeur de la demande.
+- Si tu vois clairement prénom ET nom → confidence="high"
+- Si juste prénom OU pseudo → confidence="medium"
+- Si tu ne peux extraire ni nom ni téléphone ni courriel → confidence="low"
+- Si tu vois une adresse civique précise (numéro + rue), mets-la dans address_hint
+- N'invente JAMAIS d'info. Champs inconnus = "" (chaîne vide)
+- Réponds SEULEMENT avec l'objet JSON, rien d'autre.`;
+
+  const userContent = [
+    {
+      type: 'image',
+      source: {
+        type: 'base64',
+        media_type: mediaType || 'image/jpeg',
+        data: imageBase64
+      }
+    }
+  ];
+  if (additionalText && additionalText.trim()) {
+    userContent.push({
+      type: 'text',
+      text: 'Note du courtier accompagnant le screenshot : ' + additionalText.trim()
+    });
+  } else {
+    userContent.push({
+      type: 'text',
+      text: 'Analyse ce screenshot et extrais le lead.'
+    });
+  }
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5-20250929',
+      max_tokens: 800,
+      system: sysPrompt,
+      messages: [{ role: 'user', content: userContent }]
+    })
+  });
+
+  if (!res.ok) {
+    const errTxt = await res.text();
+    throw new Error(`Anthropic vision ${res.status}: ${errTxt.substring(0, 300)}`);
+  }
+
+  const data = await res.json();
+  const text = (data.content && data.content[0] && data.content[0].text || '').trim();
+  const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch (e) {
+    throw new Error('Réponse LLM (vision) non parsable : ' + cleaned.substring(0, 200));
+  }
+}
+
+// ─── Twilio : télécharger un media (MMS attachment) ───────
+async function downloadTwilioMedia(mediaUrl) {
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const token = process.env.TWILIO_AUTH_TOKEN;
+  if (!sid || !token) throw new Error('Twilio creds manquants');
+  const auth = Buffer.from(`${sid}:${token}`).toString('base64');
+  const res = await fetch(mediaUrl, {
+    headers: { 'Authorization': `Basic ${auth}` },
+    redirect: 'follow'
+  });
+  if (!res.ok) throw new Error(`Twilio media download ${res.status}`);
+  const contentType = res.headers.get('content-type') || 'image/jpeg';
+  const buf = await res.arrayBuffer();
+  const base64 = Buffer.from(buf).toString('base64');
+  return { base64, contentType };
+}
+
 // ─── Twilio : envoyer un SMS reply ────────────────────────
 async function sendTwilioReply(toPhone, body) {
   const sid = process.env.TWILIO_ACCOUNT_SID;
@@ -210,5 +321,7 @@ module.exports = {
   clearPending,
   logSms,
   parseSmsViaLlm,
+  parseImageViaLlm,
+  downloadTwilioMedia,
   sendTwilioReply
 };
