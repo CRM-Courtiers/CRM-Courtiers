@@ -1482,8 +1482,12 @@ body.app-readonly th .rz{pointer-events:none}
       <button class="tpl-btn muted" onclick="closeSmsConfirmModal()">✕</button>
     </div>
     <div class="tpl-modal-body">
-      <div style="margin-bottom:14px"><span id="smsConfirmConfBadge"></span></div>
-      <div class="tpl-fg">
+      <div style="margin-bottom:14px;display:flex;align-items:center;gap:10px"><span id="smsConfirmConfBadge"></span><span id="smsConfirmTypeBadge" style="font-size:11px;color:#64748B"></span></div>
+      <div class="tpl-fg" id="smsConfirmImageWrap" style="display:none">
+        <label>📸 Screenshot reçu</label>
+        <img id="smsConfirmImage" style="max-width:100%;max-height:280px;border:1px solid #E2E8F0;border-radius:6px;background:#F8FAFC;cursor:zoom-in" onclick="this.style.maxHeight=this.style.maxHeight==='none'?'280px':'none';this.style.cursor=this.style.maxHeight==='none'?'zoom-out':'zoom-in'">
+      </div>
+      <div class="tpl-fg" id="smsConfirmRawWrap">
         <label>Texte original reçu</label>
         <div id="smsConfirmRaw" style="font-size:12px;padding:10px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;font-style:italic;color:#475569;line-height:1.5;max-height:120px;overflow-y:auto;white-space:pre-wrap"></div>
       </div>
@@ -3703,7 +3707,8 @@ async function smsRefreshStatus(){
     if(phone){
       var msg='<strong>✓ Capture SMS activée</strong><br>'
         +'Numéro perso : <code style="background:rgba(0,0,0,.06);padding:1px 6px;border-radius:3px">'+esc(phone)+'</code><br>'
-        +'Envoie tes textes au numéro TRI-ANGLE : <strong>'+esc(TRIANGLE_SMS_NUMBER)+'</strong>'
+        +'Envoie textes <strong>OU screenshots</strong> (Messenger, Centris, courriel, etc.) au numéro TRI-ANGLE : <strong>'+esc(TRIANGLE_SMS_NUMBER)+'</strong>'
+        +'<br><span style="font-size:11px;color:#64748B">📸 Astuce : envoie un screenshot en MMS — l\'IA va extraire le nom, téléphone, courriel et propriété automatiquement.</span>'
         +(pending.length?'<br>📥 <strong>'+pending.length+' demande(s)</strong> captée(s) en attente de confirmation.':'');
       _smsSetStatus(msg,'ok');
       document.getElementById('btnSmsConnect').style.display='none';
@@ -3819,6 +3824,25 @@ function _renderSmsConfirmModal(){
   var p=e.parsed||{};
   var total=_smsPendingCache.length,idx=_smsConfirmIndex+1;
   document.getElementById('smsConfirmTitle').textContent='Demande captée '+idx+'/'+total;
+  // Image preview si screenshot envoyé en MMS
+  var imgWrap=document.getElementById('smsConfirmImageWrap');
+  var rawWrap=document.getElementById('smsConfirmRawWrap');
+  var typeBadge=document.getElementById('smsConfirmTypeBadge');
+  if(e.isImage&&e.imagePreview){
+    document.getElementById('smsConfirmImage').src='data:'+(e.mediaContentType||'image/jpeg')+';base64,'+e.imagePreview;
+    imgWrap.style.display='block';
+    rawWrap.style.display=e.rawText?'block':'none';
+    typeBadge.textContent='📸 '+(p.screenshot_type||'screenshot');
+  } else if(e.isImage){
+    // Image reçue mais preview trop grosse → on cache la preview, on garde le hint
+    imgWrap.style.display='none';
+    rawWrap.style.display='block';
+    typeBadge.textContent='📸 '+(p.screenshot_type||'screenshot')+' (image non affichée)';
+  } else {
+    imgWrap.style.display='none';
+    rawWrap.style.display='block';
+    typeBadge.textContent='';
+  }
   document.getElementById('smsConfirmRaw').textContent=e.rawText||'(texte vide)';
   document.getElementById('smsConfirmConfBadge').innerHTML=
     p.confidence==='high'?'<span style="background:#DCFCE7;color:#166534;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700">✓ Confiance HAUTE</span>':
