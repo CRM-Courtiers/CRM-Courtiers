@@ -119,10 +119,13 @@ module.exports = async (req, res) => {
     }
   } catch (e) {
     console.error('[sms-webhook] LLM parse error:', e.message);
+    // Log l'erreur dans sms_log pour debug
+    try { await logSms(licenseKey, { from: fromNorm, error: e.message.substring(0, 400), hasImage, stage: 'llm_error' }); }
+    catch (_) {}
     // Fallback : push avec needs_review=true, le user éditera dans l'app
     parsed = {
       prenom: '', nom: '', telephone: '', courriel: '', source: hasImage ? 'Autre' : 'SMS',
-      address_hint: '', notes: text.substring(0, 200) || '(screenshot non parsable)',
+      address_hint: '', notes: (text.substring(0, 200) || '(screenshot non parsable)') + ' [err: ' + e.message.substring(0, 80) + ']',
       screenshot_type: hasImage ? 'unknown' : '', confidence: 'low'
     };
   }
