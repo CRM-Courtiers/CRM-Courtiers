@@ -1,6 +1,6 @@
 {
   "name": "crm-pro-courtage",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "description": "TRI-ANGLE — CRM pour courtiers immobiliers québécois",
   "main": "main.js",
   "author": "CRM-Courtiers",
@@ -82,7 +82,7 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "notarize": false
+      "notarize": true
     },
     "dmg": {
       "title": "${productName}-${arch}"
