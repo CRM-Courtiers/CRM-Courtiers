@@ -266,19 +266,44 @@ Règles :
 }
 
 // ─── Twilio : télécharger un media (MMS attachment) ───────
+// Twilio fait un 307 redirect vers une URL signée S3 (mms.twiliocdn.com).
+// Node fetch préserve l'Authorization header sur les redirects cross-origin,
+// ce qui fait que S3 répond 401. On gère le redirect manuellement en 2 étapes :
+//   1. GET api.twilio.com/.../Media/{id} avec Basic auth, redirect:'manual'
+//   2. Suivre le Location header sans auth (S3 signé)
 async function downloadTwilioMedia(mediaUrl) {
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
   if (!sid || !token) throw new Error('Twilio creds manquants');
   const auth = Buffer.from(`${sid}:${token}`).toString('base64');
-  const res = await fetch(mediaUrl, {
+
+  // Étape 1 : appeler Twilio API pour obtenir l'URL signée
+  const step1 = await fetch(mediaUrl, {
     headers: { 'Authorization': `Basic ${auth}` },
-    redirect: 'follow'
+    redirect: 'manual'
   });
-  if (!res.ok) throw new Error(`Twilio media download ${res.status}`);
-  const contentType = res.headers.get('content-type') || 'image/jpeg';
-  const buf = await res.arrayBuffer();
-  const base64 = Buffer.from(buf).toString('base64');
+
+  let finalUrl = mediaUrl;
+  let contentType = step1.headers.get('content-type') || 'image/jpeg';
+  let body;
+
+  // Si Twilio renvoie un redirect (302/307), suivre vers l'URL signée SANS auth
+  if (step1.status >= 300 && step1.status < 400) {
+    const loc = step1.headers.get('location');
+    if (!loc) throw new Error(`Twilio media: redirect sans Location header (status ${step1.status})`);
+    finalUrl = loc;
+    const step2 = await fetch(finalUrl); // pas d'auth — URL signée
+    if (!step2.ok) throw new Error(`Twilio media signed URL ${step2.status}`);
+    contentType = step2.headers.get('content-type') || contentType;
+    body = await step2.arrayBuffer();
+  } else if (step1.ok) {
+    // Cas alternatif : Twilio retourne directement le contenu (rare mais possible)
+    body = await step1.arrayBuffer();
+  } else {
+    throw new Error(`Twilio media download ${step1.status}`);
+  }
+
+  const base64 = Buffer.from(body).toString('base64');
   return { base64, contentType };
 }
 
