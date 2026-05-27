@@ -116,7 +116,7 @@ async function logSms(licenseKey, payload) {
 
 // ─── LLM parser (Anthropic Claude Haiku) ──────────────────
 async function parseSmsViaLlm(rawText) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = _cleanEnv(process.env.ANTHROPIC_API_KEY);
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY manquante dans Vercel');
 
   const sysPrompt = `Tu es un assistant qui extrait des informations de demandes immobilières envoyées par un courtier. Le courtier copie-colle du texte reçu via Messenger, Centris, courriel, téléphone ou autre, puis te l'envoie par SMS.
@@ -176,7 +176,7 @@ Règles :
 // SMS, Marketplace, etc.) et l'envoie en MMS à notre numéro. On extrait les
 // infos du lead via vision.
 async function parseImageViaLlm(imageBase64, mediaType, additionalText) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = _cleanEnv(process.env.ANTHROPIC_API_KEY);
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY manquante dans Vercel');
 
   const sysPrompt = `Tu es un assistant qui extrait des informations de demandes immobilières à partir d'un screenshot envoyé par un courtier au Québec.
@@ -204,7 +204,16 @@ Ton job : analyser l'image et retourner UN SEUL objet JSON, sans markdown, avec 
   "confidence": "high" | "medium" | "low"
 }
 
-Règles :
+Règles pour identifier la SOURCE (très important — sois précis) :
+- "SMS" = app Messages native iOS (icône bulle de chat verte/blanche) OU app SMS Android. Indices : UI très épurée, header montre juste le nom + parfois numéro de téléphone, sous-titre "iMessage" ou "Texte", bulles vertes (SMS) ou bleues (iMessage) très simples, AUCUN bouton "Send Money $" ou réactions emoji élaborées, AUCUN logo Messenger/Facebook.
+- "Messenger" = app Facebook Messenger. Indices : statut "Active maintenant" / "Active il y a X min" sous le nom, bouton "Send Money $" parfois visible, icônes 📞 📹 ⓘ dans le header, réactions emoji élaborées sous les bulles, logo Messenger possiblement dans la barre. Header montre nom du contact (pas de numéro de tél).
+- "Courriel" = client mail (Gmail/Outlook/Apple Mail). Indices : champs "De:", "À:", "Objet:", boutons "Répondre"/"Transférer", interface email classique.
+- "Centris" = site centris.ca ou app Centris. Indices : logo "Centris" en haut, fiche d'inscription immobilière, photos en grille, prix affiché.
+- "Téléphone" = mémo vocal / transcription d'appel.
+- "Walk-in" = note manuscrite ou texte tapé suite à une rencontre en personne.
+- "Autre" = tout autre cas (Instagram DM, WhatsApp, Marketplace, etc.).
+
+Règles pour les autres champs :
 - Le NOM est ce qui apparaît dans l'en-tête de la conversation (Messenger), le "From:" du courriel, ou le profil. Ce n'est PAS toi le destinataire — c'est l'expéditeur de la demande.
 - Si tu vois clairement prénom ET nom → confidence="high"
 - Si juste prénom OU pseudo → confidence="medium"
@@ -243,7 +252,7 @@ Règles :
       'content-type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 800,
       system: sysPrompt,
       messages: [{ role: 'user', content: userContent }]
@@ -271,17 +280,31 @@ Règles :
 // ce qui fait que S3 répond 401. On gère le redirect manuellement en 2 étapes :
 //   1. GET api.twilio.com/.../Media/{id} avec Basic auth, redirect:'manual'
 //   2. Suivre le Location header sans auth (S3 signé)
+// Strip BOM (U+FEFF), CR, LF, et tout whitespace bizarre des env vars
+function _cleanEnv(v) {
+  if (!v) return '';
+  // Strip BOM (U+FEFF), control chars (U+0000-U+001F), whitespace en début/fin
+  let s = String(v);
+  while (s.length && (s.charCodeAt(0) <= 0x20 || s.charCodeAt(0) === 0xFEFF)) s = s.slice(1);
+  while (s.length && (s.charCodeAt(s.length-1) <= 0x20 || s.charCodeAt(s.length-1) === 0xFEFF)) s = s.slice(0, -1);
+  return s;
+}
+
 async function downloadTwilioMedia(mediaUrl) {
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  if (!sid || !token) throw new Error('Twilio creds manquants');
+  const sid = _cleanEnv(process.env.TWILIO_ACCOUNT_SID);
+  const token = _cleanEnv(process.env.TWILIO_AUTH_TOKEN);
+  if (!sid || !token) throw new Error('Twilio creds manquants (sid='+(!!sid)+', token='+(!!token)+')');
   const auth = Buffer.from(`${sid}:${token}`).toString('base64');
+
+  console.log('[downloadTwilioMedia] step1 GET:', mediaUrl, 'sidLen:', sid.length, 'tokenLen:', token.length);
 
   // Étape 1 : appeler Twilio API pour obtenir l'URL signée
   const step1 = await fetch(mediaUrl, {
     headers: { 'Authorization': `Basic ${auth}` },
     redirect: 'manual'
   });
+
+  console.log('[downloadTwilioMedia] step1 status:', step1.status, 'location:', step1.headers.get('location'));
 
   let finalUrl = mediaUrl;
   let contentType = step1.headers.get('content-type') || 'image/jpeg';
@@ -292,7 +315,9 @@ async function downloadTwilioMedia(mediaUrl) {
     const loc = step1.headers.get('location');
     if (!loc) throw new Error(`Twilio media: redirect sans Location header (status ${step1.status})`);
     finalUrl = loc;
+    console.log('[downloadTwilioMedia] step2 GET:', finalUrl.substring(0, 80));
     const step2 = await fetch(finalUrl); // pas d'auth — URL signée
+    console.log('[downloadTwilioMedia] step2 status:', step2.status);
     if (!step2.ok) throw new Error(`Twilio media signed URL ${step2.status}`);
     contentType = step2.headers.get('content-type') || contentType;
     body = await step2.arrayBuffer();
@@ -300,7 +325,10 @@ async function downloadTwilioMedia(mediaUrl) {
     // Cas alternatif : Twilio retourne directement le contenu (rare mais possible)
     body = await step1.arrayBuffer();
   } else {
-    throw new Error(`Twilio media download ${step1.status}`);
+    // Lire le body pour comprendre l'erreur
+    let errBody = '';
+    try { errBody = await step1.text(); } catch (_) {}
+    throw new Error(`Twilio media download ${step1.status} url=${mediaUrl.substring(0,100)} body=${errBody.substring(0,150)}`);
   }
 
   const base64 = Buffer.from(body).toString('base64');
@@ -309,9 +337,9 @@ async function downloadTwilioMedia(mediaUrl) {
 
 // ─── Twilio : envoyer un SMS reply ────────────────────────
 async function sendTwilioReply(toPhone, body) {
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_PHONE;
+  const sid = _cleanEnv(process.env.TWILIO_ACCOUNT_SID);
+  const token = _cleanEnv(process.env.TWILIO_AUTH_TOKEN);
+  const from = _cleanEnv(process.env.TWILIO_PHONE);
   if (!sid || !token || !from) {
     console.warn('[sms] Twilio env vars manquantes — pas de reply envoyé');
     return null;

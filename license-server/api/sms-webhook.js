@@ -110,6 +110,22 @@ module.exports = async (req, res) => {
   let imageBase64Preview = ''; // Pour stocker un thumbnail (optionnel, futur usage)
   try {
     if (hasImage) {
+      // Log MediaUrl0 + verif env vars
+      try {
+        const rawSid = process.env.TWILIO_ACCOUNT_SID || '';
+        const rawTok = process.env.TWILIO_AUTH_TOKEN || '';
+        const stripCtrl = (s) => { let r = String(s||''); while (r.length && (r.charCodeAt(0) <= 0x20 || r.charCodeAt(0) === 0xFEFF)) r = r.slice(1); while (r.length && (r.charCodeAt(r.length-1) <= 0x20 || r.charCodeAt(r.length-1) === 0xFEFF)) r = r.slice(0, -1); return r; };
+        const cleanedSid = stripCtrl(rawSid);
+        const cleanedTok = stripCtrl(rawTok);
+        await logSms(licenseKey, {
+          stage: 'pre-download',
+          mediaUrl0: body.MediaUrl0,
+          rawSidLen: rawSid.length, rawTokLen: rawTok.length,
+          cleanedSidLen: cleanedSid.length, cleanedTokLen: cleanedTok.length,
+          rawSidFirst3Codes: [rawSid.charCodeAt(0), rawSid.charCodeAt(1), rawSid.charCodeAt(2)],
+          cleanedSidFirst3Codes: [cleanedSid.charCodeAt(0), cleanedSid.charCodeAt(1), cleanedSid.charCodeAt(2)]
+        });
+      } catch (_) {}
       const dl = await downloadTwilioMedia(body.MediaUrl0);
       parsed = await parseImageViaLlm(dl.base64, dl.contentType, text);
       // On garde une référence à l'image pour le UI (thumbnail base64 si petite)
@@ -119,13 +135,13 @@ module.exports = async (req, res) => {
     }
   } catch (e) {
     console.error('[sms-webhook] LLM parse error:', e.message);
-    // Log l'erreur dans sms_log pour debug
-    try { await logSms(licenseKey, { from: fromNorm, error: e.message.substring(0, 400), hasImage, stage: 'llm_error' }); }
+    // Log l'erreur dans sms_log pour debug — FULL error message
+    try { await logSms(licenseKey, { from: fromNorm, error: e.message, hasImage, stage: 'llm_error' }); }
     catch (_) {}
     // Fallback : push avec needs_review=true, le user éditera dans l'app
     parsed = {
       prenom: '', nom: '', telephone: '', courriel: '', source: hasImage ? 'Autre' : 'SMS',
-      address_hint: '', notes: (text.substring(0, 200) || '(screenshot non parsable)') + ' [err: ' + e.message.substring(0, 80) + ']',
+      address_hint: '', notes: (text.substring(0, 200) || '(screenshot non parsable)') + ' [err: ' + e.message.substring(0, 200) + ']',
       screenshot_type: hasImage ? 'unknown' : '', confidence: 'low'
     };
   }

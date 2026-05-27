@@ -215,6 +215,21 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-archive-toggle:hover{background:#F1F5F9;color:#0F172A}
 .dem-archived-row{opacity:.6}
 .dem-status-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+/* ── Actions dropdown menu (unifié pour toutes les tables) ── */
+.actions-trigger{font-size:13px;padding:6px 12px;background:#fff;border:1px solid #CBD5E1;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;color:#0F172A;transition:all .15s;white-space:nowrap}
+.actions-trigger:hover{background:#F1F5F9;border-color:#64748B}
+.actions-trigger:active{background:#E2E8F0}
+.actions-menu{position:fixed;z-index:9000;background:#fff;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 10px 28px rgba(15,23,42,.18);padding:4px 0;min-width:220px;font-size:13px;font-family:inherit;animation:actionsMenuIn .12s ease-out}
+@keyframes actionsMenuIn{from{transform:translateY(-4px);opacity:0}to{transform:translateY(0);opacity:1}}
+.actions-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;color:#0F172A;user-select:none;font-weight:500}
+.actions-item:hover{background:#F1F5F9}
+.actions-item.danger{color:#DC2626}
+.actions-item.danger:hover{background:#FEF2F2}
+.actions-item.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.actions-divider{height:1px;background:#E2E8F0;margin:4px 0}
+.actions-icon{width:18px;text-align:center;flex-shrink:0;font-size:14px}
+.actions-label{flex:1}
+.actions-section-title{font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em;padding:8px 14px 4px;user-select:none}
 .dem-status-converted{background:#DCFCE7;color:#166534}
 .dem-status-lost{background:#FEE2E2;color:#991B1B}
 .dem-status-new{background:#FECDD3;color:#9F1239}
@@ -400,6 +415,9 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .sp{flex:1}
 .badd{font-size:12px;padding:7px 16px;background:#0EA5E9;color:#fff;border:1px solid #0EA5E9;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;letter-spacing:.02em;transition:all .15s}
 .badd:hover{background:#0284C7;border-color:#0284C7}
+.bmail{font-size:12px;padding:7px 14px;background:#fff;color:#0EA5E9;border:1px solid #0EA5E9;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;letter-spacing:.02em;transition:all .15s;margin-right:8px}
+.bmail:hover{background:#E0F2FE;border-color:#0284C7;color:#0284C7}
+.bmail:disabled{opacity:.5;cursor:not-allowed}
 
 /* Threshold bar */
 .thbar{display:flex;align-items:center;gap:24px;padding:8px 20px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;font-size:11px;color:#1E293B;flex-wrap:wrap}
@@ -1158,6 +1176,7 @@ body.app-readonly th .rz{pointer-events:none}
   <div class="card accueil-mode">
     <div class="card-header">
       <div class="card-title" id="cardTitle">Accueil</div>
+      <button class="bmail" id="bmail" style="display:none" title="Envoyer un courriel à tous les enregistrements visibles de cet onglet">&#9993; Envoyer à tous</button>
       <button class="badd" id="badd">+ Ajouter</button>
     </div>
     <!-- ── PANE : Accueil ── -->
@@ -1536,6 +1555,33 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="tpl-modal-foot">
       <button class="tpl-btn muted" onclick="closeTplPicker()">Annuler</button>
       <button class="tpl-btn primary" onclick="sendEmptyMail()">✉ Sans template (mailto vide)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal : vente conclue → quoi faire avec les demandes (décision par lead) ── -->
+<div class="tpl-modal-ov" id="vConcluOv">
+  <div class="tpl-modal" style="width:min(720px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">&#127881; Vente conclue — décision par lead</div>
+      <button class="tpl-btn muted" onclick="_closeVConcluModal()">&#10005;</button>
+    </div>
+    <div class="tpl-modal-body">
+      <p style="font-size:13px;line-height:1.5;color:#0F172A;margin:0 0 12px">
+        Félicitations pour <strong id="vConcluProp">—</strong> !<br>
+        <strong><span id="vConcluCount">0</span> demande(s) d'information</strong> active(s) sur cette propriété. Garde les leads sérieux, archive le reste.
+      </p>
+      <div style="display:flex;gap:8px;margin-bottom:12px;padding:10px;background:#F1F5F9;border-radius:8px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:11px;color:#475569;font-weight:700;text-transform:uppercase;letter-spacing:.05em">Tout&nbsp;:</span>
+        <button class="tpl-btn" style="font-size:11px;padding:5px 10px" onclick="_vConcluSetAll('prospect')">&#128199; Prospects</button>
+        <button class="tpl-btn" style="font-size:11px;padding:5px 10px" onclick="_vConcluSetAll('archive')">&#128465; Archiver</button>
+        <button class="tpl-btn" style="font-size:11px;padding:5px 10px" onclick="_vConcluSetAll('skip')">&#9203; Laisser</button>
+      </div>
+      <div id="vConcluList" style="max-height:50vh;overflow-y:auto;border:1px solid #E2E8F0;border-radius:8px"></div>
+    </div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn muted" onclick="_closeVConcluModal()">Annuler</button>
+      <button class="tpl-btn primary" onclick="_vConcluApply()">&#10003; Appliquer</button>
     </div>
   </div>
 </div>
@@ -2069,12 +2115,129 @@ function etd(col,tab,id,display,extra){
   return'<td '+a+' class="'+cls+'" onclick="ie(this)">'+display+'</td>';
 }
 function ctd(d,cls,ci){var c=(cls||'')+(ci!==undefined?' c-'+ci:'');return'<td'+(c.trim()?' class="'+c.trim()+'"':'')+'>'+d+'</td>';}
+// ─── Actions dropdown menu (unifié) ──────────────────────────
+var _activeActionsMenu=null;
+function _closeActionsMenu(){
+  if(_activeActionsMenu){
+    if(_activeActionsMenu.parentNode)_activeActionsMenu.parentNode.removeChild(_activeActionsMenu);
+    _activeActionsMenu=null;
+    document.removeEventListener('mousedown',_onDocClickCloseMenu,true);
+    document.removeEventListener('keydown',_onEscCloseMenu);
+    window.removeEventListener('scroll',_closeActionsMenu,true);
+    window.removeEventListener('resize',_closeActionsMenu);
+  }
+}
+function _onDocClickCloseMenu(e){if(_activeActionsMenu&&!_activeActionsMenu.contains(e.target))_closeActionsMenu();}
+function _onEscCloseMenu(e){if(e.key==='Escape')_closeActionsMenu();}
+function openActionsMenu(tab,recId,btnEl,ev){
+  if(ev){ev.stopPropagation();ev.preventDefault();}
+  _closeActionsMenu();
+  var items=_buildActionsForRecord(tab,recId);
+  if(!items||!items.length)return;
+  var menu=document.createElement('div');
+  menu.className='actions-menu';
+  items.forEach(function(it){
+    if(it.divider){var d=document.createElement('div');d.className='actions-divider';menu.appendChild(d);return;}
+    if(it.sectionTitle){var s=document.createElement('div');s.className='actions-section-title';s.textContent=it.sectionTitle;menu.appendChild(s);return;}
+    var el=document.createElement('div');
+    el.className='actions-item'+(it.danger?' danger':'')+(it.disabled?' disabled':'');
+    el.innerHTML='<span class="actions-icon">'+(it.icon||'')+'</span><span class="actions-label">'+esc(it.label)+'</span>';
+    if(it.title)el.title=it.title;
+    el.onclick=function(e){e.stopPropagation();_closeActionsMenu();if(!it.disabled)setTimeout(it.fn,0);};
+    menu.appendChild(el);
+  });
+  // Pre-render hidden pour mesurer la hauteur avant d'attacher visiblement
+  menu.style.visibility='hidden';
+  document.body.appendChild(menu);
+  var rect=btnEl.getBoundingClientRect();
+  var menuHeight=menu.offsetHeight;
+  var menuWidth=menu.offsetWidth;
+  // Position verticale : sous le bouton; au-dessus si déborde en bas
+  var top=rect.bottom+4;
+  if(top+menuHeight>window.innerHeight-8)top=rect.top-menuHeight-4;
+  if(top<8)top=8;
+  // Position horizontale : aligner bord DROIT du menu sur bord droit du bouton via CSS right
+  // (le menu s'étend vers la gauche, ce qui évite les débordements à droite)
+  var rightOffset=Math.max(8,window.innerWidth-rect.right);
+  // Si menu trop large pour la gauche disponible, on cale à 8px du bord gauche
+  if(rect.right-menuWidth<8){
+    menu.style.left='8px';
+    menu.style.right='auto';
+  } else {
+    menu.style.right=rightOffset+'px';
+    menu.style.left='auto';
+  }
+  menu.style.top=top+'px';
+  menu.style.visibility='visible';
+  _activeActionsMenu=menu;
+  setTimeout(function(){
+    document.addEventListener('mousedown',_onDocClickCloseMenu,true);
+    document.addEventListener('keydown',_onEscCloseMenu);
+    window.addEventListener('scroll',_closeActionsMenu,true);
+    window.addEventListener('resize',_closeActionsMenu);
+  },0);
+}
+function _findRecord(tab,id){var storeTab=(tab==='pa-en-vente')?'pa':tab;var a=db[storeTab]||[];for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+function _buildActionsForRecord(tab,recId){
+  // Demandes (active + archived)
+  if(tab==='demandes'||tab==='demandes-archived'){
+    var d=_findDemande(recId);if(!d)return[];
+    var its=[];
+    var isArch=(d.status==='converted-pa'||d.status==='converted-acheteur'||d.status==='converted-cp'||d.status==='lost');
+    if(!isArch){
+      its.push({icon:'&#9993;',label:'Envoyer un courriel',fn:function(){openMailPicker('demandes',recId);}});
+      if(d.status==='new'||d.status==='qualified')its.push({icon:'&#9208;',label:'Mettre en attente',fn:function(){markDemandeEnAttente(recId);}});
+      if(d.status==='new'||d.status==='en-attente')its.push({icon:'&#10003;',label:'Marquer à suivre',fn:function(){qualifyDemande(recId);}});
+      its.push({divider:true});
+      its.push({sectionTitle:'Convertir vers'});
+      its.push({icon:'&#128196;',label:'Promesse en cours (2 côtés)',title:'Sophie représente les 2 côtés',fn:function(){convertDemandeToPa(recId);}});
+      its.push({icon:'&#128273;',label:'Acheteur actif',title:'Personne cherche au-delà de cette propriété',fn:function(){convertDemandeToA(recId);}});
+      its.push({icon:'&#128199;',label:'Prospect acheteur',title:'Pipeline amont — rétention long terme',fn:function(){convertDemandeToCp(recId);}});
+      its.push({divider:true});
+      its.push({icon:'&#10005;',label:'Rejeter',danger:true,fn:function(){dismissDemande(recId);}});
+    } else {
+      its.push({icon:'&#8634;',label:'Restaurer comme à traiter',fn:function(){restoreDemande(recId);}});
+      its.push({divider:true});
+      its.push({icon:'&#128465;',label:'Supprimer définitivement',danger:true,fn:function(){deleteDemande(recId);}});
+    }
+    return its;
+  }
+  // Onglets natifs
+  var rec=_findRecord(tab,recId);if(!rec)return[];
+  var items=[];
+  items.push({icon:'&#9998;',label:'Modifier',fn:function(){doEdit(tab,recId);}});
+  if(tab!=='pancartes')items.push({icon:'&#9993;',label:'Envoyer un courriel',fn:function(){openMailPicker(tab,recId);}});
+  if(tab==='a'){
+    items.push({icon:'&#9742;',label:'Marquer contacté',title:'Réinitialise la relance',fn:function(){markAcheteurContacted(recId);}});
+  }
+  items.push({divider:true});
+  if(tab==='cp')items.push({icon:'&#8599;',label:'Promouvoir en Acheteur',fn:function(){transferCpToA(recId);}});
+  if(tab==='vp')items.push({icon:'&#8599;',label:'Promouvoir en Vendeur',fn:function(){transferVpToV(recId);}});
+  if(tab==='a')items.push({icon:'&#8617;',label:'Renvoyer aux Prospects acheteurs',fn:function(){transferAToCp(recId);}});
+  if(tab==='pa'){
+    items.push({icon:'&#9989;',label:'Marquer conclu',fn:function(){transferToConclus('pa',recId);}});
+    items.push({icon:'&#8617;',label:'Retour Acheteurs (PA refusée)',fn:function(){transferPaToA(recId);}});
+  }
+  if(tab==='pa-en-vente'){
+    items.push({icon:'&#9989;',label:'Marquer conclu',fn:function(){transferToConclus('pa',recId);}});
+    items.push({icon:'&#8617;',label:'Retour Demandes (PA refusée)',fn:function(){transferPaevToDemande(recId);}});
+  }
+  if(tab==='v')items.push({icon:'&#9989;',label:'Marquer conclu',fn:function(){transferToConclus('v',recId);}});
+  // Liaison (sauf cp/vp/ac/vc/ca)
+  if(tab==='a'||tab==='pa'||tab==='pa-en-vente'||tab==='v'){
+    if(rec.linkId)items.push({icon:'&#128274;',label:'Délier',fn:function(){unlinkRecord(tab,recId);}});
+    else items.push({icon:'&#128279;',label:'Lier à un autre...',fn:function(){openLinkModal(tab,recId);}});
+  }
+  items.push({divider:true});
+  items.push({icon:'&#128465;',label:'Supprimer',danger:true,fn:function(){doDel(tab,recId);}});
+  return items;
+}
+
 function abtns(tab,id,extra,before){
   var ci=COLS[tab].length-1;
   var h='<td class="nm c-'+ci+'">';
-  if(before)h+=before+' ';
-  h+='<button class="bsm" onclick="doEdit(\''+tab+'\',\''+id+'\')">&#9998; Modifier</button> <button class="bsm bdl" onclick="doDel(\''+tab+'\',\''+id+'\')">&#10005; Supprimer</button>';
-  if(extra)h+=' '+extra;
+  // Tous les boutons spécifiques (before + extra) sont maintenant dans le menu dropdown
+  h+='<button class="actions-trigger" onclick="openActionsMenu(\''+tab+'\',\''+id+'\',this,event)" title="Actions">&#9776; Actions</button>';
   return h+'</td>';
 }
 
@@ -2988,8 +3151,87 @@ function transferToConclus(fromTab,id){
   });
   var idsToRemove=toTransfer.map(function(r){return r.id;});
   db[fromTab]=db[fromTab].filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
+  // Tracker les vIds transferes avant filter (pour le prompt apres)
+  var vIdsTransferred = (fromTab === 'v') ? toTransfer.map(function(r){return r.id;}) : [];
   sdb();rall();
   toast("\u2713 "+noms.join(" + ")+" \u2192 "+(targetTab==="ac"?"Acheteurs conclus":"Vendeurs conclus"));
+  if (fromTab === 'v' && vIdsTransferred.length) {
+    setTimeout(function(){ _promptDemandesAfterVConclu(vIdsTransferred, noms.join(' + ')); }, 250);
+  }
+}
+
+// Modal de choix pour les demandes restantes apres conclusion d'une vente (decision par lead)
+var _vConcluContext = null;
+function _promptDemandesAfterVConclu(vIds, label) {
+  var activeDems = (db.demandes || []).filter(function(d){
+    return vIds.indexOf(d.propertyId) >= 0 && (d.status === 'new' || d.status === 'en-attente' || d.status === 'qualified');
+  });
+  if (!activeDems.length) return;
+  document.getElementById('vConcluCount').textContent = activeDems.length;
+  document.getElementById('vConcluProp').textContent = label;
+  // Build list HTML
+  var html = '';
+  activeDems.forEach(function(d, idx){
+    var name = ((d.prenom||'') + ' ' + (d.nom||'')).trim() || '(sans nom)';
+    var contact = (d.telephone||'').trim() || (d.courriel||'').trim() || '(pas de contact)';
+    var src = d.source || 'Autre';
+    var bg = (idx % 2 === 0) ? '#fff' : '#F8FAFC';
+    html += '<div class="vconclu-row" data-did="' + esc(d.id) + '" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:' + bg + ';border-bottom:1px solid #F1F5F9">';
+    html += '<div style="flex:1;min-width:0">';
+    html += '<div style="font-size:13px;font-weight:700;color:#0F172A">' + esc(name) + '</div>';
+    html += '<div style="font-size:11px;color:#64748B;margin-top:2px">' + esc(contact) + ' &middot; ' + esc(src) + '</div>';
+    html += '</div>';
+    html += '<select class="vconclu-action" data-did="' + esc(d.id) + '" style="font-size:12px;padding:6px 10px;border:1.5px solid #CBD5E1;border-radius:6px;font-family:inherit;background:#fff;cursor:pointer">';
+    html += '<option value="prospect" selected>\u{1F4C7} Prospect acheteur</option>';
+    html += '<option value="archive">\u{1F5D1} Archiver (rejetee)</option>';
+    html += '<option value="skip">\u23F3 Laisser orpheline</option>';
+    html += '</select>';
+    html += '</div>';
+  });
+  document.getElementById('vConcluList').innerHTML = html;
+  _vConcluContext = { vIds: vIds, demIds: activeDems.map(function(d){return d.id;}) };
+  var ov = document.getElementById('vConcluOv'); if (ov) ov.classList.add('on');
+}
+function _vConcluSetAll(action) {
+  document.querySelectorAll('.vconclu-action').forEach(function(sel){ sel.value = action; });
+}
+function _vConcluApply() {
+  if (!_vConcluContext) return;
+  pushUndo('Vente conclue - decisions par lead');
+  var nProspect = 0, nArchive = 0, nSkip = 0;
+  document.querySelectorAll('.vconclu-action').forEach(function(sel){
+    var did = sel.getAttribute('data-did');
+    var action = sel.value;
+    var d = _findDemande(did); if (!d) return;
+    if (action === 'prospect') {
+      db.cp.push({
+        id: newId(),
+        prenom: d.prenom || '', nom: d.nom || '',
+        telephone: d.telephone || '', courriel: d.courriel || '',
+        prequal: '', typeBat: '', prixMin: '', prixMax: '', secteur: '',
+        dateContact: _todayStr(),
+        notes: (d.notes || '') + (d.notes ? '\n\n' : '') + "(Issue d'une demande sur propriete conclue)"
+      });
+      d.status = 'converted-cp'; d.statusDate = _todayStr(); d.lastModified = _todayStr();
+      nProspect++;
+    } else if (action === 'archive') {
+      d.status = 'lost'; d.statusDate = _todayStr(); d.lastModified = _todayStr();
+      nArchive++;
+    } else {
+      nSkip++;
+    }
+  });
+  _closeVConcluModal();
+  sdb(); rall();
+  var parts = [];
+  if (nProspect) parts.push(nProspect + ' \u2192 Prospects');
+  if (nArchive) parts.push(nArchive + ' archivee(s)');
+  if (nSkip) parts.push(nSkip + ' laissee(s)');
+  toast('\u2713 ' + parts.join(' | '));
+}
+function _closeVConcluModal() {
+  var ov = document.getElementById('vConcluOv'); if (ov) ov.classList.remove('on');
+  _vConcluContext = null;
 }
 
 
@@ -3133,7 +3375,7 @@ function renderDemandes(){
     var enAttente=dems.filter(function(d){return d.status==='en-attente';});
     var aSuivre=dems.filter(function(d){return d.status==='qualified';});
     var actives=dems.filter(function(d){return d.status==='new'||d.status==='en-attente'||d.status==='qualified';});
-    var archived=dems.filter(function(d){return d.status==='converted-pa'||d.status==='converted-acheteur'||d.status==='lost';});
+    var archived=dems.filter(function(d){return d.status==='converted-pa'||d.status==='converted-acheteur'||d.status==='converted-cp'||d.status==='lost';});
     var isExpanded=_demExpanded[v.id]===true||(_demExpanded[v.id]===undefined&&actives.length>0);
     var badges='';
     if(aTraiter.length)badges+='<span class="dem-prop-badge dem-prop-badge-new">'+aTraiter.length+' à traiter</span>';
@@ -3149,6 +3391,7 @@ function renderDemandes(){
       +'<div class="dem-prop-meta">'+esc(lbl.name)+(lbl.prix?' · '+esc(lbl.prix):'')+'</div>'
       +'</div>'
       +'<div class="dem-prop-badges">'+badges+'</div>'
+      +(actives.length?'<button class="dem-btn" style="color:#0EA5E9;border-color:#BAE6FD" onclick="event.stopPropagation();openMailPickerBulkForProperty(\''+v.id+'\')" title="Envoyer un courriel à toutes les demandes actives de cette propriété">&#9993; Envoyer à tous</button>':'')
       +'<button class="dem-btn muted" onclick="event.stopPropagation();doEdit(\'v\',\''+v.id+'\')">Ouvrir fiche</button>'
       +'</div>');
     if(isExpanded){
@@ -3214,6 +3457,7 @@ function _demRowHtml(d,status,archived){
     var arcLabel='';
     if(status==='converted-pa')arcLabel='<span class="dem-status-tag dem-status-converted">→ Promesse</span>';
     else if(status==='converted-acheteur')arcLabel='<span class="dem-status-tag dem-status-converted">→ Acheteur</span>';
+    else if(status==='converted-cp')arcLabel='<span class="dem-status-tag dem-status-converted">→ Prospect</span>';
     else if(status==='lost')arcLabel='<span class="dem-status-tag dem-status-lost">Rejetée</span>';
     statusCell='<td>'+arcLabel+'</td>';
     rowCls='dem-archived-row';
@@ -3226,31 +3470,8 @@ function _demRowHtml(d,status,archived){
       statusCell='<td>—</td>';
     }
   }
-  var mailBtn=archived?'':'<button class="dem-btn" style="color:#0EA5E9;border-color:#BAE6FD" onclick="openMailPicker(\'demandes\',\''+d.id+'\')" title="Envoyer un courriel à partir d\'un template">✉</button>';
-  var actions='';
-  if(status==='new'){
-    actions=mailBtn
-      +'<button class="dem-btn" onclick="markDemandeEnAttente(\''+d.id+'\')" title="Mettre en attente">⏸ Attente</button>'
-      +'<button class="dem-btn success" onclick="qualifyDemande(\''+d.id+'\')" title="Marquer à suivre">✓ Suivre</button>'
-      +'<button class="dem-btn primary" onclick="convertDemandeToPa(\''+d.id+'\')" title="Scénario B : Sophie représente les 2 côtés">→ PA</button>'
-      +'<button class="dem-btn" onclick="convertDemandeToA(\''+d.id+'\')" title="La personne cherche au-delà de cette propriété">→ Acheteur</button>'
-      +'<button class="dem-btn danger" onclick="dismissDemande(\''+d.id+'\')">Rejeter</button>';
-  } else if(status==='en-attente'){
-    actions=mailBtn
-      +'<button class="dem-btn success" onclick="qualifyDemande(\''+d.id+'\')" title="Marquer à suivre">✓ Suivre</button>'
-      +'<button class="dem-btn primary" onclick="convertDemandeToPa(\''+d.id+'\')">→ PA</button>'
-      +'<button class="dem-btn" onclick="convertDemandeToA(\''+d.id+'\')">→ Acheteur</button>'
-      +'<button class="dem-btn danger" onclick="dismissDemande(\''+d.id+'\')">Rejeter</button>';
-  } else if(status==='qualified'){
-    actions=mailBtn
-      +'<button class="dem-btn" onclick="markDemandeEnAttente(\''+d.id+'\')" title="Remettre en attente">⏸ Attente</button>'
-      +'<button class="dem-btn primary" onclick="convertDemandeToPa(\''+d.id+'\')">→ PA</button>'
-      +'<button class="dem-btn" onclick="convertDemandeToA(\''+d.id+'\')">→ Acheteur</button>'
-      +'<button class="dem-btn danger" onclick="dismissDemande(\''+d.id+'\')">Rejeter</button>';
-  } else {
-    actions='<button class="dem-btn muted" onclick="restoreDemande(\''+d.id+'\')">↺ Restaurer</button>'
-      +'<button class="dem-btn muted" onclick="deleteDemande(\''+d.id+'\')" title="Supprimer définitivement">🗑</button>';
-  }
+  // Toutes les actions sont maintenant dans un menu dropdown unifié (cf openActionsMenu)
+  var actions='<button class="actions-trigger" onclick="openActionsMenu(\'demandes\',\''+d.id+'\',this,event)" title="Actions">&#9776; Actions</button>';
   return '<tr'+(rowCls?' class="'+rowCls+'"':'')+'>'
     +statusCell
     +ei('prenom',d.prenom)
@@ -3405,6 +3626,23 @@ function convertDemandeToA(id){
   d.status='converted-acheteur';d.statusDate=_todayStr();d.lastModified=_todayStr();
   sdb();rall();
   toast('✓ Fiche Acheteur créée');
+}
+function convertDemandeToCp(id){
+  var d=_findDemande(id);if(!d)return;
+  var who=((d.prenom||'')+' '+(d.nom||'')).trim()||'cette personne';
+  if(!confirm('Envoyer '+who+' vers Prospects acheteurs ?\n\n→ Utilise cette option si la personne n\'est pas encore prête à devenir acheteur actif (rétention / suivi pipeline amont).\nLa demande reste archivée ici.'))return;
+  pushUndo('Conversion demande → Prospect acheteur');
+  db.cp.push({
+    id:newId(),
+    prenom:d.prenom||'',nom:d.nom||'',
+    telephone:d.telephone||'',courriel:d.courriel||'',
+    prequal:'',typeBat:'',prixMin:'',prixMax:'',secteur:'',
+    dateContact:_todayStr(),
+    notes:d.notes||''
+  });
+  d.status='converted-cp';d.statusDate=_todayStr();d.lastModified=_todayStr();
+  sdb();rall();
+  toast('✓ Envoyé vers Prospects acheteurs');
 }
 
 // Retour scénario B → Demandes (PA refusée). Garde la trace côté demande comme "qualified"
@@ -3983,6 +4221,110 @@ function _openMailto(to,subject,body){
   }
 }
 
+// ─── Bulk mail (BCC pour confidentialité) ────────────────────
+function _buildBulkMailUrl(bccArr,subject,body){
+  var p=_getMailProvider();
+  var sep=(p==='outlook-web')?';':',';
+  var bcc=encodeURIComponent((bccArr||[]).join(sep));
+  var s=encodeURIComponent(subject||''),b=encodeURIComponent(body||'');
+  if(p==='gmail')return 'https://mail.google.com/mail/?view=cm&fs=1&bcc='+bcc+'&su='+s+'&body='+b;
+  if(p==='outlook-web')return 'https://outlook.office.com/mail/0/deeplink/compose?bcc='+bcc+'&subject='+s+'&body='+b;
+  return 'mailto:?bcc='+bcc+'&subject='+s+'&body='+b;
+}
+function _openMailtoBulk(bccArr,subject,body){
+  var url=_buildBulkMailUrl(bccArr,subject,body);
+  if(url.length>8000){
+    toast('⚠ '+bccArr.length+' destinataires : URL trop longue. Essaie Gmail ou Outlook web (Paramètres → Compte).');
+  }
+  if(window.electronAPI&&window.electronAPI.openExternal){
+    window.electronAPI.openExternal(url).catch(function(){window.location.href=url;});
+  } else {
+    var a=document.createElement('a');a.href=url;a.target='_blank';a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);
+  }
+}
+function _collectEmailsForTab(tab){
+  var emails=[];
+  if(tab==='demandes'){
+    var vIds={};(db.v||[]).forEach(function(v){vIds[v.id]=true;});
+    (db.demandes||[]).forEach(function(d){
+      if(d.propertyId&&vIds[d.propertyId]&&(d.status==='new'||d.status==='en-attente'||d.status==='qualified')){
+        var e=(d.courriel||'').trim();if(e)emails.push(e);
+      }
+    });
+  } else {
+    var dataTab=_storeTab(tab);
+    (db[dataTab]||[]).forEach(function(r){var e=(r.courriel||'').trim();if(e)emails.push(e);});
+  }
+  // Dedupe (lowercase)
+  var seen={},out=[];
+  emails.forEach(function(e){var k=e.toLowerCase();if(!seen[k]){seen[k]=true;out.push(e);}});
+  return out;
+}
+function _collectEmailsForProperty(vId){
+  var emails=[];
+  (db.demandes||[]).forEach(function(d){
+    if(d.propertyId===vId&&(d.status==='new'||d.status==='en-attente'||d.status==='qualified')){
+      var e=(d.courriel||'').trim();if(e)emails.push(e);
+    }
+  });
+  var seen={},out=[];
+  emails.forEach(function(e){var k=e.toLowerCase();if(!seen[k]){seen[k]=true;out.push(e);}});
+  return out;
+}
+function openMailPickerBulkForTab(tab){
+  var emails=_collectEmailsForTab(tab);
+  if(!emails.length){toast('⚠ Aucun courriel valide dans cet onglet');return;}
+  var section=(tab==='demandes')?'demandes':tab;
+  _openBulkMailPicker(section,emails,emails.length+' destinataire(s)','de tout l\'onglet '+(CARD_TITLES[tab]||tab));
+}
+function openMailPickerBulkForProperty(vId){
+  var emails=_collectEmailsForProperty(vId);
+  if(!emails.length){toast('⚠ Aucun courriel valide pour cette propriété');return;}
+  var v=_vById(vId);
+  var addr=v?(v.adresse||'(adresse à compléter)'):'(propriété supprimée)';
+  _openBulkMailPicker('demandes',emails,emails.length+' destinataire(s)','demandes pour : '+addr);
+}
+function _openBulkMailPicker(section,emails,label,subLabel){
+  _mailPickContext={bulk:true,section:section,emails:emails,label:label,subLabel:subLabel};
+  var sec=_tplFindSection(section);
+  var tag=document.getElementById('tpl-pick-section');
+  if(sec){tag.textContent=sec.icon+' '+sec.label;tag.style.background=sec.color;}
+  document.getElementById('tpl-pick-dest').innerHTML='Destinataires (BCC) : <strong>'+esc(label)+'</strong>'+(subLabel?' &middot; <span style="color:#64748B">'+esc(subLabel)+'</span>':'')+'<br><span style="font-size:11px;color:#94A3B8">Les courriels sont en BCC — aucun destinataire ne verra les autres adresses.</span>';
+  var tpls=(db.templates||[]).filter(function(t){return t.section===section;});
+  var lst=document.getElementById('tpl-pick-list');
+  if(tpls.length===0){
+    lst.innerHTML='<div style="padding:18px;text-align:center;color:#94A3B8;font-style:italic;font-size:12px;background:#F8FAFC;border:1px dashed #E2E8F0;border-radius:8px">Aucun template pour cette section.<br><a href="javascript:void(0)" onclick="closeTplPicker();document.querySelector(\'.tbtn[data-tab=&quot;templates&quot;]\').click()" style="color:#0EA5E9;font-weight:700">+ Créer un template</a></div>';
+  } else {
+    var html=['<div class="tpl-list">'];
+    tpls.forEach(function(t){
+      html.push('<div class="tpl-row" onclick="sendMailFromTemplate(\''+t.id+'\')">'
+        +'<div class="tpl-row-main">'
+        +'<div class="tpl-row-name">'+esc(t.name||'(sans nom)')+'</div>'
+        +'<div class="tpl-row-subject">'+esc(t.subject||'(pas de sujet)')+'</div>'
+        +'</div>'
+        +'<div class="tpl-row-actions"><button class="tpl-btn primary">✉ Envoyer aux '+emails.length+'</button></div>'
+        +'</div>');
+    });
+    html.push('</div>');
+    lst.innerHTML=html.join('');
+  }
+  document.getElementById('tpl-pick-ov').classList.add('on');
+}
+function _updateBmailVisibility(tab){
+  var btn=document.getElementById('bmail');if(!btn)return;
+  var tabsWithMail=['cp','vp','a','pa','v','pa-en-vente','ac','vc','ca','demandes'];
+  if(tabsWithMail.indexOf(tab)>=0){
+    var emails=_collectEmailsForTab(tab);
+    btn.style.display='inline-block';
+    btn.disabled=(emails.length===0);
+    btn.title=emails.length?'Envoyer un courriel à '+emails.length+' destinataire(s)':'Aucun courriel valide';
+    btn.onclick=function(){openMailPickerBulkForTab(tab);};
+  } else {
+    btn.style.display='none';
+    btn.onclick=null;
+  }
+}
+
 // Substitution des placeholders {{prenom}} et {{nom}} dans un texte
 function _substituteTplVars(text,prenom,nom){
   if(!text)return '';
@@ -3995,7 +4337,18 @@ function sendMailFromTemplate(tplId){
   if(!_mailPickContext){closeTplPicker();return;}
   var tpl=_tplFind(tplId);if(!tpl){toast('⚠ Template introuvable');return;}
   var ctx=_mailPickContext;
-  // Lookup prenom/nom à partir du record source
+  // Mode bulk : pas de personnalisation {{prenom}}/{{nom}}, on envoie en BCC
+  if(ctx.bulk){
+    var subjB=_substituteTplVars(tpl.subject,'','');
+    var bodyB=_substituteTplVars(tpl.body,'','');
+    var sigBodyB=(db.signature&&db.signature.body)?db.signature.body:'';
+    if(sigBodyB)bodyB=bodyB+'\n\n'+_substituteTplVars(sigBodyB,'','');
+    _openMailtoBulk(ctx.emails,subjB,bodyB);
+    toast('✉ Envoi en BCC à '+ctx.emails.length+' destinataire(s)');
+    closeTplPicker();
+    return;
+  }
+  // Mode single (original)
   var dataTab=_storeTab(ctx.section);
   var rec=null;
   if(dataTab==='demandes'){
@@ -5151,7 +5504,7 @@ function dismissExportWarn(){var warn=document.getElementById("exportWarn");if(w
 
 // ─── Tabs ────────────────────────────────────────────────────
 var CARD_TITLES={cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Doubles représentations",templates:"Templates de courriels"};
-function setCardTitle(tab){var el=document.getElementById("cardTitle");if(el)el.textContent=CARD_TITLES[tab]||"";}
+function setCardTitle(tab){var el=document.getElementById("cardTitle");if(el)el.textContent=CARD_TITLES[tab]||"";_updateBmailVisibility(tab);}
 document.getElementById("tbar").addEventListener("click",function(e){
   var btn=e.target.closest(".tbtn");if(!btn)return;
   var tab=btn.getAttribute("data-tab");

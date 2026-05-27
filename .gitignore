@@ -36,3 +36,10 @@ license-server/data/keys.json
 # Dropbox metadata
 .dropbox
 .dropbox.cache
+
+# Vercel local env pulls
+license-server/.env.local
+license-server/.env.prod
+license-server/.env*
+# Scripts temporaires
+license-server/_*.js
