@@ -274,22 +274,79 @@ ipcMain.handle('email-create-eml', async (event, args) => {
     });
     lines.push('--' + boundary + '--');
     lines.push('');
+    // ─── Mac : piloter Outlook / Apple Mail par AppleScript pour un VRAI brouillon éditable ───
+    // Le .eml ouvre en lecture (Répondre/Transférer) dans le nouveau Outlook Mac → on crée plutôt
+    // un brouillon natif avec destinataire + sujet + corps + PJ. Repli sur .eml si l'AppleScript échoue.
+    if (process.platform === 'darwin' && (args.app === 'outlook' || args.app === 'applemail')) {
+      // Résoudre les chemins absolus des PJ (existantes)
+      var attPaths = [];
+      (args.attachments || []).forEach(function (a) {
+        var bucket = a.bucket || args.propertyId;
+        var full = path.join(_attachPropDir(bucket), _safeFileName(a.file));
+        if (fs.existsSync(full)) attPaths.push(full);
+      });
+      var recipients = String(args.to || args.bcc || '').split(/[;,]/).map(function (s) { return s.trim(); }).filter(Boolean);
+      var isBcc = !args.to && !!args.bcc;
+      var script = (args.app === 'outlook')
+        ? _buildOutlookScript(args.subject || '', args.body || '', recipients, isBcc, attPaths)
+        : _buildAppleMailScript(args.subject || '', args.body || '', recipients, isBcc, attPaths);
+      var ok = await new Promise(function (resolve) {
+        require('child_process').execFile('osascript', ['-e', script], function (err) { resolve(!err); });
+      });
+      if (ok) return { ok: true, attached: attPaths.length, via: 'applescript' };
+      // AppleScript a échoué → repli sur le .eml ouvert dans l'app ciblée
+      var emlPathF = path.join(app.getPath('temp'), 'TRI-ANGLE-' + Date.now().toString(36) + '.eml');
+      fs.writeFileSync(emlPathF, lines.join(CRLF), 'utf8');
+      var appNameF = args.app === 'outlook' ? 'Microsoft Outlook' : 'Mail';
+      var openedF = await new Promise(function (resolve) {
+        require('child_process').execFile('open', ['-a', appNameF, emlPathF], function (err) { resolve(!err); });
+      });
+      if (openedF) return { ok: true, attached: attached, via: 'eml-fallback' };
+    }
     var emlPath = path.join(app.getPath('temp'), 'TRI-ANGLE-' + Date.now().toString(36) + '.eml');
     fs.writeFileSync(emlPath, lines.join(CRLF), 'utf8');
-    // Forcer une app précise si demandé (Mac) : 'outlook' → Microsoft Outlook, 'applemail' → Mail.
-    // Repli automatique sur l'app par défaut si l'app ciblée est introuvable.
-    if (process.platform === 'darwin' && (args.app === 'outlook' || args.app === 'applemail')) {
-      var appName = args.app === 'outlook' ? 'Microsoft Outlook' : 'Mail';
-      var opened = await new Promise(function (resolve) {
-        require('child_process').execFile('open', ['-a', appName, emlPath], function (err) { resolve(!err); });
-      });
-      if (opened) return { ok: true, attached: attached };
-      // app ciblée absente → repli sur l'app de courriel par défaut
-    }
     var r = await shell.openPath(emlPath);
     return r ? { ok: false, error: r } : { ok: true, attached: attached };
   } catch (e) { return { ok: false, error: e.message }; }
 });
+
+// Échappe une chaîne pour l'insérer entre guillemets dans un script AppleScript
+function _asEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/"/g, '\\"'); }
+// Construit le script AppleScript pour créer un brouillon Microsoft Outlook
+function _buildOutlookScript(subject, body, recipients, isBcc, attPaths) {
+  var L = [];
+  L.push('tell application "Microsoft Outlook"');
+  L.push('set newMsg to make new outgoing message with properties {subject:"' + _asEsc(subject) + '", plain text content:"' + _asEsc(body) + '"}');
+  recipients.forEach(function (r) {
+    var kind = isBcc ? 'bcc recipient' : 'to recipient';
+    L.push('make new ' + kind + ' at newMsg with properties {email address:{address:"' + _asEsc(r) + '"}}');
+  });
+  attPaths.forEach(function (p) {
+    L.push('make new attachment at newMsg with properties {file:POSIX file "' + _asEsc(p) + '"}');
+  });
+  L.push('open newMsg');
+  L.push('activate');
+  L.push('end tell');
+  return L.join('\n');
+}
+// Construit le script AppleScript pour créer un brouillon Apple Mail
+function _buildAppleMailScript(subject, body, recipients, isBcc, attPaths) {
+  var L = [];
+  L.push('tell application "Mail"');
+  L.push('set newMsg to make new outgoing message with properties {subject:"' + _asEsc(subject) + '", content:"' + _asEsc(body) + '", visible:true}');
+  L.push('tell newMsg');
+  recipients.forEach(function (r) {
+    var kind = isBcc ? 'bcc recipient' : 'to recipient';
+    L.push('make new ' + kind + ' at end of ' + (isBcc ? 'bcc recipients' : 'to recipients') + ' with properties {address:"' + _asEsc(r) + '"}');
+  });
+  attPaths.forEach(function (p) {
+    L.push('make new attachment with properties {file name:POSIX file "' + _asEsc(p) + '"} at after the last paragraph');
+  });
+  L.push('end tell');
+  L.push('activate');
+  L.push('end tell');
+  return L.join('\n');
+}
 
 ipcMain.handle('pick-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
