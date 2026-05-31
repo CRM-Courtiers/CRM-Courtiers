@@ -276,6 +276,17 @@ ipcMain.handle('email-create-eml', async (event, args) => {
     lines.push('');
     var emlPath = path.join(app.getPath('temp'), 'TRI-ANGLE-' + Date.now().toString(36) + '.eml');
     fs.writeFileSync(emlPath, lines.join(CRLF), 'utf8');
+    // Sur Mac : forcer l'ouverture dans Microsoft Outlook précisément (pas l'app par défaut).
+    // Repli automatique sur l'app par défaut si Outlook est introuvable.
+    if (process.platform === 'darwin') {
+      var opened = await new Promise(function (resolve) {
+        require('child_process').execFile('open', ['-a', 'Microsoft Outlook', emlPath], function (err) {
+          resolve(!err);
+        });
+      });
+      if (opened) return { ok: true, attached: attached };
+      // Outlook absent → repli sur l'app de courriel par défaut
+    }
     var r = await shell.openPath(emlPath);
     return r ? { ok: false, error: r } : { ok: true, attached: attached };
   } catch (e) { return { ok: false, error: e.message }; }
