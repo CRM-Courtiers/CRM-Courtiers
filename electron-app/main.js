@@ -310,8 +310,19 @@ ipcMain.handle('email-create-eml', async (event, args) => {
   } catch (e) { return { ok: false, error: e.message }; }
 });
 
-// Échappe une chaîne pour l'insérer entre guillemets dans un script AppleScript
-function _asEsc(s) { return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/"/g, '\\"'); }
+// Échappe une chaîne pour l'insérer entre guillemets dans un script AppleScript.
+// Les vrais sauts de ligne doivent devenir la séquence littérale \n (sinon ils cassent
+// le littéral AppleScript et la mise en forme — sauts de ligne — est perdue).
+// La tabulation devient \t.
+function _asEsc(s) {
+  return String(s == null ? '' : s)
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\r\n/g, '\\n')
+    .replace(/\r/g, '\\n')
+    .replace(/\n/g, '\\n')
+    .replace(/\t/g, '\\t');
+}
 // Construit le script AppleScript pour créer un brouillon Microsoft Outlook
 function _buildOutlookScript(subject, body, recipients, isBcc, attPaths) {
   var L = [];
