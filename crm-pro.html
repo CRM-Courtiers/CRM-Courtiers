@@ -251,6 +251,31 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 
 /* ── PAGE TEMPLATES DE COURRIELS (Étape 22) ─────────── */
 .tpl-wrap{padding:24px 26px}
+/* Étape 26 — Banques courtiers / notaires */
+.bank-wrap{padding:24px 26px}
+.bank-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.bank-head h3{font-size:18px;font-weight:700;color:#0F172A;margin:0}
+.bank-sub{font-size:12px;color:#64748B;margin-bottom:18px;max-width:760px;line-height:1.5}
+.bank-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.bank-search{flex:1;min-width:200px;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:8px;font-family:inherit;font-size:13px}
+.bank-add-btn{font-size:12px;padding:9px 16px;background:#0EA5E9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:700;white-space:nowrap}
+.bank-add-btn:hover{background:#0284C7}
+.bank-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #E2E8F0;border-radius:10px;overflow:hidden}
+.bank-table th{text-align:left;font-size:10px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.06em;padding:10px 14px;background:#F8FAFC;border-bottom:1px solid #E2E8F0}
+.bank-table td{font-size:13px;color:#0F172A;padding:11px 14px;border-bottom:1px solid #F1F5F9}
+.bank-table tr:last-child td{border-bottom:none}
+.bank-table tr:hover td{background:#F8FAFC}
+.bank-name{font-weight:700}
+.bank-agence{font-size:11px;color:#94A3B8}
+.bank-contact{color:#0EA5E9;cursor:pointer}
+.bank-contact:hover{text-decoration:underline}
+.bank-count{display:inline-block;min-width:20px;padding:1px 8px;font-size:11px;font-weight:700;text-align:center;background:#F1F5F9;color:#475569;border-radius:10px}
+.bank-act{display:flex;gap:6px;justify-content:flex-end}
+.bank-act-btn{font-size:11px;padding:5px 10px;border:1px solid #CBD5E1;border-radius:6px;background:#fff;cursor:pointer;font-family:inherit;font-weight:600;color:#475569;white-space:nowrap}
+.bank-act-btn:hover{background:#F1F5F9}
+.bank-act-btn.del{color:#DC2626;border-color:#FECACA}
+.bank-act-btn.del:hover{background:#FEF2F2}
+.bank-empty{padding:40px 20px;text-align:center;color:#94A3B8;font-style:italic;font-size:13px;background:#F8FAFC;border:1px dashed #E2E8F0;border-radius:10px}
 .tpl-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
 .tpl-head h3{font-size:18px;font-weight:700;color:#0F172A;margin:0}
 .tpl-sub{font-size:12px;color:#64748B;margin-bottom:22px;max-width:780px;line-height:1.5}
@@ -1196,9 +1221,14 @@ body.app-readonly th .rz{pointer-events:none}
       <button class="tbtn" data-tab="ca" id="tbn-ca"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="sb-label">Autres contacts</span></button>
     </div>
     <div class="sb-section" data-color="gray">
+      <div class="sb-section-title">R&eacute;pertoires</div>
+      <button class="tbtn" data-tab="courtiers" id="tbn-courtiers"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="sb-label">Courtiers</span></button>
+      <button class="tbtn" data-tab="notaires" id="tbn-notaires"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></span><span class="sb-label">Notaires</span></button>
+    </div>
+    <div class="sb-section" data-color="gray">
       <div class="sb-section-title">Syst&egrave;me</div>
-      <button class="tbtn" data-tab="settings" id="tbn-settings"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sb-label">Param&egrave;tres</span></button>
       <button class="tbtn" data-tab="templates" id="tbn-templates"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><span class="sb-label">Templates</span></button>
+      <button class="tbtn" data-tab="settings" id="tbn-settings"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="sb-label">Param&egrave;tres</span></button>
     </div>
   </nav>
   <div class="sb-foot">v0.1 &middot; local</div>
@@ -1421,6 +1451,14 @@ body.app-readonly th .rz{pointer-events:none}
     <!-- ── PANE : Templates de courriels (Étape 22) ── -->
     <div class="pane" id="pane-templates">
       <div class="tpl-wrap" id="tpl-wrap"></div>
+    </div>
+    <!-- ── PANE : Banque de courtiers (Étape 26) ── -->
+    <div class="pane" id="pane-courtiers">
+      <div class="bank-wrap" id="courtiers-wrap"></div>
+    </div>
+    <!-- ── PANE : Banque de notaires (Étape 26) ── -->
+    <div class="pane" id="pane-notaires">
+      <div class="bank-wrap" id="notaires-wrap"></div>
     </div>
     <!-- ── PANE : Param&egrave;tres ── -->
     <div class="pane" id="pane-settings">
@@ -1737,6 +1775,50 @@ body.app-readonly th .rz{pointer-events:none}
   </div>
 </div>
 
+<!-- ── Modal : Notaire picker (Étape 26) — choisir un notaire depuis la colonne Notaire ── -->
+<div class="tpl-modal-ov" id="not-pick-ov">
+  <div class="tpl-modal" style="width:min(540px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">⚖️ Choisir un notaire</div>
+      <button class="tpl-btn muted" onclick="closeNotairePicker()">✕</button>
+    </div>
+    <div class="tpl-modal-body">
+      <div style="margin-bottom:10px"><input type="text" id="not-pick-search" placeholder="Chercher par nom, étude ou courriel..." style="width:100%;padding:8px 10px;border:1.5px solid #CBD5E1;border-radius:6px;font-size:13px;font-family:inherit"></div>
+      <div id="not-pick-list" style="max-height:340px;overflow-y:auto"></div>
+    </div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn muted" onclick="_notaireUnassignFromRecord()" title="Retirer le notaire de cette promesse">Retirer le notaire</button>
+      <button class="tpl-btn primary" onclick="openNotaireEdit(null)">+ Nouveau notaire</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal : Notaire edit form (Étape 26) ── -->
+<div class="tpl-modal-ov" id="not-edit-ov">
+  <div class="tpl-modal" style="width:min(520px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">⚖️ <span id="not-edit-title">Nouveau notaire</span></div>
+      <button class="tpl-btn muted" onclick="closeNotaireEdit()">✕</button>
+    </div>
+    <div class="tpl-modal-body">
+      <div class="g2">
+        <div class="fg"><label>Prénom *</label><input id="not-prenom" autocomplete="off"></div>
+        <div class="fg"><label>Nom *</label><input id="not-nom" autocomplete="off"></div>
+      </div>
+      <div class="fg"><label>Étude / firme</label><input id="not-agence" placeholder="ex: Étude notariale Tremblay & Associés" autocomplete="off"></div>
+      <div class="g2">
+        <div class="fg"><label>Téléphone</label><input id="not-tel" autocomplete="off"></div>
+        <div class="fg"><label>Courriel</label><input type="email" id="not-co" autocomplete="off"></div>
+      </div>
+    </div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn muted" onclick="deleteNotaireFromEdit()" id="not-edit-delete" style="display:none;margin-right:auto;color:#DC2626">🗑 Supprimer</button>
+      <button class="tpl-btn muted" onclick="closeNotaireEdit()">Annuler</button>
+      <button class="tpl-btn primary" onclick="saveNotaire()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Modal : vente conclue → quoi faire avec les demandes (décision par lead) ── -->
 <div class="tpl-modal-ov" id="vConcluOv">
   <div class="tpl-modal" style="width:min(720px,95vw)">
@@ -1797,6 +1879,8 @@ body.app-readonly th .rz{pointer-events:none}
         <div class="tpl-ph-list">
           <span class="tpl-ph-chip" onclick="insertTplPlaceholder('{{prenom}}')" title="Prénom du client">{{prenom}}</span>
           <span class="tpl-ph-chip" onclick="insertTplPlaceholder('{{nom}}')" title="Nom du client">{{nom}}</span>
+          <span class="tpl-ph-chip" onclick="insertTplPlaceholder('{{notaire}}')" title="Nom du notaire choisi dans la colonne Notaire (promesses)">{{notaire}}</span>
+          <span class="tpl-ph-chip" onclick="insertTplPlaceholder('{{date_notaire}}')" title="Date/heure du rendez-vous notaire (colonne Notaire des promesses)">{{date_notaire}}</span>
         </div>
       </div>
       <div class="tpl-fg"><label>Corps du courriel</label><textarea id="tpl-f-body" placeholder="Bonjour {{prenom}},&#10;&#10;..."></textarea></div>
@@ -2038,6 +2122,7 @@ db.templates = []; // Étape 22 : templates de courriels par section ({id, secti
 db.signature = {body:""}; // Étape 22 : signature courriel (texte + image data URL), appliquée à tous les envois
 db.courtiers = []; // Étape 24 : master list courtiers inscripteurs ({id, prenom, nom, agence, telephone, courriel, lastModified}) — référencée par db.pa[i].courtierId
 db.refs = []; // Étape 24 : références (Sophie réfère un client à un collègue → touche une commission %). {id, prenom, nom, telephone, courriel, adresse, courtierId, dateReference, dateConclusion, montantTransaction, commissionCollegue, pctReference, commissionSophie, notes, statut, lastModified}
+db.notaires = []; // Étape 26 : master list notaires ({id, prenom, nom, agence, telephone, courriel, lastModified}) — référencée par db.pa[i].notaireId
 var ctab = "cp", eid = null;
 var THR = {cp:14, vp:14, a:20};
 var SEARCH = {};
@@ -2116,6 +2201,12 @@ async function writeAutoSave(){
     try{
       var payload={version:1,savedAt:new Date().toISOString()};
       TABS.forEach(function(t){payload[t]=db[t];});
+      payload.demandes=db.demandes||[];
+      payload.templates=db.templates||[];
+      payload.signature=db.signature||{body:""};
+      payload.courtiers=db.courtiers||[];
+      payload.refs=db.refs||[];
+      payload.notaires=db.notaires||[];
       payload.thresholds=THR;
       var res=await window.electronAPI.saveJSON(JSON.stringify(payload,null,2));
       if(res.ok)showSaveStatus("\u2705 Sauvegard\u00e9 automatiquement \u00e0 "+res.time);
@@ -2132,6 +2223,7 @@ async function writeAutoSave(){
     payload.signature=db.signature||{body:""};
     payload.courtiers=db.courtiers||[];
     payload.refs=db.refs||[];
+    payload.notaires=db.notaires||[];
     payload.thresholds=THR;
     var fh=await _autoDir.getFileHandle("CRM-Pro-autosauve.json",{create:true});
     var wr=await fh.createWritable();await wr.write(JSON.stringify(payload,null,2));await wr.close();
@@ -2215,6 +2307,10 @@ async function autoImportFromFile(){
       if(!db.refs)db.refs=[];
       mergeArray(db.refs,imported.refs);
     }
+    if(imported.notaires&&Array.isArray(imported.notaires)){
+      if(!db.notaires)db.notaires=[];
+      mergeArray(db.notaires,imported.notaires);
+    }
     // Migration : Acheteurs sans lastModified \u2014 initialiser \u00e0 aujourd'hui
     try{var today=_todayStr();(db.a||[]).forEach(function(r){if(!r.lastModified)r.lastModified=today;});}catch(e){}
     if(added>0||updated>0){sdb();fullRender();var msg=[];if(added>0)msg.push(added+" ajout\u00e9(s)");if(updated>0)msg.push(updated+" mis \u00e0 jour");toast("\u2713 "+msg.join(", "));}
@@ -2236,6 +2332,7 @@ function ldb(){
   try{var xs=localStorage.getItem("crmpro-signature");db.signature=xs?JSON.parse(xs):{body:""};}catch(e){db.signature={body:""};}
   try{var xco=localStorage.getItem("crmpro-courtiers");db.courtiers=xco?JSON.parse(xco):[];}catch(e){db.courtiers=[];}
   try{var xrf=localStorage.getItem("crmpro-refs");db.refs=xrf?JSON.parse(xrf):[];}catch(e){db.refs=[];}
+  try{var xno=localStorage.getItem("crmpro-notaires");db.notaires=xno?JSON.parse(xno):[];}catch(e){db.notaires=[];}
   // Étape 24 — migration : ancien key 'courtiers' (v0.3.15 dev) → 'courtiers-insc'
   try{var migT=false;(db.templates||[]).forEach(function(t){if(t.section==='courtiers'){t.section='courtiers-insc';migT=true;}});if(migT)localStorage.setItem("crmpro-templates",JSON.stringify(db.templates));}catch(e){}
   try{var t=localStorage.getItem("crmprothr");if(t){var pt=JSON.parse(t);THR.cp=pt.cp||14;THR.vp=pt.vp||14;THR.a=pt.a||20;}}catch(e){}
@@ -2304,8 +2401,8 @@ function _maybeSeedExamples(){
 }
 
 var UNDO=[],UNDO_MAX=10;
-function pushUndo(label){var snap={label:label};TABS.forEach(function(t){snap[t]=JSON.parse(JSON.stringify(db[t]));});snap.demandes=JSON.parse(JSON.stringify(db.demandes||[]));snap.templates=JSON.parse(JSON.stringify(db.templates||[]));snap.signature=JSON.parse(JSON.stringify(db.signature||{body:""}));snap.courtiers=JSON.parse(JSON.stringify(db.courtiers||[]));snap.refs=JSON.parse(JSON.stringify(db.refs||[]));UNDO.push(snap);if(UNDO.length>UNDO_MAX)UNDO.shift();}
-function undo(){if(!UNDO.length){toast("Rien \u00e0 annuler");return;}var snap=UNDO.pop();TABS.forEach(function(t){db[t]=snap[t];});if(snap.demandes)db.demandes=snap.demandes;if(snap.templates)db.templates=snap.templates;if(snap.signature)db.signature=snap.signature;if(snap.courtiers)db.courtiers=snap.courtiers;if(snap.refs)db.refs=snap.refs;sdb();rall();toast("\u21a9 Annul\u00e9 : "+snap.label);}
+function pushUndo(label){var snap={label:label};TABS.forEach(function(t){snap[t]=JSON.parse(JSON.stringify(db[t]));});snap.demandes=JSON.parse(JSON.stringify(db.demandes||[]));snap.templates=JSON.parse(JSON.stringify(db.templates||[]));snap.signature=JSON.parse(JSON.stringify(db.signature||{body:""}));snap.courtiers=JSON.parse(JSON.stringify(db.courtiers||[]));snap.refs=JSON.parse(JSON.stringify(db.refs||[]));snap.notaires=JSON.parse(JSON.stringify(db.notaires||[]));UNDO.push(snap);if(UNDO.length>UNDO_MAX)UNDO.shift();}
+function undo(){if(!UNDO.length){toast("Rien \u00e0 annuler");return;}var snap=UNDO.pop();TABS.forEach(function(t){db[t]=snap[t];});if(snap.demandes)db.demandes=snap.demandes;if(snap.templates)db.templates=snap.templates;if(snap.signature)db.signature=snap.signature;if(snap.courtiers)db.courtiers=snap.courtiers;if(snap.refs)db.refs=snap.refs;if(snap.notaires)db.notaires=snap.notaires;sdb();rall();toast("\u21a9 Annul\u00e9 : "+snap.label);}
 document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="z"&&!e.target.matches("input,textarea,select")){e.preventDefault();undo();}});
 
 function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
@@ -2319,6 +2416,7 @@ function sdb(){
   try{localStorage.setItem("crmpro-signature",JSON.stringify(db.signature||{body:""}));}catch(e){ok=false;}
   try{localStorage.setItem("crmpro-courtiers",JSON.stringify(db.courtiers||[]));}catch(e){ok=false;}
   try{localStorage.setItem("crmpro-refs",JSON.stringify(db.refs||[]));}catch(e){ok=false;}
+  try{localStorage.setItem("crmpro-notaires",JSON.stringify(db.notaires||[]));}catch(e){ok=false;}
   if(!ok)toast("\u26a0 Stockage plein! Exportez vos donn\u00e9es imm\u00e9diatement.");
   _dbDirty=true;scheduleAutoSave();
 }
@@ -2814,7 +2912,15 @@ function renderTab(tab){
       } else if(col.t==="bool"){
         h+=etd(col,tab,rec.id,chk(rec[col.f]));
       } else if(col.t==="cond"){
-        h+=etd(col,tab,rec.id,condCell(rec[col.f]));
+        // Étape 26 — colonne Notaire : affiche la date/heure ET le nom du notaire choisi en dessous
+        if(col.f==="notaire"){
+          var notH=condCell(rec[col.f]);
+          var notObj=rec.notaireId?_notaireById(rec.notaireId):null;
+          if(notObj)notH+='<br><span style="font-size:10px;color:#0EA5E9;font-weight:600">⚖️ '+esc(_notaireFullName(notObj))+'</span>';
+          h+=etd(col,tab,rec.id,notH);
+        } else {
+          h+=etd(col,tab,rec.id,condCell(rec[col.f]));
+        }
       } else if(col.f==="courriel"){
         h+=etd(col,tab,rec.id,fmEmail(rec[col.f]),' emc');
       } else if(col.t==="centris"){
@@ -4963,6 +5069,176 @@ document.getElementById('cou-edit-ov').addEventListener('click',function(e){if(e
 // Recherche live dans le picker
 document.getElementById('cou-pick-search').addEventListener('input',function(){_renderCourtierPickList(this.value);});
 
+// ═══ Étape 26 — Banques Courtiers + Notaires (onglets dédiés) ═══════════════
+function _notaireById(id){if(!id)return null;for(var i=0;i<(db.notaires||[]).length;i++){if(db.notaires[i].id===id)return db.notaires[i];}return null;}
+function _notaireFullName(n){if(!n)return'';return((n.prenom||'')+' '+(n.nom||'')).trim()||'(sans nom)';}
+function _courtierUsageCount(id){var n=0;(db.pa||[]).forEach(function(p){if(p.courtierId===id)n++;});(db.demandes||[]).forEach(function(d){if(d.courtierId===id)n++;});(db.refs||[]).forEach(function(r){if(r.courtierId===id)n++;});return n;}
+function _notaireUsageCount(id){var n=0;(db.pa||[]).forEach(function(p){if(p.notaireId===id)n++;});return n;}
+var _bankSearch={courtiers:'',notaires:''};
+function renderBank(kind){
+  var isNot=(kind==='notaires');
+  var arr=(isNot?db.notaires:db.courtiers)||[];
+  var fullName=isNot?_notaireFullName:_courtierFullName;
+  var usage=isNot?_notaireUsageCount:_courtierUsageCount;
+  var wrap=document.getElementById(kind+'-wrap');if(!wrap)return;
+  var title=isNot?'Notaires':'Courtiers';
+  var icon=isNot?'⚖️':'🤝';
+  var sub=isNot
+    ? "Ta banque de notaires. Réutilisable partout où tu planifies un rendez-vous notaire (colonne Notaire des promesses)."
+    : "Ta banque de courtiers (inscripteurs et collaborateurs). Réutilisable dans les promesses, demandes et références.";
+  var f=norm(_bankSearch[kind]||'');
+  var list=arr.slice().sort(function(a,b){return fullName(a).localeCompare(fullName(b),'fr');});
+  if(f)list=list.filter(function(c){return norm(fullName(c)+' '+(c.agence||'')+' '+(c.courriel||'')+' '+(c.telephone||'')).indexOf(f)!==-1;});
+  var h=[];
+  h.push('<div class="bank-head"><h3>'+icon+' '+title+' <span style="font-size:13px;color:#94A3B8;font-weight:500">('+arr.length+')</span></h3></div>');
+  h.push('<div class="bank-sub">'+sub+'</div>');
+  h.push('<div class="bank-toolbar"><input class="bank-search" id="bank-search-'+kind+'" placeholder="Rechercher par nom, agence, courriel..." value="'+esc(_bankSearch[kind]||'')+'"><button class="bank-add-btn" onclick="'+(isNot?'openNotaireEdit(null)':'openCourtierEdit(null)')+'">+ Nouveau '+(isNot?'notaire':'courtier')+'</button></div>');
+  if(!list.length){
+    h.push('<div class="bank-empty">'+(_bankSearch[kind]?'Aucun résultat pour « '+esc(_bankSearch[kind])+' ».':'Aucun '+(isNot?'notaire':'courtier')+' enregistré.<br>Clique « + Nouveau » pour en ajouter.')+'</div>');
+    wrap.innerHTML=h.join('');_bankBindSearch(kind);return;
+  }
+  var agenceLbl=isNot?'Étude':'Agence';
+  h.push('<table class="bank-table"><thead><tr><th>Nom</th><th>'+agenceLbl+'</th><th>Téléphone</th><th>Courriel</th><th style="text-align:center">Dossiers</th><th></th></tr></thead><tbody>');
+  list.forEach(function(c){
+    var telSafe=esc(c.telephone||'').replace(/[^0-9+]/g,'');
+    var coSafe=esc(c.courriel||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    var cnt=usage(c.id);
+    var editFn=isNot?'openNotaireEdit':'openCourtierEdit';
+    var delFn=isNot?'deleteNotaireDirect':'deleteCourtierDirect';
+    h.push('<tr>'
+      +'<td><span class="bank-name">'+esc(fullName(c))+'</span></td>'
+      +'<td><span class="bank-agence">'+esc(c.agence||'—')+'</span></td>'
+      +'<td>'+(c.telephone?'<span class="bank-contact" onclick="_courtierCallPhone(\''+telSafe+'\')">'+esc(c.telephone)+'</span>':'<span style="color:#CBD5E1">—</span>')+'</td>'
+      +'<td>'+(c.courriel?'<span class="bank-contact" onclick="navigator.clipboard.writeText(\''+coSafe+'\');toast(\'✓ Courriel copié\')" title="Copier">'+esc(c.courriel)+'</span>':'<span style="color:#CBD5E1">—</span>')+'</td>'
+      +'<td style="text-align:center"><span class="bank-count">'+cnt+'</span></td>'
+      +'<td><div class="bank-act"><button class="bank-act-btn" onclick="'+editFn+'(\''+c.id+'\')">✎ Modifier</button><button class="bank-act-btn del" onclick="'+delFn+'(\''+c.id+'\')">🗑</button></div></td>'
+      +'</tr>');
+  });
+  h.push('</tbody></table>');
+  wrap.innerHTML=h.join('');
+  _bankBindSearch(kind);
+}
+function _bankBindSearch(kind){
+  var inp=document.getElementById('bank-search-'+kind);if(!inp)return;
+  inp.addEventListener('input',function(){_bankSearch[kind]=this.value;var pos=this.selectionStart;renderBank(kind);var ni=document.getElementById('bank-search-'+kind);if(ni){ni.focus();try{ni.setSelectionRange(pos,pos);}catch(e){}}});
+}
+function deleteCourtierDirect(id){
+  var c=_courtierById(id);if(!c)return;
+  var used=_courtierUsageCount(id);
+  var msg='Supprimer '+_courtierFullName(c)+' ?';
+  if(used>0)msg+='\n\n⚠ '+used+' dossier(s) référence(nt) ce courtier — leur champ "Courtier" sera vidé.';
+  if(!confirm(msg))return;
+  pushUndo('Suppr courtier');
+  (db.pa||[]).forEach(function(p){if(p.courtierId===id)p.courtierId='';});
+  (db.demandes||[]).forEach(function(d){if(d.courtierId===id)d.courtierId='';});
+  (db.refs||[]).forEach(function(r){if(r.courtierId===id)r.courtierId='';});
+  db.courtiers=db.courtiers.filter(function(x){return x.id!==id;});
+  sdb();rall();renderBank('courtiers');toast('✓ Courtier supprimé');
+}
+function deleteNotaireDirect(id){
+  var n=_notaireById(id);if(!n)return;
+  var used=_notaireUsageCount(id);
+  var msg='Supprimer '+_notaireFullName(n)+' ?';
+  if(used>0)msg+='\n\n⚠ '+used+' promesse(s) référence(nt) ce notaire — leur notaire sera retiré (les dates restent).';
+  if(!confirm(msg))return;
+  pushUndo('Suppr notaire');
+  (db.pa||[]).forEach(function(p){if(p.notaireId===id)p.notaireId='';});
+  db.notaires=db.notaires.filter(function(x){return x.id!==id;});
+  sdb();rall();renderBank('notaires');toast('✓ Notaire supprimé');
+}
+var _notaireEditingId=null;
+function openNotaireEdit(notaireId){
+  _notaireEditingId=notaireId||null;
+  var n=notaireId?_notaireById(notaireId):null;
+  document.getElementById('not-edit-title').textContent=n?'Modifier '+_notaireFullName(n):'Nouveau notaire';
+  document.getElementById('not-prenom').value=n?(n.prenom||''):'';
+  document.getElementById('not-nom').value=n?(n.nom||''):'';
+  document.getElementById('not-agence').value=n?(n.agence||''):'';
+  document.getElementById('not-tel').value=n?(n.telephone||''):'';
+  document.getElementById('not-co').value=n?(n.courriel||''):'';
+  document.getElementById('not-edit-delete').style.display=n?'inline-block':'none';
+  document.getElementById('not-edit-ov').classList.add('on');
+  setTimeout(function(){var p=document.getElementById('not-prenom');if(p)p.focus();},50);
+}
+function closeNotaireEdit(){var ov=document.getElementById('not-edit-ov');if(ov)ov.classList.remove('on');_notaireEditingId=null;}
+function saveNotaire(){
+  var prenom=(document.getElementById('not-prenom').value||'').trim();
+  var nom=(document.getElementById('not-nom').value||'').trim();
+  if(!prenom||!nom){alert('Le prénom et le nom sont requis.');return;}
+  var agence=(document.getElementById('not-agence').value||'').trim();
+  var tel=(document.getElementById('not-tel').value||'').trim();
+  var co=(document.getElementById('not-co').value||'').trim();
+  pushUndo(_notaireEditingId?'Modif notaire':'Ajout notaire');
+  if(!db.notaires)db.notaires=[];
+  var now=_todayStr();var assignId=null;
+  if(_notaireEditingId){
+    var n=_notaireById(_notaireEditingId);
+    if(!n){toast('⚠ Notaire introuvable');closeNotaireEdit();return;}
+    n.prenom=prenom;n.nom=nom;n.agence=agence;n.telephone=tel;n.courriel=co;n.lastModified=now;
+    toast('✓ Notaire mis à jour');
+  } else {
+    var nn={id:newId(),prenom:prenom,nom:nom,agence:agence,telephone:tel,courriel:co,lastModified:now};
+    db.notaires.push(nn);assignId=nn.id;
+    toast('✓ Notaire ajouté');
+  }
+  closeNotaireEdit();sdb();rall();
+  if(document.getElementById('pane-notaires').classList.contains('on'))renderBank('notaires');
+  if(assignId&&_notairePickCtx){_notaireAssignToRecord(assignId);}
+}
+function deleteNotaireFromEdit(){if(!_notaireEditingId)return;var id=_notaireEditingId;closeNotaireEdit();deleteNotaireDirect(id);}
+var _notairePickCtx=null;
+function openNotairePicker(tab,recId){
+  _notairePickCtx={tab:tab,recId:recId};
+  var ov=document.getElementById('not-pick-ov');if(!ov)return;
+  document.getElementById('not-pick-search').value='';
+  _renderNotairePickList('');
+  ov.classList.add('on');
+  setTimeout(function(){var s=document.getElementById('not-pick-search');if(s)s.focus();},50);
+}
+function closeNotairePicker(){var ov=document.getElementById('not-pick-ov');if(ov)ov.classList.remove('on');}
+function _renderNotairePickList(filter){
+  var lst=document.getElementById('not-pick-list');if(!lst)return;
+  var f=norm(filter||'');
+  var all=(db.notaires||[]).slice().sort(function(a,b){return _notaireFullName(a).localeCompare(_notaireFullName(b),'fr');});
+  if(f)all=all.filter(function(n){return norm(_notaireFullName(n)+' '+(n.agence||'')+' '+(n.courriel||'')).indexOf(f)!==-1;});
+  if(all.length===0){
+    lst.innerHTML='<div style="padding:18px;text-align:center;color:#94A3B8;font-style:italic;font-size:12px;background:#F8FAFC;border:1px dashed #E2E8F0;border-radius:8px">'+(filter?'Aucun notaire trouvé.':'Aucun notaire enregistré.')+'<br><a href="javascript:void(0)" onclick="openNotaireEdit(null)" style="color:#0EA5E9;font-weight:700">+ Créer un notaire</a></div>';
+    return;
+  }
+  var html=['<div class="tpl-list">'];
+  all.forEach(function(n){
+    html.push('<div class="tpl-row" onclick="_notaireAssignToRecord(\''+n.id+'\')">'
+      +'<div class="tpl-row-main"><div class="tpl-row-name">'+esc(_notaireFullName(n))+(n.agence?' <span style="color:#94A3B8;font-weight:400;font-size:11px">· '+esc(n.agence)+'</span>':'')+'</div>'
+      +'<div class="tpl-row-subject">'+esc(n.courriel||'')+(n.telephone?' · '+esc(n.telephone):'')+'</div></div>'
+      +'<div class="tpl-row-actions"><button class="tpl-btn primary">Choisir</button></div></div>');
+  });
+  html.push('</div>');
+  lst.innerHTML=html.join('');
+}
+function _notaireAssignToRecord(notaireId){
+  if(!_notairePickCtx)return;
+  var tab=_storeTab(_notairePickCtx.tab);
+  var rec=null;for(var i=0;i<(db[tab]||[]).length;i++){if(db[tab][i].id===_notairePickCtx.recId){rec=db[tab][i];break;}}
+  if(!rec){toast('⚠ Fiche introuvable');closeNotairePicker();return;}
+  pushUndo('Assignation notaire');
+  rec.notaireId=notaireId;
+  sdb();closeNotairePicker();rall();
+  var n=_notaireById(notaireId);
+  toast('✓ '+(n?_notaireFullName(n):'Notaire')+' assigné');
+}
+function _notaireUnassignFromRecord(){
+  if(!_notairePickCtx)return;
+  var tab=_storeTab(_notairePickCtx.tab);
+  var rec=null;for(var i=0;i<(db[tab]||[]).length;i++){if(db[tab][i].id===_notairePickCtx.recId){rec=db[tab][i];break;}}
+  if(rec){pushUndo('Retrait notaire');rec.notaireId='';sdb();rall();}
+  closeNotairePicker();
+}
+(function(){
+  var ps=document.getElementById('not-pick-search');if(ps)ps.addEventListener('input',function(){_renderNotairePickList(this.value);});
+  ['not-pick-ov','not-edit-ov'].forEach(function(idv){var ov=document.getElementById(idv);if(ov)ov.addEventListener('click',function(e){if(e.target===this){if(idv==='not-pick-ov')closeNotairePicker();else closeNotaireEdit();}});});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){var p=document.getElementById('not-pick-ov'),ed=document.getElementById('not-edit-ov');if(p&&p.classList.contains('on'))closeNotairePicker();if(ed&&ed.classList.contains('on'))closeNotaireEdit();}});
+})();
+
 function _getMailProvider(){try{return localStorage.getItem('crmpro-mail-provider')||'system';}catch(e){return 'system';}}
 function _mailProviderLabel(v){return v==='gmail'?'Gmail web':v==='outlook-web'?'Outlook web':v==='outlook-desktop'?'Outlook desktop':v==='apple-mail'?'Apple Mail':'App par défaut';}
 // Mappe le provider vers l'app à forcer côté Electron (.eml). null = app par défaut du système.
@@ -5564,7 +5840,7 @@ function _updateBmailVisibility(tab){
 }
 
 // Substitution des placeholders {{prenom}} et {{nom}} dans un texte (+ {{cou_prenom}}, {{cou_nom}}, {{cou_agence}} si courtier fourni)
-function _substituteTplVars(text,prenom,nom,courtier){
+function _substituteTplVars(text,prenom,nom,courtier,extra){
   if(!text)return '';
   var out=String(text)
     .replace(/\{\{\s*prenom\s*\}\}/gi,prenom||'')
@@ -5578,7 +5854,25 @@ function _substituteTplVars(text,prenom,nom,courtier){
     // Vider les placeholders courtier non substitués
     out=out.replace(/\{\{\s*cou_(prenom|nom|agence)\s*\}\}/gi,'');
   }
+  // Étape 26 — tags Notaire : {{notaire}} (nom) + {{date_notaire}} (date/heure du RDV, issue de la colonne Notaire)
+  extra=extra||{};
+  out=out
+    .replace(/\{\{\s*notaire\s*\}\}/gi,extra.notaire||'')
+    .replace(/\{\{\s*date_notaire\s*\}\}/gi,extra.dateNotaire||'');
   return out;
+}
+// Construit l'objet extra (notaire + date_notaire) à partir d'un record (promesse)
+function _tplExtraFromRec(rec){
+  if(!rec)return {};
+  var ex={};
+  if(rec.notaireId){var n=_notaireById(rec.notaireId);if(n)ex.notaire=_notaireFullName(n);}
+  // Date du RDV notaire : champ cond "notaire" (date ISO, ou 'done'/true = pas une date)
+  var dv=rec.notaire;
+  if(dv&&dv!==true&&dv!=='done'){
+    var dOnly=_dateOnly(dv),t=_timeOnly(dv);
+    ex.dateNotaire=fd(dv)+(t?(' à '+t):'');
+  }
+  return ex;
 }
 
 function sendMailFromTemplate(tplId){
@@ -5633,11 +5927,12 @@ function sendMailFromTemplate(tplId){
   // Si la PA a un courtierId associé, le passer comme contexte (permet les placeholders {{cou_*}} dans les templates pa)
   var courtierCtx=null;
   if(rec&&rec.courtierId)courtierCtx=_courtierById(rec.courtierId);
-  var subject=_substituteTplVars(tpl.subject,prenom,nom,courtierCtx);
-  var body=_substituteTplVars(tpl.body,prenom,nom,courtierCtx);
+  var extraCtx=_tplExtraFromRec(rec);
+  var subject=_substituteTplVars(tpl.subject,prenom,nom,courtierCtx,extraCtx);
+  var body=_substituteTplVars(tpl.body,prenom,nom,courtierCtx,extraCtx);
   // Étape 22 — append signature (texte seul, l'image n'est pas supportée par mailto:)
   var sigBody=(db.signature&&db.signature.body)?db.signature.body:'';
-  if(sigBody)body=body+'\n\n'+_substituteTplVars(sigBody,prenom,nom,courtierCtx);
+  if(sigBody)body=body+'\n\n'+_substituteTplVars(sigBody,prenom,nom,courtierCtx,extraCtx);
   var attsS=_pjMailAttachmentsFor(tpl.id);
   if(attsS.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
     window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subject,body:body,attachments:attsS,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
@@ -6582,13 +6877,22 @@ function ie(td){
     var saveDate=document.createElement('button');saveDate.className='cond-menu-item';saveDate.innerHTML='&#128197; Enregistrer';
     saveDate.onclick=function(ev){ev.stopPropagation();_saveDateAndClose();};
     menu.appendChild(saveDate);
+    // Étape 26 — pour la colonne Notaire : bouton pour choisir/voir le notaire de la banque
+    if(field==='notaire'){
+      menu.appendChild(Object.assign(document.createElement('div'),{className:'cond-menu-sep'}));
+      var notBtn=document.createElement('button');notBtn.className='cond-menu-item';
+      var _curNot=rec.notaireId?_notaireById(rec.notaireId):null;
+      notBtn.innerHTML='&#9878;&#65039; '+(_curNot?'Notaire : '+esc(_notaireFullName(_curNot)):'Choisir le notaire');
+      notBtn.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);openNotairePicker(tab,id);};
+      menu.appendChild(notBtn);
+    }
     menu.appendChild(Object.assign(document.createElement('div'),{className:'cond-menu-sep'}));
     var markDone=document.createElement('button');markDone.className='cond-menu-item cm-done';markDone.innerHTML='&#10003; Fait';
     markDone.onclick=function(ev){ev.stopPropagation();pushUndo('Fait '+field);var ov=val;rec[field]='done';_touchAch();sdb();rall();try{syncCalendarField(rec,tab,field,ov,'done');}catch(e){}};
     menu.appendChild(markDone);
     menu.appendChild(Object.assign(document.createElement('div'),{className:'cond-menu-sep'}));
     var clearBtn=document.createElement('button');clearBtn.className='cond-menu-item cm-clear';clearBtn.innerHTML='&#10005; Vider';
-    clearBtn.onclick=function(ev){ev.stopPropagation();pushUndo('Vider '+field);var ov=val;rec[field]='';_touchAch();sdb();rall();try{syncCalendarField(rec,tab,field,ov,'');}catch(e){}};
+    clearBtn.onclick=function(ev){ev.stopPropagation();pushUndo('Vider '+field);var ov=val;rec[field]='';if(field==='notaire')rec.notaireId='';_touchAch();sdb();rall();try{syncCalendarField(rec,tab,field,ov,'');}catch(e){}};
     menu.appendChild(clearBtn);
     var rect=td.getBoundingClientRect();
     menu.style.left=rect.left+'px';
@@ -6830,6 +7134,9 @@ function exportData(){
   payload.demandes=db.demandes||[];
   payload.templates=db.templates||[];
   payload.signature=db.signature||{body:""};
+  payload.courtiers=db.courtiers||[];
+  payload.refs=db.refs||[];
+  payload.notaires=db.notaires||[];
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
   var url=URL.createObjectURL(blob);var a=document.createElement("a");
   var ds=new Date().toISOString().slice(0,10);
@@ -6946,7 +7253,7 @@ function checkExportWarning(){try{var last=localStorage.getItem("sc-lastexport")
 function dismissExportWarn(){var warn=document.getElementById("exportWarn");if(warn)warn.style.display='none';try{localStorage.setItem("sc-lastexport",Date.now().toString());}catch(e){}}
 
 // ─── Tabs ────────────────────────────────────────────────────
-var CARD_TITLES={cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Promesses reçues",templates:"Templates de courriels",rea:"Références actives",rec:"Références conclues"};
+var CARD_TITLES={cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Promesses reçues",templates:"Templates de courriels",rea:"Références actives",rec:"Références conclues",courtiers:"Banque de courtiers",notaires:"Banque de notaires"};
 function setCardTitle(tab){var el=document.getElementById("cardTitle");if(el)el.textContent=CARD_TITLES[tab]||"";_updateBmailVisibility(tab);}
 document.getElementById("tbar").addEventListener("click",function(e){
   var btn=e.target.closest(".tbtn");if(!btn)return;
@@ -6959,6 +7266,8 @@ document.getElementById("tbar").addEventListener("click",function(e){
   card.classList.remove("settings-mode","accueil-mode","pancartes-mode","calendar-mode","dashboard-mode","demandes-mode","paev-mode","templates-mode");
   if(tab==="settings"){card.classList.add("settings-mode");var mps=document.getElementById('mailProviderSelect');if(mps)mps.value=_getMailProvider();var adt=document.getElementById('antidupToggle');if(adt)adt.checked=_isAntidupEnabled();_initSettingsTabs();smsRefreshStatus();outlookRefreshStatus();return;}
   if(tab==="templates"){card.classList.add("templates-mode");renderTemplates();return;}
+  if(tab==="courtiers"){card.classList.add("templates-mode");renderBank('courtiers');return;}
+  if(tab==="notaires"){card.classList.add("templates-mode");renderBank('notaires');return;}
   if(tab==="accueil"){card.classList.add("accueil-mode");renderAccueil();return;}
   if(tab==="pancartes"){card.classList.add("pancartes-mode");renderPancartes();return;}
   if(tab==="calendar"){card.classList.add("calendar-mode");renderCalendar();return;}
