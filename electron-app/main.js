@@ -321,6 +321,7 @@ function _asEsc(s) {
 // Construit une EXPRESSION AppleScript pour un texte multi-ligne (corps du courriel).
 // AppleScript n'a pas de \n dans les littéraux : on découpe par ligne et on concatène
 // avec le mot-clé `linefeed` → "ligne1" & linefeed & "ligne2" & linefeed & ...
+// (utilisé pour Apple Mail, dont le corps est en texte brut)
 function _asLit(s) {
   s = String(s == null ? '' : s).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   if (s === '') return '""';
@@ -328,11 +329,23 @@ function _asLit(s) {
     return '"' + line.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
   }).join(' & linefeed & ');
 }
+// Outlook Mac compose en HTML → les sauts de ligne texte sont écrasés. On envoie donc
+// le corps en HTML avec des <br> (et <br><br> pour les lignes vides). Retourne un
+// littéral AppleScript mono-ligne (plus aucun vrai saut de ligne dedans).
+function _asHtmlLit(s) {
+  s = String(s == null ? '' : s).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  var html = s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
+  return '"' + html.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+}
 // Construit le script AppleScript pour créer un brouillon Microsoft Outlook
 function _buildOutlookScript(subject, body, recipients, isBcc, attPaths) {
   var L = [];
   L.push('tell application "Microsoft Outlook"');
-  L.push('set newMsg to make new outgoing message with properties {subject:"' + _asEsc(subject) + '", plain text content:' + _asLit(body) + '}');
+  L.push('set newMsg to make new outgoing message with properties {subject:"' + _asEsc(subject) + '", content:' + _asHtmlLit(body) + '}');
   recipients.forEach(function (r) {
     var kind = isBcc ? 'bcc recipient' : 'to recipient';
     L.push('make new ' + kind + ' at newMsg with properties {email address:{address:"' + _asEsc(r) + '"}}');
