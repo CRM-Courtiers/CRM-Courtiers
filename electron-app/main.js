@@ -132,6 +132,155 @@ ipcMain.handle('get-autosave-path', async () => {
   return AUTOSAVE_PATH;
 });
 
+// ─── IPC : Pièces jointes (Étape 25) ────────────────────────
+// Les fichiers vivent dans <dossier de sauvegarde>/PiecesJointes/<propertyId>/
+// → synchronisés par Dropbox/OneDrive en même temps que la sauvegarde JSON.
+function _attachBaseDir() { return path.join(AUTOSAVE_DIR, 'PiecesJointes'); }
+function _attachPropDir(propertyId) {
+  var safeId = String(propertyId || '').replace(/[^a-zA-Z0-9_-]/g, '_') || 'sans-id';
+  return path.join(_attachBaseDir(), safeId);
+}
+function _safeFileName(n) { return String(n || '').replace(/[\\/:*?"<>|]/g, '_'); }
+
+// Migration auto du dossier PiecesJointes quand l'utilisateur change de dossier de sauvegarde.
+// Déplace <ancien>/PiecesJointes → <nouveau>/PiecesJointes (gère le cross-disque via copie + suppression).
+function _migrateAttachments(oldDir, newDir) {
+  try {
+    if (!oldDir || !newDir || oldDir === newDir) return;
+    var src = path.join(oldDir, 'PiecesJointes');
+    var dst = path.join(newDir, 'PiecesJointes');
+    if (!fs.existsSync(src)) return;            // rien à migrer
+    if (path.resolve(src) === path.resolve(dst)) return;
+    if (!fs.existsSync(dst)) {
+      // Cible absente : tenter un déplacement direct (rapide), sinon copie + suppression (cross-disque)
+      try {
+        fs.renameSync(src, dst);
+        return;
+      } catch (e) {
+        fs.cpSync(src, dst, { recursive: true });
+        fs.rmSync(src, { recursive: true, force: true });
+        return;
+      }
+    }
+    // Cible déjà présente : fusionner sous-dossier par sous-dossier (ne pas écraser un dossier existant)
+    var entries = fs.readdirSync(src);
+    entries.forEach(function (name) {
+      var s = path.join(src, name);
+      var d = path.join(dst, name);
+      if (fs.existsSync(d)) return;             // garde la version déjà au nouvel emplacement
+      try { fs.renameSync(s, d); }
+      catch (e) { fs.cpSync(s, d, { recursive: true }); fs.rmSync(s, { recursive: true, force: true }); }
+    });
+    // Retirer l'ancien dossier s'il est devenu vide
+    try { if (fs.readdirSync(src).length === 0) fs.rmdirSync(src); } catch (e) {}
+  } catch (e) { /* migration best-effort : ne jamais bloquer le changement de dossier */ }
+}
+
+ipcMain.handle('attachment-save', async (event, args) => {
+  try {
+    var dir = _attachPropDir(args.propertyId);
+    fs.mkdirSync(dir, { recursive: true });
+    var safe = _safeFileName(args.fileName);
+    var full = path.join(dir, safe);
+    var buf = Buffer.from(args.base64 || '', 'base64');
+    fs.writeFileSync(full, buf);
+    return { ok: true, file: safe, size: buf.length };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+ipcMain.handle('attachment-open', async (event, args) => {
+  try {
+    var full = path.join(_attachPropDir(args.propertyId), _safeFileName(args.fileName));
+    if (!fs.existsSync(full)) return { ok: false, error: 'Fichier introuvable' };
+    var r = await shell.openPath(full);
+    return r ? { ok: false, error: r } : { ok: true };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+ipcMain.handle('attachment-delete', async (event, args) => {
+  try {
+    var full = path.join(_attachPropDir(args.propertyId), _safeFileName(args.fileName));
+    if (fs.existsSync(full)) fs.unlinkSync(full);
+    return { ok: true };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+ipcMain.handle('attachment-delete-property', async (event, args) => {
+  try {
+    var dir = _attachPropDir(args.propertyId);
+    if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+    return { ok: true };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+ipcMain.handle('attachment-open-folder', async (event, args) => {
+  try {
+    var dir = _attachPropDir(args.propertyId);
+    fs.mkdirSync(dir, { recursive: true });
+    var r = await shell.openPath(dir);
+    return r ? { ok: false, error: r } : { ok: true };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+// ─── IPC : Courriel avec PJ (.eml auto-joint, Étape 25) ─────
+// Génère un brouillon .eml (RFC822) avec X-Unsent:1 → s'ouvre dans l'app de
+// courriel par défaut (Outlook desktop / Apple Mail) prêt à envoyer, PJ jointes.
+function _encWord(s) { return '=?UTF-8?B?' + Buffer.from(String(s || ''), 'utf8').toString('base64') + '?='; }
+function _wrap76(b64) { return String(b64).replace(/(.{76})/g, '$1\r\n'); }
+function _attHdrName(name) {
+  name = String(name || 'fichier');
+  if (/^[\x20-\x7E]+$/.test(name) && name.indexOf('"') < 0 && name.indexOf('\\') < 0) return '"' + name + '"';
+  return _encWord(name);
+}
+function _mimeForName(name) {
+  var ext = (String(name).split('.').pop() || '').toLowerCase();
+  var map = { pdf:'application/pdf', png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', gif:'image/gif', webp:'image/webp',
+    doc:'application/msword', docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xls:'application/vnd.ms-excel', xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    txt:'text/plain', csv:'text/csv', zip:'application/zip' };
+  return map[ext] || 'application/octet-stream';
+}
+ipcMain.handle('email-create-eml', async (event, args) => {
+  try {
+    var CRLF = '\r\n';
+    var boundary = '=_TRIANGLE_' + Date.now().toString(36);
+    var lines = [];
+    lines.push('X-Unsent: 1');
+    if (args.to) lines.push('To: ' + args.to);
+    if (args.bcc) lines.push('Bcc: ' + args.bcc);
+    lines.push('Subject: ' + _encWord(args.subject));
+    lines.push('MIME-Version: 1.0');
+    lines.push('Content-Type: multipart/mixed; boundary="' + boundary + '"');
+    lines.push('');
+    lines.push('--' + boundary);
+    lines.push('Content-Type: text/plain; charset="UTF-8"');
+    lines.push('Content-Transfer-Encoding: base64');
+    lines.push('');
+    lines.push(_wrap76(Buffer.from(String(args.body || ''), 'utf8').toString('base64')));
+    var attached = 0;
+    (args.attachments || []).forEach(function (a) {
+      var bucket = a.bucket || args.propertyId;
+      var full = path.join(_attachPropDir(bucket), _safeFileName(a.file));
+      if (!fs.existsSync(full)) return;
+      var data = fs.readFileSync(full).toString('base64');
+      var nm = _attHdrName(a.name || a.file);
+      lines.push('--' + boundary);
+      lines.push('Content-Type: ' + _mimeForName(a.name || a.file) + '; name=' + nm);
+      lines.push('Content-Transfer-Encoding: base64');
+      lines.push('Content-Disposition: attachment; filename=' + nm);
+      lines.push('');
+      lines.push(_wrap76(data));
+      attached++;
+    });
+    lines.push('--' + boundary + '--');
+    lines.push('');
+    var emlPath = path.join(app.getPath('temp'), 'TRI-ANGLE-' + Date.now().toString(36) + '.eml');
+    fs.writeFileSync(emlPath, lines.join(CRLF), 'utf8');
+    var r = await shell.openPath(emlPath);
+    return r ? { ok: false, error: r } : { ok: true, attached: attached };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
 ipcMain.handle('pick-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: 'Choisir le dossier de sauvegarde',
@@ -140,6 +289,7 @@ ipcMain.handle('pick-folder', async () => {
   });
   if (result.canceled || !result.filePaths.length) return { ok: false };
   const dir = result.filePaths[0];
+  _migrateAttachments(AUTOSAVE_DIR, dir);
   AUTOSAVE_DIR = dir;
   AUTOSAVE_PATH = path.join(dir, 'CRM-Pro-autosauve.json');
   try { fs.writeFileSync(SETTINGS_PATH, JSON.stringify({ saveDir: dir }), 'utf8'); } catch (e) {}
@@ -197,6 +347,7 @@ ipcMain.handle('set-autosave-folder', async (event, folderPath) => {
     if (!fs.statSync(folderPath).isDirectory()) {
       return { ok: false, error: 'Le chemin n\'est pas un dossier' };
     }
+    _migrateAttachments(AUTOSAVE_DIR, folderPath);
     AUTOSAVE_DIR = folderPath;
     AUTOSAVE_PATH = path.join(folderPath, 'CRM-Pro-autosauve.json');
     try { fs.writeFileSync(SETTINGS_PATH, JSON.stringify({ saveDir: folderPath }), 'utf8'); } catch (e) {}

@@ -33,6 +33,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Étape 22 — ouvrir URL externe (mailto:, https:, etc.) via shell.openExternal
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  // Étape 25 — Pièces jointes (fichiers sur disque dans le dossier de sauvegarde)
+  attachmentSave: (propertyId, fileName, base64) => ipcRenderer.invoke('attachment-save', { propertyId, fileName, base64 }),
+  attachmentOpen: (propertyId, fileName) => ipcRenderer.invoke('attachment-open', { propertyId, fileName }),
+  attachmentDelete: (propertyId, fileName) => ipcRenderer.invoke('attachment-delete', { propertyId, fileName }),
+  attachmentDeleteProperty: (propertyId) => ipcRenderer.invoke('attachment-delete-property', { propertyId }),
+  attachmentOpenFolder: (propertyId) => ipcRenderer.invoke('attachment-open-folder', { propertyId }),
+  emailCreateEml: (payload) => ipcRenderer.invoke('email-create-eml', payload),
   // Platform/arch infos (pour adapter le comportement Mac vs Windows)
   platform: process.platform, // 'darwin' (Mac), 'win32' (Windows), 'linux'
   arch: process.arch,         // 'x64' (Intel) ou 'arm64' (Apple Silicon)

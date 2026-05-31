@@ -293,6 +293,45 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 /* Modal édition template */
 .tpl-modal-ov{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:1500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
 .tpl-modal-ov.on{display:flex}
+/* Étape 25 — Pièces jointes */
+.pj-modal{background:#fff;border-radius:14px;width:680px;max-width:94vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(2,6,23,.4)}
+.pj-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:16px 20px;border-bottom:1px solid #E2E8F0;background:linear-gradient(180deg,#F8FAFC,#fff)}
+.pj-modal-title{font-size:15px;font-weight:800;color:#0F172A;display:flex;align-items:center;gap:8px}
+.pj-modal-sub{font-size:11px;color:#64748B;font-weight:500;margin-top:3px}
+.pj-modal-body{padding:14px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:9px}
+.pj-slot{border:1px solid #E2E8F0;border-radius:10px;padding:10px 12px;transition:all .12s;background:#fff}
+.pj-slot.drag{border-color:#0F766E;background:#F0FDFA;box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+.pj-slot-top{display:flex;align-items:center;gap:8px}
+.pj-slot-label{font-size:12px;font-weight:700;color:#0F172A;flex:1;min-width:0}
+.pj-slot-empty{font-size:11px;color:#94A3B8;font-style:italic;border:1px dashed #CBD5E1;border-radius:7px;padding:9px 12px;text-align:center;cursor:pointer;margin-top:7px;transition:all .12s}
+.pj-slot-empty:hover{border-color:#0F766E;color:#0F766E;background:#F0FDFA}
+.pj-file{display:flex;align-items:center;gap:9px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:7px;padding:7px 10px;margin-top:7px}
+.pj-file-ico{font-size:16px}
+.pj-file-main{flex:1;min-width:0}
+.pj-file-name{font-size:12px;font-weight:600;color:#0F172A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.pj-file-name:hover{color:#0F766E;text-decoration:underline}
+.pj-file-meta{font-size:10px;color:#94A3B8}
+.pj-file-btn{font-size:11px;padding:4px 9px;border:1px solid #CBD5E1;border-radius:6px;background:#fff;cursor:pointer;font-family:inherit;font-weight:600;color:#475569;white-space:nowrap}
+.pj-file-btn:hover{background:#F1F5F9}
+.pj-file-btn.del{color:#DC2626;border-color:#FECACA}
+.pj-file-btn.del:hover{background:#FEF2F2}
+.pj-autres-add{font-size:11px;color:#0F766E;font-weight:700;cursor:pointer;border:1px dashed #99F6E4;border-radius:7px;padding:8px 12px;text-align:center;margin-top:7px;transition:all .12s}
+.pj-autres-add:hover{background:#F0FDFA;border-color:#0F766E}
+.pj-modal-foot{padding:12px 20px;border-top:1px solid #E2E8F0;display:flex;align-items:center;gap:10px}
+.pj-dem-badge{display:inline-block;min-width:15px;padding:0 4px;margin-left:3px;font-size:10px;font-weight:800;line-height:15px;text-align:center;background:#0F766E;color:#fff;border-radius:8px}
+/* Étape 25 — Cases à cocher PJ dans le popup d'envoi de courriel */
+.pjm-box{margin:12px 0 4px;padding:10px 12px;background:#F0FDFA;border:1px solid #99F6E4;border-radius:9px}
+.pjm-title{font-size:11px;font-weight:800;color:#0F766E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.pjm-list{display:flex;flex-direction:column;gap:3px;max-height:150px;overflow-y:auto}
+.pjm-item{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:6px;cursor:pointer;font-size:12px;background:#fff;border:1px solid #CCFBF1}
+.pjm-item:hover{border-color:#0F766E}
+.pjm-cb{width:15px;height:15px;accent-color:#0F766E;cursor:pointer;flex-shrink:0}
+.pjm-name{flex:1;min-width:0;color:#0F172A;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pjm-cat{font-size:10px;color:#64748B;background:#F1F5F9;border-radius:6px;padding:1px 7px;white-space:nowrap}
+.pjm-foot{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11px}
+.pjm-folder{color:#0F766E;font-weight:700;cursor:pointer;text-decoration:none}
+.pjm-folder:hover{text-decoration:underline}
+.pjm-hint{color:#64748B;font-size:10px;line-height:1.4;margin-top:6px}
 .tpl-modal{background:#fff;border-radius:14px;width:min(720px,95vw);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.3);overflow:hidden}
 .tpl-modal-head{padding:18px 22px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .tpl-modal-title{font-size:16px;font-weight:700;color:#0F172A;display:flex;align-items:center;gap:8px}
@@ -1625,6 +1664,7 @@ body.app-readonly th .rz{pointer-events:none}
     </div>
     <div class="tpl-modal-body">
       <div style="font-size:12px;color:#64748B;margin-bottom:10px" id="tpl-pick-dest">Destinataire : <strong>—</strong></div>
+      <div id="tpl-pick-attach" style="display:none"></div>
       <div id="tpl-pick-list"></div>
     </div>
     <div class="tpl-modal-foot">
@@ -1721,6 +1761,24 @@ body.app-readonly th .rz{pointer-events:none}
   </div>
 </div>
 
+<!-- ── Modal Pièces jointes (Étape 25) ── -->
+<div class="tpl-modal-ov" id="pj-modal-ov">
+  <div class="pj-modal">
+    <div class="pj-modal-head">
+      <div>
+        <div class="pj-modal-title">📎 <span id="pj-modal-addr">Pièces jointes</span></div>
+        <div class="pj-modal-sub" id="pj-modal-sub"></div>
+      </div>
+      <button class="tpl-btn muted" onclick="closePJModal()">✕</button>
+    </div>
+    <div class="pj-modal-body" id="pj-modal-body"></div>
+    <div class="pj-modal-foot">
+      <button class="tpl-btn muted" onclick="pjOpenFolder()" title="Ouvrir le dossier des pièces jointes dans l'explorateur">📂 Ouvrir le dossier</button>
+      <button class="tpl-btn primary" style="margin-left:auto" onclick="closePJModal()">Terminé</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Modal édition template (Étape 22) ── -->
 <div class="tpl-modal-ov" id="tpl-modal-ov">
   <div class="tpl-modal">
@@ -1739,6 +1797,10 @@ body.app-readonly th .rz{pointer-events:none}
         </div>
       </div>
       <div class="tpl-fg"><label>Corps du courriel</label><textarea id="tpl-f-body" placeholder="Bonjour {{prenom}},&#10;&#10;..."></textarea></div>
+      <div class="tpl-fg">
+        <label>📎 Pièces jointes du gabarit <span style="font-weight:400;color:#94A3B8;font-size:11px">(jointes automatiquement à chaque envoi de ce gabarit)</span></label>
+        <div id="tpl-f-attach"></div>
+      </div>
     </div>
     <div class="tpl-modal-foot">
       <button class="tpl-btn danger" id="tpl-btn-delete" onclick="deleteCurrentTemplate()" style="margin-right:auto;display:none">🗑 Supprimer</button>
@@ -3480,6 +3542,200 @@ function transferRecToRea(id){
   toast('\u21bb R\u00e9f\u00e9rence renvoy\u00e9e dans Actives');
 }
 
+// ─── Étape 25 — Pièces jointes par propriété (fichiers sur disque) ──────────
+// Métadonnées dans v.attachments ; fichiers réels gérés par Electron (IPC).
+//   v.attachments = { fiche:{name,file,size,addedAt}, ... , autres:[{...}] }
+var PJ_CATS=[
+  {key:'fiche',label:'Fiche détaillée'},
+  {key:'zonage',label:"Zonage / grille d'usage"},
+  {key:'cadastre',label:'Plan cadastral'},
+  {key:'taxesScol',label:'Taxes scolaires'},
+  {key:'taxesMun',label:'Taxes municipales'},
+  {key:'declVend',label:'Déclaration du vendeur'}
+];
+var _pjCurrentVId=null;
+function _pjCountById(vId){
+  var v=_vById(vId);if(!v||!v.attachments)return 0;
+  var n=0;PJ_CATS.forEach(function(c){if(v.attachments[c.key])n++;});
+  if(v.attachments.autres&&v.attachments.autres.length)n+=v.attachments.autres.length;
+  return n;
+}
+function _pjFmtSize(b){b=b||0;if(b<1024)return b+' o';if(b<1048576)return (b/1024).toFixed(0)+' Ko';return (b/1048576).toFixed(1)+' Mo';}
+function _pjElectronOk(){
+  if(window.electronAPI&&window.electronAPI.attachmentSave)return true;
+  toast("⚠ Pièces jointes disponibles uniquement dans l'app installée");return false;
+}
+function openPJModal(vId){
+  if(!_pjElectronOk())return;
+  var v=_vById(vId);if(!v){toast('⚠ Propriété introuvable');return;}
+  _pjCurrentVId=vId;
+  var lbl=_vPropertyLabel(v);
+  document.getElementById('pj-modal-addr').textContent=lbl.addr||'Pièces jointes';
+  document.getElementById('pj-modal-sub').textContent=(lbl.name||'')+(lbl.prix?' · '+lbl.prix:'');
+  _renderPJSlots();
+  document.getElementById('pj-modal-ov').classList.add('on');
+}
+function closePJModal(){document.getElementById('pj-modal-ov').classList.remove('on');_pjCurrentVId=null;}
+function _renderPJSlots(){
+  var v=_vById(_pjCurrentVId);if(!v)return;
+  v.attachments=v.attachments||{};
+  var body=document.getElementById('pj-modal-body');
+  var h=[];
+  PJ_CATS.forEach(function(c){
+    var f=v.attachments[c.key];
+    h.push('<div class="pj-slot" ondragover="_pjDragOver(event,this)" ondragleave="_pjDragLeave(event,this)" ondrop="_pjDrop(event,\''+c.key+'\')">');
+    h.push('<div class="pj-slot-top"><div class="pj-slot-label">'+esc(c.label)+'</div></div>');
+    if(f){
+      h.push('<div class="pj-file"><span class="pj-file-ico">📄</span>'
+        +'<div class="pj-file-main"><div class="pj-file-name" title="Ouvrir" onclick="_pjOpen(\''+c.key+'\')">'+esc(f.name)+'</div>'
+        +'<div class="pj-file-meta">'+_pjFmtSize(f.size)+' · ajouté le '+esc(f.addedAt||'')+'</div></div>'
+        +'<button class="pj-file-btn" onclick="_pjOpen(\''+c.key+'\')">Ouvrir</button>'
+        +'<button class="pj-file-btn" onclick="_pjBrowse(\''+c.key+'\')" title="Remplacer">↻</button>'
+        +'<button class="pj-file-btn del" onclick="_pjDelete(\''+c.key+'\')" title="Supprimer">🗑</button></div>');
+    } else {
+      h.push('<div class="pj-slot-empty" onclick="_pjBrowse(\''+c.key+'\')">+ Glisser un fichier ici ou cliquer pour parcourir</div>');
+    }
+    h.push('</div>');
+  });
+  var autres=v.attachments.autres||[];
+  h.push('<div class="pj-slot" ondragover="_pjDragOver(event,this)" ondragleave="_pjDragLeave(event,this)" ondrop="_pjDrop(event,\'autres\')">');
+  h.push('<div class="pj-slot-top"><div class="pj-slot-label">Autres documents'+(autres.length?' ('+autres.length+')':'')+'</div></div>');
+  autres.forEach(function(f,idx){
+    h.push('<div class="pj-file"><span class="pj-file-ico">📄</span>'
+      +'<div class="pj-file-main"><div class="pj-file-name" title="Ouvrir" onclick="_pjOpenAutre('+idx+')">'+esc(f.name)+'</div>'
+      +'<div class="pj-file-meta">'+_pjFmtSize(f.size)+' · ajouté le '+esc(f.addedAt||'')+'</div></div>'
+      +'<button class="pj-file-btn" onclick="_pjOpenAutre('+idx+')">Ouvrir</button>'
+      +'<button class="pj-file-btn del" onclick="_pjDeleteAutre('+idx+')" title="Supprimer">🗑</button></div>');
+  });
+  h.push('<div class="pj-autres-add" onclick="_pjBrowse(\'autres\')">+ Ajouter un ou plusieurs fichiers</div>');
+  h.push('</div>');
+  body.innerHTML=h.join('');
+}
+function _pjDragOver(e,el){e.preventDefault();el.classList.add('drag');}
+function _pjDragLeave(e,el){el.classList.remove('drag');}
+function _pjDrop(e,key){
+  e.preventDefault();
+  var slot=e.currentTarget;if(slot)slot.classList.remove('drag');
+  var files=e.dataTransfer&&e.dataTransfer.files;if(!files||!files.length)return;
+  if(key==='autres'){for(var i=0;i<files.length;i++)_pjAddFile(key,files[i]);}
+  else _pjAddFile(key,files[0]);
+}
+function _pjBrowse(key){
+  var inp=document.createElement('input');inp.type='file';if(key==='autres')inp.multiple=true;
+  inp.onchange=function(){var fl=inp.files;if(!fl||!fl.length)return;if(key==='autres'){for(var i=0;i<fl.length;i++)_pjAddFile(key,fl[i]);}else _pjAddFile(key,fl[0]);};
+  inp.click();
+}
+function _pjAddFile(key,file){
+  if(!file)return;
+  var vId=_pjCurrentVId;
+  var reader=new FileReader();
+  reader.onload=function(){
+    var res=String(reader.result||'');
+    var base64=res.indexOf(',')>=0?res.substring(res.indexOf(',')+1):res;
+    var stamp=(key==='autres')?(Date.now().toString(36)+'-'):'';
+    var diskName=key+'__'+stamp+file.name;
+    window.electronAPI.attachmentSave(vId,diskName,base64).then(function(r){
+      if(!r||!r.ok){toast('⚠ Échec sauvegarde PJ : '+((r&&r.error)||'inconnu'));return;}
+      var v2=_vById(vId);if(!v2)return;
+      v2.attachments=v2.attachments||{};
+      var meta={name:file.name,file:r.file,size:r.size,addedAt:_todayStr()};
+      if(key==='autres'){v2.attachments.autres=v2.attachments.autres||[];v2.attachments.autres.push(meta);}
+      else {
+        var old=v2.attachments[key];
+        if(old&&old.file&&old.file!==r.file){window.electronAPI.attachmentDelete(vId,old.file).catch(function(){});}
+        v2.attachments[key]=meta;
+      }
+      sdb();
+      if(_pjCurrentVId===vId)_renderPJSlots();
+      renderDemandes();
+      toast('📎 '+file.name+' ajouté');
+    }).catch(function(err){toast('⚠ Erreur PJ : '+err.message);});
+  };
+  reader.onerror=function(){toast('⚠ Lecture du fichier impossible');};
+  reader.readAsDataURL(file);
+}
+function _pjOpen(key){var v=_vById(_pjCurrentVId);if(!v||!v.attachments||!v.attachments[key])return;window.electronAPI.attachmentOpen(_pjCurrentVId,v.attachments[key].file).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Ouverture impossible'));});}
+function _pjOpenAutre(idx){var v=_vById(_pjCurrentVId);if(!v||!v.attachments||!v.attachments.autres||!v.attachments.autres[idx])return;window.electronAPI.attachmentOpen(_pjCurrentVId,v.attachments.autres[idx].file).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Ouverture impossible'));});}
+function _pjDelete(key){
+  var v=_vById(_pjCurrentVId);if(!v||!v.attachments||!v.attachments[key])return;
+  if(!confirm('Supprimer « '+v.attachments[key].name+' » ?'))return;
+  var vId=_pjCurrentVId,fileName=v.attachments[key].file;
+  window.electronAPI.attachmentDelete(vId,fileName).catch(function(){});
+  delete v.attachments[key];sdb();_renderPJSlots();renderDemandes();
+  toast('🗑 Pièce jointe supprimée');
+}
+function _pjDeleteAutre(idx){
+  var v=_vById(_pjCurrentVId);if(!v||!v.attachments||!v.attachments.autres||!v.attachments.autres[idx])return;
+  if(!confirm('Supprimer « '+v.attachments.autres[idx].name+' » ?'))return;
+  var vId=_pjCurrentVId,fileName=v.attachments.autres[idx].file;
+  window.electronAPI.attachmentDelete(vId,fileName).catch(function(){});
+  v.attachments.autres.splice(idx,1);sdb();_renderPJSlots();renderDemandes();
+  toast('🗑 Pièce jointe supprimée');
+}
+function pjOpenFolder(){if(!_pjCurrentVId||!window.electronAPI||!window.electronAPI.attachmentOpenFolder)return;window.electronAPI.attachmentOpenFolder(_pjCurrentVId);}
+// Suppression auto des PJ disque quand une propriété passe en Conclus
+function _pjDeletePropertyFiles(vIds){
+  if(!window.electronAPI||!window.electronAPI.attachmentDeleteProperty)return;
+  (vIds||[]).forEach(function(id){window.electronAPI.attachmentDeleteProperty(id).catch(function(){});});
+}
+// ─── Étape 25 — PJ dans le popup d'envoi de courriel ────────
+function _pjMailResolvePropertyId(ctx){
+  if(!ctx)return null;
+  if(ctx.bulk)return ctx.vId||null;
+  var sec=ctx.section,rid=ctx.recordId;
+  if(sec==='demandes'){var d=_findDemande(rid);return d?d.propertyId:null;}
+  if(sec==='pa-en-vente'){var dt=_storeTab(sec);for(var i=0;i<(db[dt]||[]).length;i++){if(db[dt][i].id===rid)return db[dt][i].propertyId;}return null;}
+  if(sec==='v')return rid;
+  return null;
+}
+function _pjMailItems(vId){
+  var v=_vById(vId);if(!v||!v.attachments)return [];
+  var items=[];
+  PJ_CATS.forEach(function(c){var f=v.attachments[c.key];if(f)items.push({file:f.file,name:f.name,label:c.label});});
+  (v.attachments.autres||[]).forEach(function(f){items.push({file:f.file,name:f.name,label:'Autre'});});
+  return items;
+}
+function _pjRenderMailAttachUI(ctx){
+  var box=document.getElementById('tpl-pick-attach');if(!box)return;
+  var vId=_pjMailResolvePropertyId(ctx);
+  if(ctx)ctx._pjVId=vId;
+  if(!vId||!window.electronAPI||!window.electronAPI.emailCreateEml){box.innerHTML='';box.style.display='none';return;}
+  var items=_pjMailItems(vId);
+  if(!items.length){box.innerHTML='';box.style.display='none';return;}
+  var h=['<div class="pjm-box"><div class="pjm-title">📎 Pièces jointes à inclure</div><div class="pjm-list">'];
+  items.forEach(function(it){
+    var fa=esc(it.file).replace(/"/g,'&quot;'),na=esc(it.name).replace(/"/g,'&quot;');
+    h.push('<label class="pjm-item"><input type="checkbox" class="pjm-cb" data-file="'+fa+'" data-name="'+na+'"><span class="pjm-name">'+esc(it.name)+'</span><span class="pjm-cat">'+esc(it.label)+'</span></label>');
+  });
+  h.push('</div>');
+  h.push('<div class="pjm-foot"><a class="pjm-folder" onclick="_pjMailOpenFolder(\''+vId+'\')">📂 Ouvrir le dossier des PJ</a></div>');
+  h.push('<div class="pjm-hint">'+"Les PJ cochées s'ouvrent jointes dans ton app de courriel (Outlook / Mail). Avec Gmail web : ouvre le dossier et glisse-les dans le courriel."+'</div>');
+  h.push('</div>');
+  box.innerHTML=h.join('');
+  box.style.display='block';
+}
+function _pjMailOpenFolder(vId){if(window.electronAPI&&window.electronAPI.attachmentOpenFolder)window.electronAPI.attachmentOpenFolder(vId);}
+function _pjGetCheckedForMail(){
+  var out=[],cbs=document.querySelectorAll('#tpl-pick-attach .pjm-cb:checked');
+  for(var i=0;i<cbs.length;i++){out.push({file:cbs[i].getAttribute('data-file'),name:cbs[i].getAttribute('data-name')});}
+  return out;
+}
+// Combine les PJ de propriété cochées (bucket = vId) + les PJ du gabarit (bucket = _tpl_<id>)
+function _pjMailAttachmentsFor(tplId){
+  var list=[];
+  var ctx=_mailPickContext;
+  if(ctx&&ctx._pjVId){_pjGetCheckedForMail().forEach(function(a){list.push({bucket:ctx._pjVId,file:a.file,name:a.name});});}
+  var tpl=tplId?_tplFind(tplId):null;
+  if(tpl&&tpl.attachments&&tpl.attachments.length){tpl.attachments.forEach(function(a){list.push({bucket:_tplBucket(tpl.id),file:a.file,name:a.name});});}
+  return list;
+}
+function _tplAttachCount(tplId){var t=_tplFind(tplId);return (t&&t.attachments)?t.attachments.length:0;}
+(function(){
+  var ov=document.getElementById('pj-modal-ov');
+  if(ov)ov.addEventListener('click',function(e){if(e.target===this)closePJModal();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){var o=document.getElementById('pj-modal-ov');if(o&&o.classList.contains('on'))closePJModal();}});
+})();
+
 function transferToConclus(fromTab,id){
   var rec=null;for(var i=0;i<db[fromTab].length;i++){if(db[fromTab][i].id===id){rec=db[fromTab][i];break;}}if(!rec)return;
   var targetTab=(fromTab==="a"||fromTab==="pa")?"ac":"vc";
@@ -3511,6 +3767,7 @@ function transferToConclus(fromTab,id){
   db[fromTab]=db[fromTab].filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
   // Tracker les vIds transferes avant filter (pour le prompt apres)
   var vIdsTransferred = (fromTab === 'v') ? toTransfer.map(function(r){return r.id;}) : [];
+  if (fromTab === 'v' && vIdsTransferred.length) { _pjDeletePropertyFiles(vIdsTransferred); }
   sdb();rall();
   toast("\u2713 "+noms.join(" + ")+" \u2192 "+(targetTab==="ac"?"Acheteurs conclus":"Vendeurs conclus"));
   if (fromTab === 'v' && vIdsTransferred.length) {
@@ -3750,6 +4007,7 @@ function renderDemandes(){
       +'</div>'
       +'<div class="dem-prop-badges">'+badges+'</div>'
       +(actives.length?'<button class="dem-btn" style="color:#0EA5E9;border-color:#BAE6FD" onclick="event.stopPropagation();openMailPickerBulkForProperty(\''+v.id+'\')" title="Envoyer un courriel à toutes les demandes actives de cette propriété">&#9993; Envoyer à tous</button>':'')
+      +'<button class="dem-btn" style="color:#0F766E;border-color:#99F6E4" onclick="event.stopPropagation();openPJModal(\''+v.id+'\')" title="Pièces jointes de la propriété (fiche, zonage, cadastre, taxes, déclaration du vendeur...)">📎 PJ'+(_pjCountById(v.id)?' <span class="pj-dem-badge">'+_pjCountById(v.id)+'</span>':'')+'</button>'
       +'<button class="dem-btn muted" onclick="event.stopPropagation();doEdit(\'v\',\''+v.id+'\')">Ouvrir fiche</button>'
       +'</div>');
     if(isExpanded){
@@ -4243,7 +4501,7 @@ function renderTemplates(){
         tpls.forEach(function(t){
           html.push('<div class="tpl-row" onclick="openTplModal(\''+t.id+'\')">'
             +'<div class="tpl-row-main">'
-            +'<div class="tpl-row-name">'+esc(t.name||'(sans nom)')+'</div>'
+            +'<div class="tpl-row-name">'+esc(t.name||'(sans nom)')+(_tplAttachCount(t.id)?' <span class="pjm-cat" style="background:#CCFBF1;color:#0F766E;margin-left:6px">📎 '+_tplAttachCount(t.id)+'</span>':'')+'</div>'
             +'<div class="tpl-row-subject">'+esc(t.subject||'(pas de sujet)')+'</div>'
             +'</div>'
             +'<div class="tpl-row-actions">'
@@ -4280,9 +4538,12 @@ function saveSigBody(v){
   sdb();
 }
 
+var _tplModalId=null; // bucket id pour les PJ du gabarit (= tpl.id existant ou id pré-généré pour un nouveau)
+function _tplBucket(id){return '_tpl_'+id;}
 function openTplModal(id,sectionKey){
   var tpl=id?_tplFind(id):null;
   _tplEditingId=id||null;
+  _tplModalId=id||newId();
   _tplEditingSection=tpl?tpl.section:sectionKey;
   var sec=_tplFindSection(_tplEditingSection);
   document.getElementById('tpl-modal-mode').textContent=id?'Modifier template':'Nouveau template';
@@ -4292,11 +4553,81 @@ function openTplModal(id,sectionKey){
   document.getElementById('tpl-f-subject').value=tpl?(tpl.subject||''):'';
   document.getElementById('tpl-f-body').value=tpl?(tpl.body||''):'';
   document.getElementById('tpl-btn-delete').style.display=id?'inline-block':'none';
+  _renderTplAttach();
   document.getElementById('tpl-modal-ov').classList.add('on');
   setTimeout(function(){document.getElementById('tpl-f-name').focus();},30);
 }
 
-function closeTplModal(){document.getElementById('tpl-modal-ov').classList.remove('on');_tplEditingId=null;_tplEditingSection=null;}
+function closeTplModal(){document.getElementById('tpl-modal-ov').classList.remove('on');_tplEditingId=null;_tplEditingSection=null;_tplModalId=null;}
+
+// ─── Étape 25 — PJ de gabarit (fichiers disque, bucket "_tpl_<id>") ──────────
+function _tplAttachList(){var t=_tplEditingId?_tplFind(_tplEditingId):null;return (t&&t.attachments)?t.attachments:[];}
+function _renderTplAttach(){
+  var box=document.getElementById('tpl-f-attach');if(!box)return;
+  if(!window.electronAPI||!window.electronAPI.attachmentSave){
+    box.innerHTML='<div style="font-size:11px;color:#94A3B8;font-style:italic;border:1px dashed #E2E8F0;border-radius:7px;padding:9px 12px">Disponible uniquement dans l\'app installée.</div>';
+    return;
+  }
+  var list=_tplAttachList();
+  var h=[];
+  list.forEach(function(f,idx){
+    h.push('<div class="pj-file"><span class="pj-file-ico">📄</span>'
+      +'<div class="pj-file-main"><div class="pj-file-name" title="Ouvrir" onclick="_tplAttOpen('+idx+')">'+esc(f.name)+'</div>'
+      +'<div class="pj-file-meta">'+_pjFmtSize(f.size)+'</div></div>'
+      +'<button class="pj-file-btn" onclick="_tplAttOpen('+idx+')">Ouvrir</button>'
+      +'<button class="pj-file-btn del" onclick="_tplAttDelete('+idx+')" title="Retirer">🗑</button></div>');
+  });
+  h.push('<div class="pj-slot-empty" onclick="_tplAttBrowse()">+ Glisser un fichier ici ou cliquer pour ajouter</div>');
+  box.innerHTML=h.join('');
+  box.ondragover=function(e){e.preventDefault();box.classList.add('drag');};
+  box.ondragleave=function(){box.classList.remove('drag');};
+  box.ondrop=function(e){e.preventDefault();box.classList.remove('drag');var fl=e.dataTransfer&&e.dataTransfer.files;if(fl){for(var i=0;i<fl.length;i++)_tplAttAdd(fl[i]);}};
+}
+// Crée l'enregistrement template si nouveau (pour avoir un id stable où rattacher les PJ)
+function _tplEnsureRecord(){
+  if(_tplEditingId)return _tplFind(_tplEditingId);
+  var name=document.getElementById('tpl-f-name').value.trim()||'(Sans nom)';
+  var subject=document.getElementById('tpl-f-subject').value.trim();
+  var body=document.getElementById('tpl-f-body').value;
+  var rec={id:_tplModalId,section:_tplEditingSection,name:name,subject:subject,body:body,attachments:[],lastModified:_todayStr()};
+  db.templates.push(rec);
+  _tplEditingId=_tplModalId;
+  document.getElementById('tpl-btn-delete').style.display='inline-block';
+  document.getElementById('tpl-modal-mode').textContent='Modifier template';
+  return rec;
+}
+function _tplAttBrowse(){
+  var inp=document.createElement('input');inp.type='file';inp.multiple=true;
+  inp.onchange=function(){var fl=inp.files;if(!fl)return;for(var i=0;i<fl.length;i++)_tplAttAdd(fl[i]);};
+  inp.click();
+}
+function _tplAttAdd(file){
+  if(!file||!window.electronAPI||!window.electronAPI.attachmentSave){toast('⚠ Disponible uniquement dans l\'app installée');return;}
+  var rec=_tplEnsureRecord();rec.attachments=rec.attachments||[];
+  var bucket=_tplBucket(rec.id);
+  var reader=new FileReader();
+  reader.onload=function(){
+    var res=String(reader.result||'');
+    var base64=res.indexOf(',')>=0?res.substring(res.indexOf(',')+1):res;
+    var diskName=(Date.now().toString(36))+'-'+file.name;
+    window.electronAPI.attachmentSave(bucket,diskName,base64).then(function(r){
+      if(!r||!r.ok){toast('⚠ Échec sauvegarde PJ : '+((r&&r.error)||'inconnu'));return;}
+      rec.attachments.push({name:file.name,file:r.file,size:r.size,addedAt:_todayStr()});
+      sdb();_renderTplAttach();renderTemplates();
+      toast('📎 '+file.name+' ajouté au gabarit');
+    }).catch(function(err){toast('⚠ Erreur PJ : '+err.message);});
+  };
+  reader.onerror=function(){toast('⚠ Lecture du fichier impossible');};
+  reader.readAsDataURL(file);
+}
+function _tplAttOpen(idx){var l=_tplAttachList();if(!l[idx])return;window.electronAPI.attachmentOpen(_tplBucket(_tplEditingId),l[idx].file).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Ouverture impossible'));});}
+function _tplAttDelete(idx){
+  var rec=_tplEditingId?_tplFind(_tplEditingId):null;if(!rec||!rec.attachments||!rec.attachments[idx])return;
+  if(!confirm('Retirer « '+rec.attachments[idx].name+' » de ce gabarit ?'))return;
+  window.electronAPI.attachmentDelete(_tplBucket(rec.id),rec.attachments[idx].file).catch(function(){});
+  rec.attachments.splice(idx,1);sdb();_renderTplAttach();renderTemplates();
+  toast('🗑 Pièce jointe retirée');
+}
 
 function insertTplPlaceholder(ph){
   var ta=document.getElementById('tpl-f-body');if(!ta)return;
@@ -4316,7 +4647,7 @@ function saveCurrentTemplate(){
     var t=_tplFind(_tplEditingId);
     if(t){t.name=name;t.subject=subject;t.body=body;t.lastModified=_todayStr();}
   } else {
-    db.templates.push({id:newId(),section:_tplEditingSection,name:name,subject:subject,body:body,lastModified:_todayStr()});
+    db.templates.push({id:_tplModalId||newId(),section:_tplEditingSection,name:name,subject:subject,body:body,attachments:[],lastModified:_todayStr()});
   }
   sdb();
   closeTplModal();
@@ -4324,10 +4655,12 @@ function saveCurrentTemplate(){
   toast('✓ Template enregistré');
 }
 
+function _tplDeleteBucketFiles(id){if(id&&window.electronAPI&&window.electronAPI.attachmentDeleteProperty)window.electronAPI.attachmentDeleteProperty(_tplBucket(id)).catch(function(){});}
 function deleteCurrentTemplate(){
   if(!_tplEditingId)return;
   if(!confirm('Supprimer définitivement ce template ?'))return;
   pushUndo('Suppression template');
+  _tplDeleteBucketFiles(_tplEditingId);
   db.templates=db.templates.filter(function(x){return x.id!==_tplEditingId;});
   sdb();
   closeTplModal();
@@ -4338,6 +4671,7 @@ function deleteCurrentTemplate(){
 function deleteTemplate(id){
   if(!confirm('Supprimer définitivement ce template ?'))return;
   pushUndo('Suppression template');
+  _tplDeleteBucketFiles(id);
   db.templates=db.templates.filter(function(x){return x.id!==id;});
   sdb();renderTemplates();updateDemandesBadges();
   toast('🗑 Template supprimé');
@@ -4375,7 +4709,7 @@ function openMailPicker(section,recordId){
     tpls.forEach(function(t){
       html.push('<div class="tpl-row" onclick="sendMailFromTemplate(\''+t.id+'\')">'
         +'<div class="tpl-row-main">'
-        +'<div class="tpl-row-name">'+esc(t.name||'(sans nom)')+'</div>'
+        +'<div class="tpl-row-name">'+esc(t.name||'(sans nom)')+(_tplAttachCount(t.id)?' <span class="pjm-cat" style="background:#CCFBF1;color:#0F766E;margin-left:6px">📎 '+_tplAttachCount(t.id)+'</span>':'')+'</div>'
         +'<div class="tpl-row-subject">'+esc(t.subject||'(pas de sujet)')+'</div>'
         +'</div>'
         +'<div class="tpl-row-actions">'
@@ -4386,6 +4720,7 @@ function openMailPicker(section,recordId){
     html.push('</div>');
     lst.innerHTML=html.join('');
   }
+  _pjRenderMailAttachUI(_mailPickContext);
   document.getElementById('tpl-pick-ov').classList.add('on');
 }
 
@@ -5166,10 +5501,10 @@ function openMailPickerBulkForProperty(vId){
   if(!emails.length){toast('⚠ Aucun courriel valide pour cette propriété');return;}
   var v=_vById(vId);
   var addr=v?(v.adresse||'(adresse à compléter)'):'(propriété supprimée)';
-  _openBulkMailPicker('demandes',emails,emails.length+' destinataire(s)','demandes pour : '+addr);
+  _openBulkMailPicker('demandes',emails,emails.length+' destinataire(s)','demandes pour : '+addr,vId);
 }
-function _openBulkMailPicker(section,emails,label,subLabel){
-  _mailPickContext={bulk:true,section:section,emails:emails,label:label,subLabel:subLabel};
+function _openBulkMailPicker(section,emails,label,subLabel,vId){
+  _mailPickContext={bulk:true,section:section,emails:emails,label:label,subLabel:subLabel,vId:vId};
   var sec=_tplFindSection(section);
   var tag=document.getElementById('tpl-pick-section');
   if(sec){tag.textContent=sec.icon+' '+sec.label;tag.style.background=sec.color;}
@@ -5183,7 +5518,7 @@ function _openBulkMailPicker(section,emails,label,subLabel){
     tpls.forEach(function(t){
       html.push('<div class="tpl-row" onclick="sendMailFromTemplate(\''+t.id+'\')">'
         +'<div class="tpl-row-main">'
-        +'<div class="tpl-row-name">'+esc(t.name||'(sans nom)')+'</div>'
+        +'<div class="tpl-row-name">'+esc(t.name||'(sans nom)')+(_tplAttachCount(t.id)?' <span class="pjm-cat" style="background:#CCFBF1;color:#0F766E;margin-left:6px">📎 '+_tplAttachCount(t.id)+'</span>':'')+'</div>'
         +'<div class="tpl-row-subject">'+esc(t.subject||'(pas de sujet)')+'</div>'
         +'</div>'
         +'<div class="tpl-row-actions"><button class="tpl-btn primary">✉ Envoyer aux '+emails.length+'</button></div>'
@@ -5192,6 +5527,7 @@ function _openBulkMailPicker(section,emails,label,subLabel){
     html.push('</div>');
     lst.innerHTML=html.join('');
   }
+  _pjRenderMailAttachUI(_mailPickContext);
   document.getElementById('tpl-pick-ov').classList.add('on');
 }
 function _updateBmailVisibility(tab){
@@ -5237,6 +5573,12 @@ function sendMailFromTemplate(tplId){
     var bodyB=_substituteTplVars(tpl.body,'','');
     var sigBodyB=(db.signature&&db.signature.body)?db.signature.body:'';
     if(sigBodyB)bodyB=bodyB+'\n\n'+_substituteTplVars(sigBodyB,'','');
+    var attsB=_pjMailAttachmentsFor(tpl.id);
+    if(attsB.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
+      window.electronAPI.emailCreateEml({bcc:ctx.emails.join(', '),subject:subjB,body:bodyB,attachments:attsB}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+      toast('✉ Brouillon créé avec '+attsB.length+' pièce(s) jointe(s)');
+      closeTplPicker();return;
+    }
     _openMailtoBulk(ctx.emails,subjB,bodyB);
     toast('✉ Envoi en BCC à '+ctx.emails.length+' destinataire(s)');
     closeTplPicker();
@@ -5250,6 +5592,12 @@ function sendMailFromTemplate(tplId){
     var bodyC=_substituteTplVars(tpl.body,couPrenom,couNom,ctx.courtier);
     var sigBodyC=(db.signature&&db.signature.body)?db.signature.body:'';
     if(sigBodyC)bodyC=bodyC+'\n\n'+_substituteTplVars(sigBodyC,couPrenom,couNom,ctx.courtier);
+    var attsC=_pjMailAttachmentsFor(tpl.id);
+    if(attsC.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
+      window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subjC,body:bodyC,attachments:attsC}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+      toast('✉ Brouillon créé avec '+attsC.length+' pièce(s) jointe(s)');
+      closeTplPicker();return;
+    }
     _openMailto(ctx.courriel,subjC,bodyC);
     closeTplPicker();
     return;
@@ -5272,6 +5620,12 @@ function sendMailFromTemplate(tplId){
   // Étape 22 — append signature (texte seul, l'image n'est pas supportée par mailto:)
   var sigBody=(db.signature&&db.signature.body)?db.signature.body:'';
   if(sigBody)body=body+'\n\n'+_substituteTplVars(sigBody,prenom,nom,courtierCtx);
+  var attsS=_pjMailAttachmentsFor(tpl.id);
+  if(attsS.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
+    window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subject,body:body,attachments:attsS}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+    toast('✉ Brouillon créé avec '+attsS.length+' pièce(s) jointe(s)');
+    closeTplPicker();return;
+  }
   if(!ctx.courriel){toast('⚠ Pas de courriel sur cette fiche — ouverture vide');}
   _openMailto(ctx.courriel,subject,body);
   closeTplPicker();
@@ -5279,6 +5633,15 @@ function sendMailFromTemplate(tplId){
 
 function sendEmptyMail(){
   if(!_mailPickContext)return;
+  var ctx=_mailPickContext;
+  var atts=_pjGetCheckedForMail();
+  if(atts.length&&ctx._pjVId&&window.electronAPI&&window.electronAPI.emailCreateEml){
+    var payload={subject:'',body:'',propertyId:ctx._pjVId,attachments:atts};
+    if(ctx.bulk)payload.bcc=(ctx.emails||[]).join(', ');else payload.to=ctx.courriel||'';
+    window.electronAPI.emailCreateEml(payload).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+    toast('✉ Brouillon créé avec '+atts.length+' pièce(s) jointe(s)');
+    closeTplPicker();return;
+  }
   _openMailto(_mailPickContext.courriel,'','');
   closeTplPicker();
 }
