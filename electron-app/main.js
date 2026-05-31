@@ -278,12 +278,33 @@ ipcMain.handle('email-create-eml', async (event, args) => {
     // Le .eml ouvre en lecture (Répondre/Transférer) dans le nouveau Outlook Mac → on crée plutôt
     // un brouillon natif avec destinataire + sujet + corps + PJ. Repli sur .eml si l'AppleScript échoue.
     if (process.platform === 'darwin' && (args.app === 'outlook' || args.app === 'applemail')) {
-      // Résoudre les chemins absolus des PJ (existantes)
+      // Résoudre les chemins absolus des PJ (existantes). Le nom de fichier sur disque contient
+      // parfois un préfixe technique anti-collision (ex. "autres__m9k3x-Fiche.pdf"). On copie donc
+      // chaque PJ dans un dossier temp SOUS SON VRAI NOM (a.name) pour qu'Outlook l'affiche correctement.
+      var attTmpDir = path.join(app.getPath('temp'), 'TRI-ANGLE-pj-' + Date.now().toString(36));
       var attPaths = [];
+      var usedNames = {};
       (args.attachments || []).forEach(function (a) {
         var bucket = a.bucket || args.propertyId;
         var full = path.join(_attachPropDir(bucket), _safeFileName(a.file));
-        if (fs.existsSync(full)) attPaths.push(full);
+        if (!fs.existsSync(full)) return;
+        var realName = _safeFileName(a.name || a.file);
+        // éviter une collision de noms dans le dossier temp (2 PJ avec le même vrai nom)
+        if (usedNames[realName]) {
+          var dot = realName.lastIndexOf('.');
+          var base = dot > 0 ? realName.slice(0, dot) : realName;
+          var ext = dot > 0 ? realName.slice(dot) : '';
+          realName = base + ' (' + usedNames[realName] + ')' + ext;
+        }
+        usedNames[_safeFileName(a.name || a.file)] = (usedNames[_safeFileName(a.name || a.file)] || 0) + 1;
+        try {
+          if (!fs.existsSync(attTmpDir)) fs.mkdirSync(attTmpDir, { recursive: true });
+          var dest = path.join(attTmpDir, realName);
+          fs.copyFileSync(full, dest);
+          attPaths.push(dest);
+        } catch (e) {
+          attPaths.push(full); // repli : au pire le préfixe reste, mais la PJ est jointe
+        }
       });
       var recipients = String(args.to || args.bcc || '').split(/[;,]/).map(function (s) { return s.trim(); }).filter(Boolean);
       var isBcc = !args.to && !!args.bcc;
