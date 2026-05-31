@@ -69,6 +69,8 @@ function createWindow() {
     height: 900,
     title: 'TRI-ANGLE — Courtage immobilier',
     icon: path.join(__dirname, 'build', 'icon.png'),
+    show: false,                 // ne pas afficher avant que la page soit prête (évite le flash)
+    backgroundColor: '#0F172A',  // fond slate sombre pendant le chargement (pas de flash blanc)
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -78,6 +80,10 @@ function createWindow() {
 
   mainWindow.loadFile(getHtmlPath());
   mainWindow.setMenuBarVisibility(false);
+  // Afficher seulement quand le rendu est prêt → plus de prévisualisation/flash transitoire
+  mainWindow.once('ready-to-show', function () {
+    mainWindow.show();
+  });
 }
 
 // ─── IPC : Auto-save ────────────────────────────────────────
