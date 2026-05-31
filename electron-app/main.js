@@ -310,24 +310,29 @@ ipcMain.handle('email-create-eml', async (event, args) => {
   } catch (e) { return { ok: false, error: e.message }; }
 });
 
-// Échappe une chaîne pour l'insérer entre guillemets dans un script AppleScript.
-// Les vrais sauts de ligne doivent devenir la séquence littérale \n (sinon ils cassent
-// le littéral AppleScript et la mise en forme — sauts de ligne — est perdue).
-// La tabulation devient \t.
+// Échappe une chaîne pour un littéral AppleScript "sur une ligne" (sujet, courriel, chemin).
+// AppleScript n'interprète PAS les séquences \n — on remplace donc tout saut de ligne par une espace.
 function _asEsc(s) {
   return String(s == null ? '' : s)
     .replace(/\\/g, '\\\\')
     .replace(/"/g, '\\"')
-    .replace(/\r\n/g, '\\n')
-    .replace(/\r/g, '\\n')
-    .replace(/\n/g, '\\n')
-    .replace(/\t/g, '\\t');
+    .replace(/[\r\n]+/g, ' ');
+}
+// Construit une EXPRESSION AppleScript pour un texte multi-ligne (corps du courriel).
+// AppleScript n'a pas de \n dans les littéraux : on découpe par ligne et on concatène
+// avec le mot-clé `linefeed` → "ligne1" & linefeed & "ligne2" & linefeed & ...
+function _asLit(s) {
+  s = String(s == null ? '' : s).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  if (s === '') return '""';
+  return s.split('\n').map(function (line) {
+    return '"' + line.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+  }).join(' & linefeed & ');
 }
 // Construit le script AppleScript pour créer un brouillon Microsoft Outlook
 function _buildOutlookScript(subject, body, recipients, isBcc, attPaths) {
   var L = [];
   L.push('tell application "Microsoft Outlook"');
-  L.push('set newMsg to make new outgoing message with properties {subject:"' + _asEsc(subject) + '", plain text content:"' + _asEsc(body) + '"}');
+  L.push('set newMsg to make new outgoing message with properties {subject:"' + _asEsc(subject) + '", plain text content:' + _asLit(body) + '}');
   recipients.forEach(function (r) {
     var kind = isBcc ? 'bcc recipient' : 'to recipient';
     L.push('make new ' + kind + ' at newMsg with properties {email address:{address:"' + _asEsc(r) + '"}}');
@@ -344,7 +349,7 @@ function _buildOutlookScript(subject, body, recipients, isBcc, attPaths) {
 function _buildAppleMailScript(subject, body, recipients, isBcc, attPaths) {
   var L = [];
   L.push('tell application "Mail"');
-  L.push('set newMsg to make new outgoing message with properties {subject:"' + _asEsc(subject) + '", content:"' + _asEsc(body) + '", visible:true}');
+  L.push('set newMsg to make new outgoing message with properties {subject:"' + _asEsc(subject) + '", content:' + _asLit(body) + ', visible:true}');
   L.push('tell newMsg');
   recipients.forEach(function (r) {
     var kind = isBcc ? 'bcc recipient' : 'to recipient';
