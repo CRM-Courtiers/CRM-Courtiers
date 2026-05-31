@@ -1500,7 +1500,9 @@ body.app-readonly th .rz{pointer-events:none}
           <div class="settings-group-desc">Quel service ouvrir quand tu cliques sur l'ic&ocirc;ne &#9993; d'une fiche client. TRI-ANGLE adaptera le format du lien selon ton choix.</div>
           <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
             <select id="mailProviderSelect" onchange="setMailProvider(this.value)" style="font-size:13px;padding:8px 12px;border:1.5px solid #CBD5E1;border-radius:7px;font-family:inherit;background:#fff;color:#0F172A;min-width:280px;cursor:pointer">
-              <option value="system">Outlook desktop ou app par d&eacute;faut (mailto:)</option>
+              <option value="system">App de courriel par d&eacute;faut (mailto:)</option>
+              <option value="outlook-desktop">Outlook desktop (forcer Outlook)</option>
+              <option value="apple-mail">Apple Mail (forcer Apple Mail &middot; Mac)</option>
               <option value="gmail">Gmail web (gmail.com)</option>
               <option value="outlook-web">Outlook web (outlook.com / 365)</option>
             </select>
