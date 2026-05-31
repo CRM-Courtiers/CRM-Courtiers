@@ -4961,7 +4961,10 @@ document.getElementById('cou-edit-ov').addEventListener('click',function(e){if(e
 document.getElementById('cou-pick-search').addEventListener('input',function(){_renderCourtierPickList(this.value);});
 
 function _getMailProvider(){try{return localStorage.getItem('crmpro-mail-provider')||'system';}catch(e){return 'system';}}
-function setMailProvider(v){try{localStorage.setItem('crmpro-mail-provider',v||'system');}catch(e){}toast('✓ Service courriel : '+(v==='gmail'?'Gmail web':v==='outlook-web'?'Outlook web':'Outlook desktop'));}
+function _mailProviderLabel(v){return v==='gmail'?'Gmail web':v==='outlook-web'?'Outlook web':v==='outlook-desktop'?'Outlook desktop':v==='apple-mail'?'Apple Mail':'App par défaut';}
+// Mappe le provider vers l'app à forcer côté Electron (.eml). null = app par défaut du système.
+function _mailAppForProvider(){var p=_getMailProvider();return p==='outlook-desktop'?'outlook':(p==='apple-mail'?'applemail':null);}
+function setMailProvider(v){try{localStorage.setItem('crmpro-mail-provider',v||'system');}catch(e){}toast('✓ Service courriel : '+_mailProviderLabel(v));}
 
 // ═══════════════════════════════════════════════════════════════
 // ─── Étape 23 : SMS Capture (route → CRM via Twilio + LLM parsing)
@@ -5431,6 +5434,12 @@ function _buildMailUrl(to,subject,body){
 }
 
 function _openMailto(to,subject,body){
+  // Provider qui force une app desktop (Outlook/Apple Mail) → passer par un brouillon .eml
+  var forceApp=_mailAppForProvider();
+  if(forceApp&&window.electronAPI&&window.electronAPI.emailCreateEml){
+    window.electronAPI.emailCreateEml({to:to||'',subject:subject,body:body,attachments:[],app:forceApp}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec ouverture courriel'));});
+    return;
+  }
   var url=_buildMailUrl(to,subject,body);
   // Electron : préférer shell.openExternal si dispo (gère mailto: + URL web)
   if(window.electronAPI&&window.electronAPI.openExternal){
@@ -5451,6 +5460,12 @@ function _buildBulkMailUrl(bccArr,subject,body){
   return 'mailto:?bcc='+bcc+'&subject='+s+'&body='+b;
 }
 function _openMailtoBulk(bccArr,subject,body){
+  // Provider qui force une app desktop (Outlook/Apple Mail) → brouillon .eml avec BCC
+  var forceAppB=_mailAppForProvider();
+  if(forceAppB&&window.electronAPI&&window.electronAPI.emailCreateEml){
+    window.electronAPI.emailCreateEml({bcc:(bccArr||[]).join(', '),subject:subject,body:body,attachments:[],app:forceAppB}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec ouverture courriel'));});
+    return;
+  }
   var url=_buildBulkMailUrl(bccArr,subject,body);
   if(url.length>8000){
     toast('⚠ '+bccArr.length+' destinataires : URL trop longue. Essaie Gmail ou Outlook web (Paramètres → Compte).');
@@ -5575,7 +5590,7 @@ function sendMailFromTemplate(tplId){
     if(sigBodyB)bodyB=bodyB+'\n\n'+_substituteTplVars(sigBodyB,'','');
     var attsB=_pjMailAttachmentsFor(tpl.id);
     if(attsB.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
-      window.electronAPI.emailCreateEml({bcc:ctx.emails.join(', '),subject:subjB,body:bodyB,attachments:attsB}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+      window.electronAPI.emailCreateEml({bcc:ctx.emails.join(', '),subject:subjB,body:bodyB,attachments:attsB,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
       toast('✉ Brouillon créé avec '+attsB.length+' pièce(s) jointe(s)');
       closeTplPicker();return;
     }
@@ -5594,7 +5609,7 @@ function sendMailFromTemplate(tplId){
     if(sigBodyC)bodyC=bodyC+'\n\n'+_substituteTplVars(sigBodyC,couPrenom,couNom,ctx.courtier);
     var attsC=_pjMailAttachmentsFor(tpl.id);
     if(attsC.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
-      window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subjC,body:bodyC,attachments:attsC}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+      window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subjC,body:bodyC,attachments:attsC,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
       toast('✉ Brouillon créé avec '+attsC.length+' pièce(s) jointe(s)');
       closeTplPicker();return;
     }
@@ -5622,7 +5637,7 @@ function sendMailFromTemplate(tplId){
   if(sigBody)body=body+'\n\n'+_substituteTplVars(sigBody,prenom,nom,courtierCtx);
   var attsS=_pjMailAttachmentsFor(tpl.id);
   if(attsS.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
-    window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subject,body:body,attachments:attsS}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+    window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subject,body:body,attachments:attsS,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
     toast('✉ Brouillon créé avec '+attsS.length+' pièce(s) jointe(s)');
     closeTplPicker();return;
   }
@@ -5636,7 +5651,7 @@ function sendEmptyMail(){
   var ctx=_mailPickContext;
   var atts=_pjGetCheckedForMail();
   if(atts.length&&ctx._pjVId&&window.electronAPI&&window.electronAPI.emailCreateEml){
-    var payload={subject:'',body:'',propertyId:ctx._pjVId,attachments:atts};
+    var payload={subject:'',body:'',propertyId:ctx._pjVId,attachments:atts,app:_mailAppForProvider()};
     if(ctx.bulk)payload.bcc=(ctx.emails||[]).join(', ');else payload.to=ctx.courriel||'';
     window.electronAPI.emailCreateEml(payload).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
     toast('✉ Brouillon créé avec '+atts.length+' pièce(s) jointe(s)');
