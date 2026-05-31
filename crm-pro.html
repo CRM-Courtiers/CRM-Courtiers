@@ -174,6 +174,9 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-tbl td.ei textarea{min-height:50px;resize:vertical}
 .dem-tbl tr.dem-archived-row td{opacity:.55}
 .dem-tbl tr.dem-archived-row td.dem-actions-cell{opacity:1}
+/* Étape 24 — Demande médiée par courtier (sans infos client encore) : tint bleu pâle pour signaler le contexte */
+.dem-tbl tr.dem-broker-row td{background:#F0F9FF}
+.dem-tbl tr.dem-broker-row:hover td{background:#E0F2FE}
 .dem-tbl .dem-actions-cell{white-space:nowrap;overflow:visible;text-align:right}
 .dem-tbl .dem-actions-cell .dem-btn{margin-right:3px}
 .dem-tbl .dem-empty-row td{font-size:11px;color:#94A3B8;font-style:italic;text-align:center;padding:8px;background:#FAFBFC!important}
@@ -222,7 +225,7 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .actions-trigger{font-size:13px;padding:6px 12px;background:#fff;border:1px solid #CBD5E1;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;color:#0F172A;transition:all .15s;white-space:nowrap}
 .actions-trigger:hover{background:#F1F5F9;border-color:#64748B}
 .actions-trigger:active{background:#E2E8F0}
-.actions-menu{position:fixed;z-index:9000;background:#fff;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 10px 28px rgba(15,23,42,.18);padding:4px 0;min-width:220px;font-size:13px;font-family:inherit;animation:actionsMenuIn .12s ease-out}
+.actions-menu{position:fixed;z-index:9000;background:#fff;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 10px 28px rgba(15,23,42,.18);padding:4px 0;min-width:220px;max-height:calc(100vh - 24px);overflow-y:auto;font-size:13px;font-family:inherit;animation:actionsMenuIn .12s ease-out}
 @keyframes actionsMenuIn{from{transform:translateY(-4px);opacity:0}to{transform:translateY(0);opacity:1}}
 .actions-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;color:#0F172A;user-select:none;font-weight:500}
 .actions-item:hover{background:#F1F5F9}
@@ -317,7 +320,7 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .tpl-sig-warn strong{color:#92400E}
 
 /* Pastilles sur fiches En Vente (Étape 19) */
-.vpill{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;cursor:pointer;margin-right:4px;transition:transform .12s,box-shadow .12s;border:none;font-family:inherit;color:#fff;letter-spacing:.02em}
+.vpill{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;cursor:pointer;margin-right:2px;transition:transform .12s,box-shadow .12s;border:none;font-family:inherit;color:#fff;letter-spacing:.02em}
 .vpill:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(15,23,42,.18)}
 .vpill.dem{background:#F59E0B}
 .vpill.pa{background:#DC2626}
@@ -395,6 +398,12 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .tbtn[data-tab="settings"].on{background:linear-gradient(180deg,rgba(100,116,139,.22) 0%,rgba(100,116,139,.05) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 3px 0 0 #64748B,0 0 10px rgba(100,116,139,.2),0 0 3px rgba(100,116,139,.28)}
 .tbtn[data-tab="pancartes"].on{background:linear-gradient(180deg,rgba(168,85,247,.28) 0%,rgba(168,85,247,.06) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 3px 0 0 #A855F7,0 0 12px rgba(168,85,247,.25),0 0 3px rgba(168,85,247,.32)}
 .tbtn[data-tab="pancartes"].on .sb-icon{color:#A855F7}
+/* Étape 24 — Références (teal) */
+.tbtn[data-tab="rea"].on,.tbtn[data-tab="rec"].on{background:linear-gradient(180deg,rgba(20,184,166,.28) 0%,rgba(20,184,166,.06) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 3px 0 0 #14B8A6,0 0 12px rgba(20,184,166,.22),0 0 3px rgba(20,184,166,.3)}
+.tbtn[data-tab="rea"].on .sb-icon,.tbtn[data-tab="rec"].on .sb-icon{color:#14B8A6}
+.sb-section[data-color="teal"] .sb-badge{background:#14B8A6}
+.sb-section[data-color="teal"] .sb-section-title::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#14B8A6;margin-right:7px;vertical-align:middle}
+.tbtn[data-tab="rea"] .sb-badge{background:#14B8A6 !important}
 /* Badge compteur sur les items sidebar */
 .sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:#A855F7;color:#fff;letter-spacing:.02em;min-width:18px;text-align:center}
 .sb-badge:empty,.sb-badge.zero{display:none}
@@ -833,6 +842,22 @@ body.app-readonly th .rz{pointer-events:none}
 .dash-section-period{font-size:12px;color:#64748B;font-weight:500;text-transform:none;letter-spacing:0}
 
 .dash-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.dash-kpis-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.dash-decomp{display:flex;flex-direction:column;gap:8px;padding:14px 0}
+.dash-decomp-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;transition:all .15s;cursor:default}
+.dash-decomp-row.clickable{cursor:pointer}
+.dash-decomp-row.clickable:hover{background:#F1F5F9;border-color:#CBD5E1;transform:translateX(2px)}
+.dash-decomp-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center}
+.dash-decomp-label{flex:1;font-size:13px;color:#0F172A;font-weight:500}
+.dash-decomp-meta{font-size:11px;color:#64748B;margin-top:2px;font-weight:400}
+.dash-decomp-amount{font-size:15px;font-weight:700;color:#0F172A;font-variant-numeric:tabular-nums;letter-spacing:-.01em;min-width:90px;text-align:right}
+.dash-decomp-arrow{font-size:14px;color:#94A3B8;flex-shrink:0;width:16px;text-align:right}
+.dash-decomp-total{margin-top:6px;padding:12px 14px;background:linear-gradient(90deg,#F1F5F9,#F8FAFC);border-radius:8px;display:flex;justify-content:space-between;align-items:center;border:1.5px solid #CBD5E1;font-weight:700}
+.dash-projection{background:linear-gradient(135deg,#FEF3C7,#FAFBFC);border:1px solid #FDE68A;border-radius:10px;padding:18px 20px;margin-top:8px}
+.dash-projection-label{font-size:11px;color:#92400E;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.dash-projection-num{font-size:32px;font-weight:800;color:#78350F;letter-spacing:-.02em;line-height:1.1;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.dash-projection-detail{font-size:12px;color:#92400E;line-height:1.5}
+.dash-projection-vs{margin-top:10px;padding-top:10px;border-top:1px dashed #FDE68A;font-size:12px;color:#78350F}
 .dash-kpi{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;transition:all .15s;position:relative;overflow:hidden}
 .dash-kpi:hover{box-shadow:0 4px 14px rgba(15,23,42,.06);transform:translateY(-1px)}
 .dash-kpi-label{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.06em}
@@ -1111,11 +1136,16 @@ body.app-readonly th .rz{pointer-events:none}
       <div class="sb-section-title">En vente</div>
       <button class="tbtn" data-tab="v"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><span class="sb-label">Mes inscriptions</span><span class="sb-badge zero" id="sb-v-badge">0</span></button>
       <button class="tbtn" data-tab="demandes"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span><span class="sb-label">Demandes reçues</span><span class="sb-badge zero" id="sb-demandes-badge">0</span></button>
-      <button class="tbtn" data-tab="pa-en-vente"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg></span><span class="sb-label">Doubles représentations</span><span class="sb-badge zero" id="sb-paev-badge">0</span></button>
+      <button class="tbtn" data-tab="pa-en-vente"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg></span><span class="sb-label">Promesses reçues</span><span class="sb-badge zero" id="sb-paev-badge">0</span></button>
     </div>
     <div class="sb-section" data-color="purple">
       <div class="sb-section-title">Pancartes</div>
       <button class="tbtn" data-tab="pancartes"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span><span class="sb-label">Pancartes</span><span class="sb-badge zero" id="sb-pancartes-badge">0</span></button>
+    </div>
+    <div class="sb-section" data-color="teal">
+      <div class="sb-section-title">Références</div>
+      <button class="tbtn" data-tab="rea"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span><span class="sb-label">Références actives</span><span class="sb-badge zero" id="sb-rea-badge">0</span></button>
+      <button class="tbtn" data-tab="rec"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span><span class="sb-label">Références conclues</span></button>
     </div>
     <div class="sb-section" data-color="amber">
       <div class="sb-section-title">Conclus</div>
@@ -1275,7 +1305,7 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="pane" id="pane-demandes">
       <div class="dem-wrap" id="dem-wrap"></div>
     </div>
-    <!-- ── PANE : Doubles représentations (Étape 19, scénarios B+C) ── -->
+    <!-- ── PANE : Promesses reçues (anc. Doubles représentations — Étape 19+24, scénarios B+C+collaborateur) ── -->
     <div class="pane" id="pane-pa-en-vente">
       <div class="sortbar2" id="sortbar-pa-en-vente"></div>
       <div class="tw"><table id="tbl-pa-en-vente"><colgroup id="cg-pa-en-vente"></colgroup><thead id="th-pa-en-vente"></thead><tbody id="tb-pa-en-vente"></tbody></table></div>
@@ -1294,6 +1324,16 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="pane" id="pane-ca">
       <div class="sortbar2" id="sortbar-ca"></div>
       <div class="tw"><table id="tbl-ca"><colgroup id="cg-ca"></colgroup><thead id="th-ca"></thead><tbody id="tb-ca"></tbody></table></div>
+    </div>
+    <!-- ── PANE : Références actives (Étape 24) ── -->
+    <div class="pane" id="pane-rea">
+      <div class="sortbar2" id="sortbar-rea"></div>
+      <div class="tw"><table id="tbl-rea"><colgroup id="cg-rea"></colgroup><thead id="th-rea"></thead><tbody id="tb-rea"></tbody></table></div>
+    </div>
+    <!-- ── PANE : Références conclues (Étape 24) ── -->
+    <div class="pane" id="pane-rec">
+      <div class="sortbar2" id="sortbar-rec"></div>
+      <div class="tw"><table id="tbl-rec"><colgroup id="cg-rec"></colgroup><thead id="th-rec"></thead><tbody id="tb-rec"></tbody></table></div>
     </div>
     <!-- ── PANE : Dashboard ── -->
     <div class="pane" id="pane-dashboard">
@@ -1397,6 +1437,21 @@ body.app-readonly th .rz{pointer-events:none}
           <div class="settings-actions">
             <button class="btn-import" id="btnOutlookConnect" onclick="outlookConnect()">&#128197; Connecter Outlook</button>
             <button class="btn-import" id="btnOutlookDisconnect" onclick="outlookDisconnect()" style="display:none;color:#DC2626;border-color:#FECACA">D&eacute;connecter</button>
+          </div>
+        </div>
+
+        <!-- ── Anti-doublons demandes (Étape 24) ── -->
+        <div class="settings-group">
+          <div class="settings-group-title">&#9888; Anti-doublons demandes</div>
+          <div class="settings-group-desc">Avertit avant de cr&eacute;er une demande tr&egrave;s similaire &agrave; une demande existante (m&ecirc;me client / t&eacute;l / courriel sur la m&ecirc;me propri&eacute;t&eacute; dans les 24h). N'emp&ecirc;che pas la cr&eacute;ation &mdash; juste un confirm.</div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600">
+              <input type="checkbox" id="antidupToggle" onchange="setAntidup(this.checked)" style="width:auto;cursor:pointer">
+              <span>Activer la d&eacute;tection de doublons</span>
+            </label>
+          </div>
+          <div style="font-size:11px;color:#64748B;margin-top:10px;line-height:1.55;background:#F1F5F9;padding:10px 12px;border-radius:6px">
+            <strong style="color:#0F172A">&#128161; Mode test :</strong> garde &laquo;&nbsp;d&eacute;sactiv&eacute;&nbsp;&raquo; pendant que tu fais des essais r&eacute;p&eacute;t&eacute;s (m&ecirc;mes screenshots). Active quand tu es pr&ecirc;t pour la prod.
           </div>
         </div>
 
@@ -1514,6 +1569,22 @@ body.app-readonly th .rz{pointer-events:none}
         <label>Texte original reçu</label>
         <div id="smsConfirmRaw" style="font-size:12px;padding:10px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;font-style:italic;color:#475569;line-height:1.5;max-height:120px;overflow-y:auto;white-space:pre-wrap"></div>
       </div>
+      <!-- Étape 24 — Section courtier (toujours visible) : Direct / Détecté LLM / Lié -->
+      <div id="smsConfirmCourtierSection" style="margin-bottom:14px;padding:12px 14px;background:#F8FAFC;border:1px solid #E2E8F0;border-left:4px solid #94A3B8;border-radius:6px;transition:all .2s">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-size:14px">🤝</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:#0F172A">Représenté par un courtier ?</div>
+            <div id="smsConfirmCourtierHint" style="font-size:11px;color:#94A3B8">Laisse vide si demande directe d'un client. Lie un courtier si c'est un inscripteur/collaborateur.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px">
+          <div id="smsConfirmCourtierStatus" style="flex:1;min-width:200px;font-size:12px;padding:7px 10px;background:#fff;border:1px solid #E2E8F0;border-radius:6px;color:#94A3B8;font-style:italic">— Direct (aucun courtier) —</div>
+          <button type="button" class="tpl-btn" id="smsConfirmCourtierBtnPick" onclick="_smsCfPickCourtier()">📇 Lier existant</button>
+          <button type="button" class="tpl-btn primary" id="smsConfirmCourtierBtnCreate" onclick="_smsCfCreateCourtier()">+ Créer fiche</button>
+          <button type="button" class="tpl-btn muted" id="smsConfirmCourtierBtnClear" onclick="_smsCfClearCourtier()" style="display:none">✕</button>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="tpl-fg" style="margin-bottom:8px"><label>Prénom</label><input type="text" id="smsCf-prenom"></div>
         <div class="tpl-fg" style="margin-bottom:8px"><label>Nom</label><input type="text" id="smsCf-nom"></div>
@@ -1559,6 +1630,66 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="tpl-modal-foot">
       <button class="tpl-btn muted" onclick="closeTplPicker()">Annuler</button>
       <button class="tpl-btn primary" onclick="sendEmptyMail()">✉ Sans template (mailto vide)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal : Courtier picker (Étape 24) — choisir un courtier existant ou créer ── -->
+<div class="tpl-modal-ov" id="cou-pick-ov">
+  <div class="tpl-modal" style="width:min(540px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">🤝 Assigner un courtier inscripteur</div>
+      <button class="tpl-btn muted" onclick="closeCourtierPicker()">✕</button>
+    </div>
+    <div class="tpl-modal-body">
+      <div style="margin-bottom:10px"><input type="text" id="cou-pick-search" placeholder="Chercher par nom, agence ou courriel..." style="width:100%;padding:8px 10px;border:1.5px solid #CBD5E1;border-radius:6px;font-size:13px;font-family:inherit"></div>
+      <div id="cou-pick-list" style="max-height:340px;overflow-y:auto"></div>
+    </div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn muted" onclick="closeCourtierPicker()">Annuler</button>
+      <button class="tpl-btn primary" onclick="openCourtierEdit(null)">+ Nouveau courtier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal : Courtier info popup (Étape 24) — affiche infos courtier déjà assigné ── -->
+<div class="tpl-modal-ov" id="cou-info-ov">
+  <div class="tpl-modal" style="width:min(460px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">🤝 <span id="cou-info-name">Courtier</span></div>
+      <button class="tpl-btn muted" onclick="closeCourtierInfo()">✕</button>
+    </div>
+    <div class="tpl-modal-body" id="cou-info-body"></div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn muted" onclick="_courtierUnassign()" id="cou-info-unassign">Retirer de cette PA</button>
+      <button class="tpl-btn" onclick="openCourtierEdit(_currentCourtierId)">Modifier la fiche</button>
+      <button class="tpl-btn primary" onclick="openCourtierPicker(_currentCourtierTab,_currentCourtierRecId)">Changer de courtier</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal : Courtier edit form (Étape 24) — ajouter / modifier une fiche courtier ── -->
+<div class="tpl-modal-ov" id="cou-edit-ov">
+  <div class="tpl-modal" style="width:min(520px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">🤝 <span id="cou-edit-title">Nouveau courtier</span></div>
+      <button class="tpl-btn muted" onclick="closeCourtierEdit()">✕</button>
+    </div>
+    <div class="tpl-modal-body">
+      <div class="g2">
+        <div class="fg"><label>Prénom *</label><input id="cou-prenom" autocomplete="off"></div>
+        <div class="fg"><label>Nom *</label><input id="cou-nom" autocomplete="off"></div>
+      </div>
+      <div class="fg"><label>Agence / bannière</label><input id="cou-agence" placeholder="ex: RE/MAX, Royal LePage, Via Capitale..." autocomplete="off"></div>
+      <div class="g2">
+        <div class="fg"><label>Téléphone</label><input id="cou-tel" autocomplete="off"></div>
+        <div class="fg"><label>Courriel</label><input type="email" id="cou-co" autocomplete="off"></div>
+      </div>
+    </div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn muted" onclick="_courtierDelete()" id="cou-edit-delete" style="display:none;margin-right:auto;color:#DC2626">🗑 Supprimer</button>
+      <button class="tpl-btn muted" onclick="closeCourtierEdit()">Annuler</button>
+      <button class="tpl-btn primary" onclick="saveCourtier()">Enregistrer</button>
     </div>
   </div>
 </div>
@@ -1671,6 +1802,8 @@ var COLS = {
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
+    {lbl:"No. Centris",f:"noCentris",t:"centris",w:100,cls:"mu"},
+    {lbl:"Courtier",f:"courtierId",t:"courtier",w:140,cls:"mu"},
     {lbl:"Notes",f:"notes",t:"text",w:130,cls:"nc"},
     {lbl:"MLS",f:"mls",t:"bool",w:44},
     {lbl:"DV",f:"declVend",t:"bool",w:40},
@@ -1691,11 +1824,39 @@ var COLS = {
   // \u00c9tape 19 \u2014 PA Active sur mes propri\u00e9t\u00e9s (data source = db.pa.filter(propertyId))
   // Adresse = lookup du mandat vendeur (db.v[propertyId].adresse), non \u00e9ditable ici
   // Pas de Montant/Commission : d\u00e9j\u00e0 comptabilis\u00e9s sur la fiche En Vente correspondante
+  // Étape 24 — Références (Sophie réfère un client à un collègue, touche % commission)
+  rea: [
+    {lbl:"Prénom",f:"prenom",t:"text",w:100},
+    {lbl:"Nom",f:"nom",t:"text",w:100},
+    {lbl:"Collègue référé",f:"courtierId",t:"courtier",w:160,cls:"mu"},
+    {lbl:"Adresse propriété",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"Téléphone",f:"telephone",t:"text",w:110,cls:"mu"},
+    {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
+    {lbl:"Date réf.",f:"dateReference",t:"date",w:100},
+    {lbl:"Comm. coll. ($)",f:"commissionCollegue",t:"number",w:110},
+    {lbl:"% réf.",f:"pctReference",t:"number",w:70,u:"%"},
+    {lbl:"Comm. Sophie ($)",f:"commissionSophie",t:"number",w:120},
+    {lbl:"Notes",f:"notes",t:"text",w:140,cls:"nc"},
+    {lbl:"Actions",f:null,t:"action",w:280}
+  ],
+  rec: [
+    {lbl:"Prénom",f:"prenom",t:"text",w:100},
+    {lbl:"Nom",f:"nom",t:"text",w:100},
+    {lbl:"Collègue",f:"courtierId",t:"courtier",w:160,cls:"mu"},
+    {lbl:"Adresse propriété",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"Date conclusion",f:"dateConclusion",t:"date",w:120},
+    {lbl:"Comm. coll. ($)",f:"commissionCollegue",t:"number",w:110},
+    {lbl:"% réf.",f:"pctReference",t:"number",w:70,u:"%"},
+    {lbl:"Comm. Sophie ($)",f:"commissionSophie",t:"number",w:120},
+    {lbl:"Notes",f:"notes",t:"text",w:140,cls:"nc"},
+    {lbl:"Actions",f:null,t:"action",w:220}
+  ],
   "pa-en-vente": [
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:100},
     {lbl:"Nom",f:"nom",t:"text",w:100},
     {lbl:"Statut",f:"statutPa",t:"select",o:"STATUT_PA",w:100},
     {lbl:"Adresse (mandat)",f:"_vAdresse",t:"vlookup",w:200,cls:"mu"},
+    {lbl:"Repr\u00e9sentation",f:"courtierId",t:"courtier-coll",w:160,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
     {lbl:"Notes",f:"notes",t:"text",w:130,cls:"nc"},
@@ -1727,7 +1888,7 @@ var COLS = {
     {lbl:"Actions",f:null,t:"action",w:160}
   ],
   v: [
-    {lbl:"",f:null,t:"pills",w:74},
+    {lbl:"",f:null,t:"pills",w:100},
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:100},
     {lbl:"Nom",f:"nom",t:"text",w:100},
     {lbl:"Centris",f:"centris",t:"text",w:90},
@@ -1810,6 +1971,8 @@ TABS.forEach(function(t){ db[t] = []; });
 db.demandes = []; // Étape 19 : demandes entrantes rattachées à une propriété en vente (propertyId → v.id)
 db.templates = []; // Étape 22 : templates de courriels par section ({id, section, name, subject, body, lastModified})
 db.signature = {body:""}; // Étape 22 : signature courriel (texte + image data URL), appliquée à tous les envois
+db.courtiers = []; // Étape 24 : master list courtiers inscripteurs ({id, prenom, nom, agence, telephone, courriel, lastModified}) — référencée par db.pa[i].courtierId
+db.refs = []; // Étape 24 : références (Sophie réfère un client à un collègue → touche une commission %). {id, prenom, nom, telephone, courriel, adresse, courtierId, dateReference, dateConclusion, montantTransaction, commissionCollegue, pctReference, commissionSophie, notes, statut, lastModified}
 var ctab = "cp", eid = null;
 var THR = {cp:14, vp:14, a:20};
 var SEARCH = {};
@@ -1818,7 +1981,7 @@ var COL_VIS = {};
 var _showFlt = {};
 var ST = {};
 // \u00c9tape 19 \u2014 pa-en-vente est un pseudo-tab UI (storage alias\u00e9 sur db.pa avec filtre propertyId)
-var TABS_UI = TABS.concat(['pa-en-vente']);
+var TABS_UI = TABS.concat(['pa-en-vente','rea','rec']);
 TABS_UI.forEach(function(t){
   SEARCH[t] = '';
   FLT[t] = {};
@@ -1832,7 +1995,7 @@ ST.a = {c1:3, d1:1, c2:2, d2:-1};
 ST.pa = {c1:3, d1:1, c2:2, d2:-1};
 ST['pa-en-vente'] = {c1:3, d1:1, c2:2, d2:-1};
 // Nombre de colonnes sticky par onglet (Pr\u00e9nom, Nom et autres en t\u00eate)
-var STICKY_COUNT = {cp:3, vp:3, a:4, pa:4, v:4, ac:3, vc:3, ca:3, "pa-en-vente":4};
+var STICKY_COUNT = {cp:3, vp:3, a:4, pa:4, v:4, ac:3, vc:3, ca:3, "pa-en-vente":4, rea:3, rec:3};
 
 // Load saved state (recherche vid\u00e9e au d\u00e9marrage pour \u00e9viter les filtres fant\u00f4mes)
 (function(){
@@ -1902,6 +2065,8 @@ async function writeAutoSave(){
     payload.demandes=db.demandes||[];
     payload.templates=db.templates||[];
     payload.signature=db.signature||{body:""};
+    payload.courtiers=db.courtiers||[];
+    payload.refs=db.refs||[];
     payload.thresholds=THR;
     var fh=await _autoDir.getFileHandle("CRM-Pro-autosauve.json",{create:true});
     var wr=await fh.createWritable();await wr.write(JSON.stringify(payload,null,2));await wr.close();
@@ -1977,6 +2142,14 @@ async function autoImportFromFile(){
     if(imported.signature&&typeof imported.signature==='object'){
       db.signature=imported.signature;
     }
+    if(imported.courtiers&&Array.isArray(imported.courtiers)){
+      if(!db.courtiers)db.courtiers=[];
+      mergeArray(db.courtiers,imported.courtiers);
+    }
+    if(imported.refs&&Array.isArray(imported.refs)){
+      if(!db.refs)db.refs=[];
+      mergeArray(db.refs,imported.refs);
+    }
     // Migration : Acheteurs sans lastModified \u2014 initialiser \u00e0 aujourd'hui
     try{var today=_todayStr();(db.a||[]).forEach(function(r){if(!r.lastModified)r.lastModified=today;});}catch(e){}
     if(added>0||updated>0){sdb();fullRender();var msg=[];if(added>0)msg.push(added+" ajout\u00e9(s)");if(updated>0)msg.push(updated+" mis \u00e0 jour");toast("\u2713 "+msg.join(", "));}
@@ -1996,6 +2169,10 @@ function ldb(){
   try{var xd=localStorage.getItem("crmpro-demandes");db.demandes=xd?JSON.parse(xd):[];}catch(e){db.demandes=[];}
   try{var xt=localStorage.getItem("crmpro-templates");db.templates=xt?JSON.parse(xt):[];}catch(e){db.templates=[];}
   try{var xs=localStorage.getItem("crmpro-signature");db.signature=xs?JSON.parse(xs):{body:""};}catch(e){db.signature={body:""};}
+  try{var xco=localStorage.getItem("crmpro-courtiers");db.courtiers=xco?JSON.parse(xco):[];}catch(e){db.courtiers=[];}
+  try{var xrf=localStorage.getItem("crmpro-refs");db.refs=xrf?JSON.parse(xrf):[];}catch(e){db.refs=[];}
+  // Étape 24 — migration : ancien key 'courtiers' (v0.3.15 dev) → 'courtiers-insc'
+  try{var migT=false;(db.templates||[]).forEach(function(t){if(t.section==='courtiers'){t.section='courtiers-insc';migT=true;}});if(migT)localStorage.setItem("crmpro-templates",JSON.stringify(db.templates));}catch(e){}
   try{var t=localStorage.getItem("crmprothr");if(t){var pt=JSON.parse(t);THR.cp=pt.cp||14;THR.vp=pt.vp||14;THR.a=pt.a||20;}}catch(e){}
   // Migration : fiches Acheteurs sans lastModified — initialiser à aujourd'hui pour démarrer le chrono d'inactivité
   try{
@@ -2062,8 +2239,8 @@ function _maybeSeedExamples(){
 }
 
 var UNDO=[],UNDO_MAX=10;
-function pushUndo(label){var snap={label:label};TABS.forEach(function(t){snap[t]=JSON.parse(JSON.stringify(db[t]));});snap.demandes=JSON.parse(JSON.stringify(db.demandes||[]));snap.templates=JSON.parse(JSON.stringify(db.templates||[]));snap.signature=JSON.parse(JSON.stringify(db.signature||{body:""}));UNDO.push(snap);if(UNDO.length>UNDO_MAX)UNDO.shift();}
-function undo(){if(!UNDO.length){toast("Rien \u00e0 annuler");return;}var snap=UNDO.pop();TABS.forEach(function(t){db[t]=snap[t];});if(snap.demandes)db.demandes=snap.demandes;if(snap.templates)db.templates=snap.templates;if(snap.signature)db.signature=snap.signature;sdb();rall();toast("\u21a9 Annul\u00e9 : "+snap.label);}
+function pushUndo(label){var snap={label:label};TABS.forEach(function(t){snap[t]=JSON.parse(JSON.stringify(db[t]));});snap.demandes=JSON.parse(JSON.stringify(db.demandes||[]));snap.templates=JSON.parse(JSON.stringify(db.templates||[]));snap.signature=JSON.parse(JSON.stringify(db.signature||{body:""}));snap.courtiers=JSON.parse(JSON.stringify(db.courtiers||[]));snap.refs=JSON.parse(JSON.stringify(db.refs||[]));UNDO.push(snap);if(UNDO.length>UNDO_MAX)UNDO.shift();}
+function undo(){if(!UNDO.length){toast("Rien \u00e0 annuler");return;}var snap=UNDO.pop();TABS.forEach(function(t){db[t]=snap[t];});if(snap.demandes)db.demandes=snap.demandes;if(snap.templates)db.templates=snap.templates;if(snap.signature)db.signature=snap.signature;if(snap.courtiers)db.courtiers=snap.courtiers;if(snap.refs)db.refs=snap.refs;sdb();rall();toast("\u21a9 Annul\u00e9 : "+snap.label);}
 document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="z"&&!e.target.matches("input,textarea,select")){e.preventDefault();undo();}});
 
 function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
@@ -2075,13 +2252,17 @@ function sdb(){
   try{localStorage.setItem("crmpro-demandes",JSON.stringify(db.demandes||[]));}catch(e){ok=false;}
   try{localStorage.setItem("crmpro-templates",JSON.stringify(db.templates||[]));}catch(e){ok=false;}
   try{localStorage.setItem("crmpro-signature",JSON.stringify(db.signature||{body:""}));}catch(e){ok=false;}
+  try{localStorage.setItem("crmpro-courtiers",JSON.stringify(db.courtiers||[]));}catch(e){ok=false;}
+  try{localStorage.setItem("crmpro-refs",JSON.stringify(db.refs||[]));}catch(e){ok=false;}
   if(!ok)toast("\u26a0 Stockage plein! Exportez vos donn\u00e9es imm\u00e9diatement.");
   _dbDirty=true;scheduleAutoSave();
 }
 function sthr(){try{localStorage.setItem("crmprothr",JSON.stringify(THR));}catch(e){}}
 function getCW(tab){try{var x=localStorage.getItem("crmprocw"+tab);if(x){var ws=JSON.parse(x);if(ws.length===COLS[tab].length){
-  // Force la largeur de la colonne Actions \u00e0 la valeur d\u00e9finie dans COLS (\u00e9vite que les anciens caches \u00e9crasent les ajustements UI)
-  for(var i=0;i<COLS[tab].length;i++){if(COLS[tab][i].t==="action")ws[i]=COLS[tab][i].w;}
+  // Force la largeur de certaines colonnes \u00e0 la valeur d\u00e9finie dans COLS (\u00e9vite que les anciens caches \u00e9crasent les ajustements UI)
+  // - action : boutons multiples, doit refl\u00e9ter ajouts r\u00e9cents
+  // - pills : 2 pastilles (dem + pa), doit accommoder les 2
+  for(var i=0;i<COLS[tab].length;i++){if(COLS[tab][i].t==="action"||COLS[tab][i].t==="pills")ws[i]=COLS[tab][i].w;}
   return ws;
 }}}catch(e){}return COLS[tab].map(function(c){return c.w;});}
 function saveCW(tab,ws){try{localStorage.setItem("crmprocw"+tab,JSON.stringify(ws));}catch(e){}}
@@ -2111,6 +2292,15 @@ function getOpts(k){if(k==="PREQ_STS")return PREQ_STS;if(k==="TYPE_BAT")return T
 
 function isEmailOk(v){return!v||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
 function fmEmail(v){if(!v)return'\u2014';var warn=!isEmailOk(v)?'<span style="color:#D97706;margin-left:3px" title="Format courriel invalide">\u26a0</span>':'';var safe=esc(v).replace(/\\/g,'\\\\').replace(/'/g,"\\'");return esc(v)+warn+'<button class="cpb" title="Copier" onclick="event.stopPropagation();navigator.clipboard.writeText(\''+safe+'\');this.textContent=\'\u2713\';var b=this;setTimeout(function(){b.textContent=\'\u2398\'},800)">&#9112;</button>';}
+// \u00c9tape 24 \u2014 No. Centris : affiche le num\u00e9ro + bouton \ud83d\udd17 pour ouvrir la fiche publique centris.ca
+function fmCentris(v){if(!v)return'\u2014';var safe=esc(String(v).trim());return safe+'<button class="cpb" title="Ouvrir sur centris.ca" onclick="event.stopPropagation();_openCentris(\''+safe+'\')" style="margin-left:4px">\ud83d\udd17</button>';}
+function _openCentris(no){if(!no)return;var url='https://www.centris.ca/fr/propriete~a-vendre/'+encodeURIComponent(no);if(window.electronAPI&&window.electronAPI.openExternal){window.electronAPI.openExternal(url).catch(function(){window.open(url,'_blank');});}else{window.open(url,'_blank');}}
+// \u00c9tape 24 \u2014 Courtier : lookup nom dans db.courtiers, clic ouvre popup info, "(non assign\u00e9)" si vide
+function _courtierById(id){if(!id)return null;for(var i=0;i<(db.courtiers||[]).length;i++){if(db.courtiers[i].id===id)return db.courtiers[i];}return null;}
+function _courtierFullName(c){if(!c)return'';return((c.prenom||'')+' '+(c.nom||'')).trim()||'(sans nom)';}
+function fmCourtier(id){var c=_courtierById(id);if(!c)return'<span style="color:#94A3B8;font-style:italic">+ Assigner</span>';return'<span style="color:#0EA5E9;font-weight:600">'+esc(_courtierFullName(c))+'</span>'+(c.agence?'<br><span style="font-size:10px;color:#94A3B8">'+esc(c.agence)+'</span>':'');}
+// Étape 24 — Représentation (côté pa-en-vente) : vide → badge mauve "Double rep.", set → badge bleu "[Nom courtier]"
+function fmCourtierColl(id){var c=_courtierById(id);if(!c)return'<span class="badge bbg" style="background:#F3E8FF;color:#7E22CE;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Double rep.</span>';return'<span style="color:#0EA5E9;font-weight:600">'+esc(_courtierFullName(c))+'</span>'+(c.agence?'<br><span style="font-size:10px;color:#94A3B8">'+esc(c.agence)+'</span>':'');}
 
 function etd(col,tab,id,display,extra){
   var ci=COLS[tab].indexOf(col);
@@ -2156,14 +2346,32 @@ function openActionsMenu(tab,recId,btnEl,ev){
   var rect=btnEl.getBoundingClientRect();
   var menuHeight=menu.offsetHeight;
   var menuWidth=menu.offsetWidth;
-  // Position verticale : sous le bouton; au-dessus si déborde en bas
-  var top=rect.bottom+4;
-  if(top+menuHeight>window.innerHeight-8)top=rect.top-menuHeight-4;
-  if(top<8)top=8;
+  var vh=window.innerHeight,vw=window.innerWidth;
+  // Position verticale intelligente : compare espace dispo dessous vs dessus, prend le meilleur
+  // Évite de superposer le menu sur le bouton trigger (qui était le bug : top clampé à 8 mais menu plus haut que la position du bouton)
+  var spaceBelow=vh-rect.bottom-8;
+  var spaceAbove=rect.top-8;
+  var top;
+  if(menuHeight<=spaceBelow){
+    // Cas idéal : tient dessous
+    top=rect.bottom+4;
+  } else if(menuHeight<=spaceAbove){
+    // Ne tient pas dessous mais tient dessus
+    top=rect.top-menuHeight-4;
+  } else {
+    // Ne tient ni dessous ni dessus → utilise le côté avec le plus d'espace + scroll interne (max-height CSS)
+    if(spaceBelow>=spaceAbove){
+      top=rect.bottom+4;
+    } else {
+      top=8;
+    }
+  }
+  // Clamp final : jamais sortir du viewport (top entre 8 et vh - menuHeight - 8, avec menuHeight limité par max-height CSS)
+  var maxMenuHeight=vh-24;
+  var effectiveH=Math.min(menuHeight,maxMenuHeight);
+  top=Math.max(8,Math.min(top,vh-effectiveH-8));
   // Position horizontale : aligner bord DROIT du menu sur bord droit du bouton via CSS right
-  // (le menu s'étend vers la gauche, ce qui évite les débordements à droite)
-  var rightOffset=Math.max(8,window.innerWidth-rect.right);
-  // Si menu trop large pour la gauche disponible, on cale à 8px du bord gauche
+  var rightOffset=Math.max(8,vw-rect.right);
   if(rect.right-menuWidth<8){
     menu.style.left='8px';
     menu.style.right='auto';
@@ -2181,7 +2389,110 @@ function openActionsMenu(tab,recId,btnEl,ev){
     window.addEventListener('resize',_closeActionsMenu);
   },0);
 }
-function _findRecord(tab,id){var storeTab=(tab==='pa-en-vente')?'pa':tab;var a=db[storeTab]||[];for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+// ─── Étape 24 — Menu contextuel global clic-droit (Copier sur cellules + Couper/Copier/Coller sur inputs) ──
+var _activeCtxMenu=null;
+function _closeCtxMenu(){if(_activeCtxMenu){if(_activeCtxMenu.parentNode)_activeCtxMenu.parentNode.removeChild(_activeCtxMenu);_activeCtxMenu=null;document.removeEventListener('mousedown',_onDocClickCloseCtxMenu,true);document.removeEventListener('keydown',_onEscCloseCtxMenu);window.removeEventListener('scroll',_closeCtxMenu,true);window.removeEventListener('resize',_closeCtxMenu);}}
+function _onDocClickCloseCtxMenu(e){if(_activeCtxMenu&&!_activeCtxMenu.contains(e.target))_closeCtxMenu();}
+function _onEscCloseCtxMenu(e){if(e.key==='Escape')_closeCtxMenu();}
+function _showCtxMenu(x,y,items){
+  _closeCtxMenu();_closeActionsMenu();
+  if(!items||!items.length)return;
+  var menu=document.createElement('div');menu.className='actions-menu';menu.style.minWidth='180px';
+  items.forEach(function(it){
+    if(it.divider){var d=document.createElement('div');d.className='actions-divider';menu.appendChild(d);return;}
+    var el=document.createElement('div');
+    el.className='actions-item'+(it.disabled?' disabled':'');
+    el.innerHTML='<span class="actions-icon">'+(it.icon||'')+'</span><span class="actions-label">'+esc(it.label)+'</span>';
+    el.onclick=function(e){e.stopPropagation();_closeCtxMenu();if(!it.disabled)setTimeout(it.fn,0);};
+    menu.appendChild(el);
+  });
+  menu.style.visibility='hidden';
+  document.body.appendChild(menu);
+  var mh=menu.offsetHeight,mw=menu.offsetWidth;
+  var vh=window.innerHeight,vw=window.innerWidth;
+  var top=y,left=x;
+  if(top+mh>vh-8)top=Math.max(8,vh-mh-8);
+  if(left+mw>vw-8)left=Math.max(8,vw-mw-8);
+  menu.style.top=top+'px';menu.style.left=left+'px';menu.style.right='auto';
+  menu.style.visibility='visible';
+  _activeCtxMenu=menu;
+  setTimeout(function(){
+    document.addEventListener('mousedown',_onDocClickCloseCtxMenu,true);
+    document.addEventListener('keydown',_onEscCloseCtxMenu);
+    window.addEventListener('scroll',_closeCtxMenu,true);
+    window.addEventListener('resize',_closeCtxMenu);
+  },0);
+}
+function _ctxCopyText(text){
+  if(!text)return;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){toast('📋 Copié : '+(text.length>30?text.substring(0,30)+'…':text));},function(){toast('⚠ Copie échouée');});
+  } else {
+    // Fallback
+    try{var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('📋 Copié');}catch(e){toast('⚠ Copie échouée');}
+  }
+}
+function _extractCellText(td){
+  // Récupère le texte affiché dans une cellule (en strippant les boutons "copier" 📋/⎘)
+  var clone=td.cloneNode(true);
+  // Retire les boutons cpb (copy email button), SVG icons, badges utilitaires
+  clone.querySelectorAll('.cpb,svg,.actions-trigger').forEach(function(el){el.parentNode.removeChild(el);});
+  var txt=(clone.innerText||clone.textContent||'').trim();
+  // Si la cellule contient juste "—" (placeholder vide), retourner chaîne vide
+  if(txt==='—'||txt==='-')return '';
+  return txt;
+}
+document.addEventListener('contextmenu',function(e){
+  var target=e.target;
+  // 1) Input / textarea / contenteditable → menu standard Couper/Copier/Coller
+  var isEditable=target.matches&&(target.matches('input[type="text"],input[type="email"],input[type="number"],input[type="date"],input[type="datetime-local"],input:not([type]),textarea')||target.isContentEditable);
+  if(isEditable){
+    e.preventDefault();
+    var hasSel=(typeof target.selectionStart==='number'&&target.selectionEnd>target.selectionStart);
+    var selectedText=hasSel?target.value.substring(target.selectionStart,target.selectionEnd):'';
+    var items=[];
+    items.push({icon:'✂',label:'Couper',disabled:!hasSel||target.readOnly,fn:function(){if(hasSel){_ctxCopyText(selectedText);var v=target.value;target.value=v.substring(0,target.selectionStart)+v.substring(target.selectionEnd);target.dispatchEvent(new Event('input',{bubbles:true}));}}});
+    items.push({icon:'📋',label:'Copier',disabled:!hasSel,fn:function(){_ctxCopyText(selectedText);}});
+    items.push({icon:'📥',label:'Coller',disabled:target.readOnly,fn:function(){if(navigator.clipboard&&navigator.clipboard.readText){navigator.clipboard.readText().then(function(text){target.focus();var s=target.selectionStart,en=target.selectionEnd,v=target.value;target.value=v.substring(0,s)+text+v.substring(en);target.selectionStart=target.selectionEnd=s+text.length;target.dispatchEvent(new Event('input',{bubbles:true}));},function(){toast('⚠ Coller échoué');});}}});
+    items.push({divider:true});
+    items.push({icon:'⊞',label:'Tout sélectionner',fn:function(){target.focus();target.select&&target.select();}});
+    _showCtxMenu(e.clientX,e.clientY,items);
+    return;
+  }
+  // 2) Cellule de tableau (td) → "Copier valeur" + "Copier la ligne"
+  var td=target.closest&&target.closest('td');
+  if(td){
+    e.preventDefault();
+    var cellText=_extractCellText(td);
+    var tr=td.parentNode;
+    var rowItems=[];
+    if(cellText){
+      rowItems.push({icon:'📋',label:'Copier la valeur',fn:function(){_ctxCopyText(cellText);}});
+    } else {
+      rowItems.push({icon:'📋',label:'(cellule vide)',disabled:true,fn:function(){}});
+    }
+    // Copier toute la ligne (utile pour paster dans Excel/courriel)
+    if(tr&&tr.tagName==='TR'){
+      rowItems.push({icon:'⤓',label:'Copier toute la ligne',fn:function(){
+        var cells=tr.querySelectorAll('td');
+        var parts=[];cells.forEach(function(c){var t=_extractCellText(c);if(t)parts.push(t);});
+        _ctxCopyText(parts.join(' · '));
+      }});
+    }
+    _showCtxMenu(e.clientX,e.clientY,rowItems);
+    return;
+  }
+  // 3) Texte sélectionné en page (en dehors d'un td/input) → Copier juste la sélection
+  var sel=window.getSelection&&window.getSelection().toString().trim();
+  if(sel){
+    e.preventDefault();
+    _showCtxMenu(e.clientX,e.clientY,[{icon:'📋',label:'Copier la sélection',fn:function(){_ctxCopyText(sel);}}]);
+    return;
+  }
+  // 4) Sinon : ne rien faire (pas de menu)
+});
+
+function _findRecord(tab,id){var storeTab=_storeTab(tab);var a=db[storeTab]||[];for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
 function _buildActionsForRecord(tab,recId){
   // Demandes (active + archived)
   if(tab==='demandes'||tab==='demandes-archived'){
@@ -2194,7 +2505,7 @@ function _buildActionsForRecord(tab,recId){
       if(d.status==='new'||d.status==='en-attente')its.push({icon:'&#10003;',label:'Marquer à suivre',fn:function(){qualifyDemande(recId);}});
       its.push({divider:true});
       its.push({sectionTitle:'Convertir vers'});
-      its.push({icon:'&#128196;',label:'Promesse en cours (2 côtés)',title:'Sophie représente les 2 côtés',fn:function(){convertDemandeToPa(recId);}});
+      its.push({icon:'&#128196;',label:'→ Promesse reçue',title:'Crée une PA dans "Promesses reçues" (avec le courtier si assigné)',fn:function(){convertDemandeToPa(recId);}});
       its.push({icon:'&#128273;',label:'Acheteur actif',title:'Personne cherche au-delà de cette propriété',fn:function(){convertDemandeToA(recId);}});
       its.push({icon:'&#128199;',label:'Prospect acheteur',title:'Pipeline amont — rétention long terme',fn:function(){convertDemandeToCp(recId);}});
       its.push({divider:true});
@@ -2227,6 +2538,13 @@ function _buildActionsForRecord(tab,recId){
     items.push({icon:'&#8617;',label:'Retour Demandes (PA refusée)',fn:function(){transferPaevToDemande(recId);}});
   }
   if(tab==='v')items.push({icon:'&#9989;',label:'Marquer conclu',fn:function(){transferToConclus('v',recId);}});
+  // Étape 24 — Références : transitions
+  if(tab==='rea'){
+    items.push({icon:'&#9989;',label:'Marquer conclue (commission touchée)',fn:function(){transferReaToRec(recId);}});
+  }
+  if(tab==='rec'){
+    items.push({icon:'&#8617;',label:'Renvoyer dans Actives',fn:function(){transferRecToRea(recId);}});
+  }
   // Liaison (sauf cp/vp/ac/vc/ca)
   if(tab==='a'||tab==='pa'||tab==='pa-en-vente'||tab==='v'){
     if(rec.linkId)items.push({icon:'&#128274;',label:'Délier',fn:function(){unlinkRecord(tab,recId);}});
@@ -2334,7 +2652,7 @@ function buildHeaders(tab){
 }
 
 // ─── Render functions ────────────────────────────────────────
-function _storeTab(tab){return tab==="pa-en-vente"?"pa":tab;}
+function _storeTab(tab){if(tab==="pa-en-vente")return "pa";if(tab==="rea"||tab==="rec")return "refs";return tab;}
 function renderTab(tab){
   var tbEl=document.getElementById("tb-"+tab);if(!tbEl)return;
   // Étape 19 : P.A. Active (EN COURS) = scénario A (PA sans propertyId)
@@ -2342,6 +2660,9 @@ function renderTab(tab){
   var rawData=db[_storeTab(tab)];
   if(tab==="pa")rawData=rawData.filter(function(r){return !r.propertyId;});
   if(tab==="pa-en-vente")rawData=rawData.filter(function(r){return !!r.propertyId;});
+  // Étape 24 — Références : filter par statut
+  if(tab==="rea")rawData=rawData.filter(function(r){return r.statut!=='concluded';});
+  if(tab==="rec")rawData=rawData.filter(function(r){return r.statut==='concluded';});
   var data=filterData(rawData,tab);data=sortedData(data,tab);
   var cols=COLS[tab];
   if(!data.length){tbEl.innerHTML='<tr><td colspan="'+cols.length+'" style="padding:24px;color:#9CA3AF;font-style:italic;text-align:center">Aucun enregistrement &mdash; cliquez sur + Ajouter</td></tr>';return;}
@@ -2431,6 +2752,12 @@ function renderTab(tab){
         h+=etd(col,tab,rec.id,condCell(rec[col.f]));
       } else if(col.f==="courriel"){
         h+=etd(col,tab,rec.id,fmEmail(rec[col.f]),' emc');
+      } else if(col.t==="centris"){
+        h+=etd(col,tab,rec.id,fmCentris(rec[col.f]));
+      } else if(col.t==="courtier"){
+        h+=etd(col,tab,rec.id,fmCourtier(rec[col.f]));
+      } else if(col.t==="courtier-coll"){
+        h+=etd(col,tab,rec.id,fmCourtierColl(rec[col.f]));
       } else if(col.t==="number"){
         var nv=parseFloat(rec[col.f]);
         var disp;
@@ -3126,6 +3453,33 @@ function transferVpToV(id){
   toast("\u2713 "+noms.join(" + ")+" \u2192 En Vente");
 }
 
+// \u00c9tape 24 \u2014 R\u00e9f\u00e9rences : Active \u2192 Conclue (commission touch\u00e9e)
+function transferReaToRec(id){
+  var rec=null;for(var i=0;i<db.refs.length;i++){if(db.refs[i].id===id){rec=db.refs[i];break;}}if(!rec)return;
+  if(!rec.dateConclusion){
+    var d=prompt('Date de conclusion (AAAA-MM-JJ) :',_todayStr());
+    if(!d)return;
+    rec.dateConclusion=d;
+  }
+  if(!rec.commissionSophie||parseFloat(rec.commissionSophie)<=0){
+    if(!confirm('\u26a0 Aucune commission Sophie saisie. Marquer quand m\u00eame comme conclue ?'))return;
+  }
+  pushUndo('R\u00e9f\u00e9rence \u2192 Conclue');
+  rec.statut='concluded';
+  rec.lastModified=_todayStr();
+  sdb();rall();
+  toast('\u2713 R\u00e9f\u00e9rence '+(rec.prenom||'')+' '+(rec.nom||'')+' marqu\u00e9e conclue');
+}
+function transferRecToRea(id){
+  var rec=null;for(var i=0;i<db.refs.length;i++){if(db.refs[i].id===id){rec=db.refs[i];break;}}if(!rec)return;
+  if(!confirm('Renvoyer cette r\u00e9f\u00e9rence dans Actives ? (Elle dispara\u00eetra du Dashboard YTD)'))return;
+  pushUndo('R\u00e9f\u00e9rence \u2192 Active');
+  rec.statut='active';
+  rec.lastModified=_todayStr();
+  sdb();rall();
+  toast('\u21bb R\u00e9f\u00e9rence renvoy\u00e9e dans Actives');
+}
+
 function transferToConclus(fromTab,id){
   var rec=null;for(var i=0;i<db[fromTab].length;i++){if(db[fromTab][i].id===id){rec=db[fromTab][i];break;}}if(!rec)return;
   var targetTab=(fromTab==="a"||fromTab==="pa")?"ac":"vc";
@@ -3427,10 +3781,10 @@ function toggleDemProp(vId){
 function _demTable(dems,opts){
   opts=opts||{};
   var archived=!!opts.archived;
-  var headers='<thead><tr><th>Statut</th><th>Prénom</th><th>Nom</th><th>Téléphone</th><th>Courriel</th><th>Date</th><th>Source</th><th>Notes</th><th>Actions</th></tr></thead>';
+  var headers='<thead><tr><th>Statut</th><th>Prénom</th><th>Nom</th><th>Téléphone</th><th>Courriel</th><th>Représenté par</th><th>Date</th><th>Source</th><th>Notes</th><th>Actions</th></tr></thead>';
   if(!dems.length){
     var msg=archived?'Aucune demande archivée.':'Aucune demande pour cette propriété.';
-    return '<div class="dem-tbl-wrap"><table class="dem-tbl">'+headers+'<tbody><tr class="dem-empty-row"><td colspan="9">'+msg+'</td></tr></tbody></table></div>';
+    return '<div class="dem-tbl-wrap"><table class="dem-tbl">'+headers+'<tbody><tr class="dem-empty-row"><td colspan="10">'+msg+'</td></tr></tbody></table></div>';
   }
   if(!archived){
     dems=dems.slice().sort(function(a,b){
@@ -3444,6 +3798,8 @@ function _demTable(dems,opts){
 
 function _demRowHtml(d,status,archived){
   var did=esc(d.id);
+  // Étape 24 — détection "demande via courtier sans infos client" (cas typique : demande de visite Centris)
+  var isBrokerOnly=(!d.prenom&&!d.nom&&!d.telephone&&!d.courriel&&d.courtierId);
   var ei=function(field,val,type){
     type=type||'text';
     var disp;
@@ -3453,6 +3809,8 @@ function _demRowHtml(d,status,archived){
       disp=raw?esc(raw.length>50?raw.substring(0,50)+'…':raw):'<span style="color:#CBD5E1">—</span>';
     }
     else disp=val?esc(val):'<span style="color:#CBD5E1">—</span>';
+    // En mode broker-only : la première cellule vide (prenom) affiche "🤝 via courtier" pour expliquer le vide
+    if(isBrokerOnly&&field==='prenom'&&!val)disp='<span style="color:#0EA5E9;font-style:italic;font-weight:600">🤝 via courtier</span>';
     var titleAttr=(type==='textarea'&&val)?' title="'+esc(val)+'"':'';
     return '<td class="ei" onclick="editDemandeCell(event,\''+did+'\',\''+field+'\',\''+type+'\')"'+titleAttr+'>'+disp+'</td>';
   };
@@ -3476,12 +3834,25 @@ function _demRowHtml(d,status,archived){
   }
   // Toutes les actions sont maintenant dans un menu dropdown unifié (cf openActionsMenu)
   var actions='<button class="actions-trigger" onclick="openActionsMenu(\'demandes\',\''+d.id+'\',this,event)" title="Actions">&#9776; Actions</button>';
-  return '<tr'+(rowCls?' class="'+rowCls+'"':'')+'>'
+  // Étape 24 — Représenté par : badge gris "Direct" si pas de courtier, sinon nom courtier cliquable (ouvre popup courtier mode coll)
+  var couRep=d.courtierId?_courtierById(d.courtierId):null;
+  var couCellHtml;
+  if(couRep){
+    couCellHtml='<span style="color:#0EA5E9;font-weight:600;cursor:pointer" onclick="event.stopPropagation();openCourtierInfo(\''+esc(d.courtierId)+'\',\'demandes\',\''+did+'\',true)" title="Voir fiche courtier">'+esc(_courtierFullName(couRep))+'</span>'+(couRep.agence?'<br><span style="font-size:10px;color:#94A3B8">'+esc(couRep.agence)+'</span>':'');
+  } else {
+    couCellHtml='<span style="cursor:pointer" onclick="event.stopPropagation();openCourtierPicker(\'demandes\',\''+did+'\',true)"><span class="badge bbg" style="background:#F1F5F9;color:#475569;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Direct</span> <span style="font-size:10px;color:#0EA5E9">+ courtier?</span></span>';
+  }
+  var couCell='<td>'+couCellHtml+'</td>';
+  // Si broker-only, on ajoute une classe pour le tint bleu pâle de la ligne
+  var trCls=rowCls;
+  if(isBrokerOnly)trCls=(trCls?trCls+' ':'')+'dem-broker-row';
+  return '<tr'+(trCls?' class="'+trCls+'"':'')+'>'
     +statusCell
     +ei('prenom',d.prenom)
     +ei('nom',d.nom)
     +ei('telephone',d.telephone)
     +ei('courriel',d.courriel)
+    +couCell
     +ei('date',d.date,'date')
     +ei('source',d.source,'select-source')
     +ei('notes',d.notes,'textarea')
@@ -3568,6 +3939,8 @@ function saveDemande(vId){
   var g=function(f){var el=document.getElementById('dem-f-'+f+'-'+vId);return el?el.value.trim():'';};
   var prenom=g('prenom'),nom=g('nom'),tel=g('tel'),courriel=g('courriel');
   if(!prenom&&!nom&&!tel&&!courriel){toast('⚠ Entre au moins un nom ou un contact');return;}
+  // Étape 24 — anti-doublons (manual add)
+  if(!_confirmDuplicateOrProceed(vId,'',prenom,nom,tel,courriel,g('notes')))return;
   pushUndo('Nouvelle demande');
   db.demandes.push({
     id:newId(),propertyId:vId,
@@ -3584,6 +3957,91 @@ function saveDemande(vId){
 
 function _findDemande(id){for(var i=0;i<(db.demandes||[]).length;i++){if(db.demandes[i].id===id)return db.demandes[i];}return null;}
 
+// Étape 24 — Anti-doublons : cherche dans db.demandes une entrée potentiellement dupliquée
+// Signaux forts (24h) : même propertyId + (nom client identique OU tel identique OU courriel identique)
+// Signal faible (1h, broker-only) : même propertyId + même courtierId + clients vides des 2 côtés + notes similaires (>70%)
+// Retourne {demande, reason} si match, null sinon
+function _findDuplicateDemande(propertyId, courtierId, prenom, nom, tel, courriel, notes) {
+  if (!propertyId) return null;
+  var nowMs = new Date().getTime();
+  var H24_MS = 24 * 3600 * 1000;
+  var H1_MS  = 1 * 3600 * 1000;
+  var hasClient = !!(prenom || nom || tel || courriel);
+  var clientKey = norm((prenom||'') + ' ' + (nom||'')).trim();
+  var telKey = norm(tel||'').replace(/\D/g,'');
+  var emailKey = norm(courriel||'').trim();
+  var notesNorm = norm(notes||'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  var notesTokens = notesNorm.split(' ').filter(function(t){return t.length>=4;});
+  var candidates = (db.demandes||[]).filter(function(d){return d.propertyId===propertyId;});
+  for (var i = 0; i < candidates.length; i++) {
+    var d = candidates[i];
+    // Ignore les demandes archivées (converted/lost) — pas pertinent pour dedup
+    if (d.status==='lost'||d.status==='converted-pa'||d.status==='converted-acheteur'||d.status==='converted-cp') continue;
+    // Calcul écart temporel
+    var dMs = d.lastModified ? new Date(d.lastModified).getTime() : (d.statusDate ? new Date(d.statusDate).getTime() : 0);
+    if (!dMs) continue;
+    var ageMs = nowMs - dMs;
+    if (ageMs < 0 || ageMs > H24_MS) continue; // au-delà de 24h, on n'évalue pas
+    // Signal fort : nom client identique
+    var dHasClient = !!(d.prenom||d.nom||d.telephone||d.courriel);
+    if (hasClient && dHasClient) {
+      var dClientKey = norm((d.prenom||'')+' '+(d.nom||'')).trim();
+      if (clientKey && dClientKey && clientKey === dClientKey) {
+        return { demande: d, reason: 'Même nom client (« '+_displayName(d)+' »)' };
+      }
+      var dTelKey = norm(d.telephone||'').replace(/\D/g,'');
+      if (telKey && dTelKey && telKey === dTelKey && telKey.length >= 7) {
+        return { demande: d, reason: 'Même téléphone ('+d.telephone+')' };
+      }
+      var dEmailKey = norm(d.courriel||'').trim();
+      if (emailKey && dEmailKey && emailKey === dEmailKey) {
+        return { demande: d, reason: 'Même courriel ('+d.courriel+')' };
+      }
+    }
+    // Signal faible : broker-only des 2 côtés, même courtier, dans 1h, notes similaires
+    if (!hasClient && !dHasClient && courtierId && d.courtierId && courtierId === d.courtierId && ageMs <= H1_MS) {
+      var dNotesNorm = norm(d.notes||'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+      var dNotesTokens = dNotesNorm.split(' ').filter(function(t){return t.length>=4;});
+      // Jaccard sur les tokens
+      if (notesTokens.length && dNotesTokens.length) {
+        var setA = {}; notesTokens.forEach(function(t){setA[t]=1;});
+        var inter=0, total=notesTokens.length;
+        dNotesTokens.forEach(function(t){if(setA[t])inter++;else total++;});
+        var jaccard = total>0 ? inter/total : 0;
+        if (jaccard >= 0.7) {
+          return { demande: d, reason: 'Même courtier dans la dernière heure + notes très similaires ('+Math.round(jaccard*100)+'% match)' };
+        }
+      } else if (!notesTokens.length && !dNotesTokens.length) {
+        // 2 demandes broker-only sans aucune note, même courtier, dans l'heure → probable doublon
+        return { demande: d, reason: 'Même courtier dans la dernière heure, aucune autre info distinctive' };
+      }
+    }
+  }
+  return null;
+}
+function _displayName(d){var n=((d.prenom||'')+' '+(d.nom||'')).trim();if(n)return n;if(d.courtierId){var c=_courtierById(d.courtierId);if(c)return 'via '+_courtierFullName(c);}return '(sans nom)';}
+
+// Kill switch (localStorage 'crmpro-antidup' : 'on' | 'off') — off pendant phase de test
+function _isAntidupEnabled(){try{return localStorage.getItem('crmpro-antidup')==='on';}catch(e){return false;}}
+function setAntidup(v){try{localStorage.setItem('crmpro-antidup',v?'on':'off');}catch(e){}toast('✓ Anti-doublons : '+(v?'ACTIVÉ':'désactivé'));}
+
+// Wrapper UX : affiche confirm si doublon détecté, retourne true si user veut continuer
+function _confirmDuplicateOrProceed(propertyId, courtierId, prenom, nom, tel, courriel, notes) {
+  // Kill switch : off → toujours laisser passer (mode test)
+  if (!_isAntidupEnabled()) return true;
+  var dup = _findDuplicateDemande(propertyId, courtierId, prenom, nom, tel, courriel, notes);
+  if (!dup) return true;
+  var d = dup.demande;
+  var ageH = Math.round((new Date().getTime() - new Date(d.lastModified||d.statusDate).getTime()) / 3600000 * 10) / 10;
+  var msg = '⚠ DEMANDE SIMILAIRE DÉTECTÉE\n\n';
+  msg += 'Raison : ' + dup.reason + '\n';
+  msg += 'Demande existante : ' + _displayName(d) + '\n';
+  msg += 'Reçue il y a ' + ageH + 'h (' + (d.source||'?') + ')\n';
+  if (d.notes) msg += 'Notes : ' + d.notes.substring(0, 120) + (d.notes.length>120?'…':'') + '\n';
+  msg += '\nCréer quand même ?\n(OK = créer le doublon · Annuler = ne pas créer)';
+  return confirm(msg);
+}
+
 function qualifyDemande(id){var d=_findDemande(id);if(!d)return;pushUndo('Marquer à suivre');d.status='qualified';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('✓ Demande passée à suivre');}
 function markDemandeEnAttente(id){var d=_findDemande(id);if(!d)return;pushUndo('Mettre en attente');d.status='en-attente';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('⏸ Demande mise en attente');}
 function dismissDemande(id){var d=_findDemande(id);if(!d)return;if(!confirm('Rejeter cette demande ?'))return;pushUndo('Rejet demande');d.status='lost';d.statusDate=_todayStr();d.lastModified=_todayStr();sdb();rall();toast('Demande rejetée');}
@@ -3594,12 +4052,19 @@ function convertDemandeToPa(id){
   var d=_findDemande(id);if(!d)return;
   var v=_vById(d.propertyId);if(!v){toast('⚠ Propriété introuvable');return;}
   var who=((d.prenom||'')+' '+(d.nom||'')).trim()||'cet acheteur';
-  if(!confirm('Créer une promesse pour '+who+'\nsur '+(v.adresse||'cette propriété')+' ?\n\n→ Sophie représente les 2 côtés (scénario B).\nLa fiche apparaîtra dans "Doubles représentations" sous EN VENTE.'))return;
-  pushUndo('Conversion demande → Doubles représentations');
+  // Étape 24 — si la demande a un courtier, la PA hérite (mode collaborateur) ; sinon double rep
+  var couExist=d.courtierId?_courtierById(d.courtierId):null;
+  var repLine=couExist
+    ?'\n→ Représentation : courtier collaborateur '+_courtierFullName(couExist)+(couExist.agence?' ('+couExist.agence+')':'')
+    :'\n→ Représentation : double rep (Sophie des 2 côtés)';
+  if(!confirm('Créer une promesse pour '+who+'\nsur '+(v.adresse||'cette propriété')+' ?'+repLine+'\n\nLa fiche apparaîtra dans "Promesses reçues" sous EN VENTE.'))return;
+  pushUndo('Conversion demande → Promesses reçues');
+  var newPaId=newId();
   db.pa.push({
-    id:newId(),propertyId:d.propertyId,
+    id:newPaId,propertyId:d.propertyId,
     prenom:d.prenom||'',nom:d.nom||'',
     telephone:d.telephone||'',courriel:d.courriel||'',
+    courtierId:d.courtierId||'',
     adresse:v.adresse||'',
     notes:d.notes||'',
     statutPa:'En cours',
@@ -3609,8 +4074,17 @@ function convertDemandeToPa(id){
     lastModified:_todayStr()
   });
   d.status='converted-pa';d.statusDate=_todayStr();d.lastModified=_todayStr();
+  d.convertedPaId=newPaId; // lien historique demande → PA (pour traçabilité future)
   sdb();rall();
-  toast('✓ Promesse créée dans "Doubles représentations"');
+  toast('✓ Promesse créée dans "Promesses reçues"');
+  // Jump vers l'onglet Promesses reçues + scroll sur la nouvelle PA
+  setTimeout(function(){
+    var btn=document.querySelector('.tbtn[data-tab="pa-en-vente"]');if(btn)btn.click();
+    setTimeout(function(){
+      var row=document.querySelector('#tb-pa-en-vente tr[data-rid="'+newPaId+'"]');
+      if(row){row.scrollIntoView({behavior:'smooth',block:'center'});row.style.boxShadow='0 0 0 3px #EF4444';setTimeout(function(){row.style.boxShadow='';},1800);}
+    },150);
+  },100);
 }
 
 function convertDemandeToA(id){
@@ -3690,6 +4164,9 @@ function updateDemandesBadges(){
     setBadge('sb-paev-badge',nPaev);
     setBadge('sb-pa-badge',nPa);
     setBadge('sb-v-badge',nVPaext);
+    // Étape 24 — pastille Références actives
+    var nRea=(db.refs||[]).filter(function(r){return r.statut!=='concluded';}).length;
+    setBadge('sb-rea-badge',nRea);
   }catch(e){console.warn('[demandes badges]',e.message);}
 }
 
@@ -3703,27 +4180,33 @@ var TPL_SECTIONS=[
   {key:'pa',         label:'Promesses en cours',         icon:'📄', color:'#EF4444', group:'achats'},
   {key:'v',          label:'Mes inscriptions',           icon:'🏡', color:'#84CC16', group:'envente'},
   {key:'demandes',   label:'Demandes reçues',            icon:'📩', color:'#F59E0B', group:'envente'},
-  {key:'pa-en-vente',label:'Doubles représentations',    icon:'📄', color:'#DC2626', group:'envente'}
+  {key:'pa-en-vente',label:'Promesses reçues',           icon:'📄', color:'#DC2626', group:'envente'},
+  {key:'courtiers-insc', label:'Courtiers inscripteurs',  icon:'🤝', color:'#64748B', group:'externes'},
+  {key:'courtiers-coll', label:'Courtiers collaborateurs', icon:'🤝', color:'#475569', group:'externes'}
 ];
 var TPL_GROUPS=[
-  {key:'prospects', label:'Prospects',  color:'#06B6D4'},
-  {key:'achats',    label:'Achats',     color:'#EF4444'},
-  {key:'envente',   label:'En vente',   color:'#84CC16'}
+  {key:'prospects', label:'Prospects',                   color:'#06B6D4'},
+  {key:'achats',    label:'Achats',                      color:'#EF4444'},
+  {key:'envente',   label:'En vente',                    color:'#84CC16'},
+  {key:'externes',  label:'Communications externes',     color:'#64748B'}
 ];
 var TPL_PLACEHOLDERS=[
-  {key:'prenom',          label:'Prénom client'},
-  {key:'nom',             label:'Nom client'},
-  {key:'telephone',       label:'Téléphone'},
-  {key:'courriel',        label:'Courriel'},
-  {key:'adresse',         label:'Adresse propriété'},
-  {key:'prix',            label:'Prix demandé'},
-  {key:'prixMin',         label:'Prix min'},
-  {key:'prixMax',         label:'Prix max'},
-  {key:'typeBat',         label:'Type bâtiment'},
-  {key:'secteur',         label:'Secteur'},
-  {key:'date_jour',       label:'Date du jour'},
-  {key:'courtier_prenom', label:'Mon prénom (courtier)'},
-  {key:'courtier_nom',    label:'Mon nom (courtier)'}
+  {key:'prenom',           label:'Prénom client'},
+  {key:'nom',              label:'Nom client'},
+  {key:'telephone',        label:'Téléphone'},
+  {key:'courriel',         label:'Courriel'},
+  {key:'adresse',          label:'Adresse propriété'},
+  {key:'prix',             label:'Prix demandé'},
+  {key:'prixMin',          label:'Prix min'},
+  {key:'prixMax',          label:'Prix max'},
+  {key:'typeBat',          label:'Type bâtiment'},
+  {key:'secteur',          label:'Secteur'},
+  {key:'date_jour',        label:'Date du jour'},
+  {key:'courtier_prenom',  label:'Mon prénom (courtier)'},
+  {key:'courtier_nom',     label:'Mon nom (courtier)'},
+  {key:'cou_prenom',       label:'Prénom courtier destinataire'},
+  {key:'cou_nom',          label:'Nom courtier destinataire'},
+  {key:'cou_agence',       label:'Agence courtier destinataire'}
 ];
 
 // État du modal
@@ -3908,6 +4391,240 @@ function openMailPicker(section,recordId){
 
 function closeTplPicker(){document.getElementById('tpl-pick-ov').classList.remove('on');_mailPickContext=null;}
 
+// ─── Étape 24 — Courtiers (master list db.courtiers) ─────────
+var _currentCourtierTab=null;   // contexte : tab en cours (pa)
+var _currentCourtierRecId=null; // contexte : id du record PA en cours
+var _currentCourtierId=null;    // contexte : id du courtier affiché dans la fiche info
+var _currentCourtierIsColl=false; // contexte : true = courtier collaborateur (pa-en-vente, demandes) → templates 'courtiers-coll'; false = inscripteur (pa) → 'courtiers-insc'
+var _courtierEditingId=null;    // null = nouveau courtier, sinon id existant
+
+function openCourtierPicker(tab,recId,isColl){
+  closeCourtierInfo();closeCourtierEdit();
+  _currentCourtierTab=tab;_currentCourtierRecId=recId;_currentCourtierIsColl=!!isColl;
+  var ov=document.getElementById('cou-pick-ov');if(!ov)return;
+  document.getElementById('cou-pick-search').value='';
+  _renderCourtierPickList('');
+  ov.classList.add('on');
+  setTimeout(function(){var s=document.getElementById('cou-pick-search');if(s)s.focus();},50);
+}
+function _renderCourtierPickList(filter){
+  var lst=document.getElementById('cou-pick-list');if(!lst)return;
+  var f=norm(filter||'');
+  var all=(db.courtiers||[]).slice().sort(function(a,b){return _courtierFullName(a).localeCompare(_courtierFullName(b),'fr');});
+  if(f){all=all.filter(function(c){return norm(_courtierFullName(c)+' '+(c.agence||'')+' '+(c.courriel||'')).indexOf(f)!==-1;});}
+  if(all.length===0){
+    lst.innerHTML='<div style="padding:18px;text-align:center;color:#94A3B8;font-style:italic;font-size:12px;background:#F8FAFC;border:1px dashed #E2E8F0;border-radius:8px">'+(filter?'Aucun courtier trouvé pour « '+esc(filter)+' »':'Aucun courtier enregistré.')+'<br><a href="javascript:void(0)" onclick="openCourtierEdit(null)" style="color:#0EA5E9;font-weight:700">+ Créer un courtier</a></div>';
+    return;
+  }
+  var html=['<div class="tpl-list">'];
+  all.forEach(function(c){
+    html.push('<div class="tpl-row" onclick="_courtierAssign(\''+c.id+'\')">'
+      +'<div class="tpl-row-main">'
+      +'<div class="tpl-row-name">'+esc(_courtierFullName(c))+(c.agence?' <span style="color:#94A3B8;font-weight:400;font-size:11px">· '+esc(c.agence)+'</span>':'')+'</div>'
+      +'<div class="tpl-row-subject">'+esc(c.courriel||'')+(c.telephone?' · '+esc(c.telephone):'')+'</div>'
+      +'</div>'
+      +'<div class="tpl-row-actions"><button class="tpl-btn primary">Assigner</button></div>'
+      +'</div>');
+  });
+  html.push('</div>');
+  lst.innerHTML=html.join('');
+}
+function closeCourtierPicker(){var ov=document.getElementById('cou-pick-ov');if(ov)ov.classList.remove('on');}
+function _courtierAssign(courtierId){
+  if(!_currentCourtierTab||!_currentCourtierRecId)return;
+  var tab=_storeTab(_currentCourtierTab);
+  var rec=null;for(var i=0;i<db[tab].length;i++){if(db[tab][i].id===_currentCourtierRecId){rec=db[tab][i];break;}}
+  if(!rec){toast('⚠ Fiche introuvable');return;}
+  pushUndo('Assignation courtier');
+  rec.courtierId=courtierId;
+  sdb();closeCourtierPicker();rall();
+  var c=_courtierById(courtierId);
+  toast('✓ '+(c?_courtierFullName(c):'Courtier')+' assigné');
+}
+function _courtierUnassign(){
+  if(!_currentCourtierTab||!_currentCourtierRecId)return;
+  var tab=_storeTab(_currentCourtierTab);
+  var rec=null;for(var i=0;i<db[tab].length;i++){if(db[tab][i].id===_currentCourtierRecId){rec=db[tab][i];break;}}
+  if(!rec)return;
+  pushUndo('Retrait courtier');
+  rec.courtierId='';
+  sdb();closeCourtierInfo();rall();
+  toast('✓ Courtier retiré de cette PA');
+}
+
+function openCourtierInfo(courtierId,tab,recId,isColl){
+  closeCourtierPicker();closeCourtierEdit();
+  _currentCourtierId=courtierId;
+  if(tab)_currentCourtierTab=tab;
+  if(recId)_currentCourtierRecId=recId;
+  if(typeof isColl!=='undefined')_currentCourtierIsColl=!!isColl;
+  var c=_courtierById(courtierId);if(!c){toast('⚠ Courtier introuvable');return;}
+  document.getElementById('cou-info-name').textContent=_courtierFullName(c);
+  var body=document.getElementById('cou-info-body');
+  var rows=[];
+  if(c.agence)rows.push('<div style="font-size:12px;color:#475569;margin-bottom:14px"><span style="font-weight:700">Agence :</span> '+esc(c.agence)+'</div>');
+  if(c.telephone){
+    var telSafe=esc(c.telephone).replace(/[^0-9+]/g,'');
+    rows.push('<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;margin-bottom:8px;cursor:pointer" onclick="_courtierCallPhone(\''+telSafe+'\')"><span style="color:#0EA5E9;font-size:16px">📞</span><div style="flex:1"><div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.05em">Téléphone</div><div style="font-size:14px;font-weight:600;color:#0F172A">'+esc(c.telephone)+'</div></div><span style="font-size:11px;color:#0EA5E9">Appeler →</span></div>');
+  }
+  if(c.courriel){
+    rows.push('<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;cursor:pointer" onclick="_courtierMailFlow()"><span style="color:#0EA5E9;font-size:16px">✉</span><div style="flex:1"><div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.05em">Courriel</div><div style="font-size:14px;font-weight:600;color:#0EA5E9">'+esc(c.courriel)+'</div></div><span style="font-size:11px;color:#0EA5E9">Envoyer →</span></div>');
+  }
+  if(!c.telephone&&!c.courriel){rows.push('<div style="padding:14px;text-align:center;color:#94A3B8;font-style:italic">Aucun contact enregistré pour ce courtier.<br><a href="javascript:void(0)" onclick="openCourtierEdit(_currentCourtierId)" style="color:#0EA5E9;font-weight:700">+ Ajouter téléphone / courriel</a></div>');}
+  body.innerHTML=rows.join('');
+  // Cache le bouton "Retirer" si on n'a pas de contexte PA
+  document.getElementById('cou-info-unassign').style.display=(_currentCourtierTab&&_currentCourtierRecId)?'inline-block':'none';
+  document.getElementById('cou-info-ov').classList.add('on');
+}
+function closeCourtierInfo(){var ov=document.getElementById('cou-info-ov');if(ov)ov.classList.remove('on');}
+function _courtierCallPhone(tel){if(!tel)return;var url='tel:'+tel;if(window.electronAPI&&window.electronAPI.openExternal){window.electronAPI.openExternal(url).catch(function(){window.location.href=url;});}else{window.location.href=url;}}
+function _courtierMailFlow(){
+  var c=_courtierById(_currentCourtierId);if(!c||!c.courriel)return;
+  // Section template selon le contexte : 'courtiers-coll' si depuis pa-en-vente/demandes, sinon 'courtiers-insc' (depuis pa)
+  var secKey=_currentCourtierIsColl?'courtiers-coll':'courtiers-insc';
+  _mailPickContext={section:secKey,recordId:null,courriel:c.courriel,name:_courtierFullName(c),courtierMode:true,courtier:c};
+  var sec=_tplFindSection(secKey);
+  var tag=document.getElementById('tpl-pick-section');
+  if(sec){tag.textContent=sec.icon+' '+sec.label;tag.style.background=sec.color;}
+  document.getElementById('tpl-pick-dest').innerHTML='Destinataire : <strong>'+esc(_courtierFullName(c))+'</strong> &middot; <span style="color:#0EA5E9">'+esc(c.courriel)+'</span>'+(c.agence?'<br><span style="font-size:11px;color:#94A3B8">'+esc(c.agence)+'</span>':'');
+  var tpls=(db.templates||[]).filter(function(t){return t.section===secKey;});
+  var lst=document.getElementById('tpl-pick-list');
+  if(tpls.length===0){
+    var secLbl=sec?sec.label:'Courtiers';
+    lst.innerHTML='<div style="padding:18px;text-align:center;color:#94A3B8;font-style:italic;font-size:12px;background:#F8FAFC;border:1px dashed #E2E8F0;border-radius:8px">Aucun template « '+esc(secLbl)+' ».<br><a href="javascript:void(0)" onclick="closeTplPicker();document.querySelector(\'.tbtn[data-tab=&quot;templates&quot;]\').click()" style="color:#0EA5E9;font-weight:700">+ Créer un template</a></div>';
+  } else {
+    var html=['<div class="tpl-list">'];
+    tpls.forEach(function(t){
+      html.push('<div class="tpl-row" onclick="sendMailFromTemplate(\''+t.id+'\')">'
+        +'<div class="tpl-row-main"><div class="tpl-row-name">'+esc(t.name||'(sans nom)')+'</div><div class="tpl-row-subject">'+esc(t.subject||'(pas de sujet)')+'</div></div>'
+        +'<div class="tpl-row-actions"><button class="tpl-btn primary">✉ Utiliser</button></div>'
+        +'</div>');
+    });
+    html.push('</div>');
+    lst.innerHTML=html.join('');
+  }
+  closeCourtierInfo();
+  document.getElementById('tpl-pick-ov').classList.add('on');
+}
+
+function openCourtierEdit(courtierId){
+  closeCourtierPicker();closeCourtierInfo();
+  _courtierEditingId=courtierId||null;
+  var c=courtierId?_courtierById(courtierId):null;
+  document.getElementById('cou-edit-title').textContent=c?'Modifier '+_courtierFullName(c):'Nouveau courtier';
+  document.getElementById('cou-prenom').value=c?(c.prenom||''):'';
+  document.getElementById('cou-nom').value=c?(c.nom||''):'';
+  document.getElementById('cou-agence').value=c?(c.agence||''):'';
+  document.getElementById('cou-tel').value=c?(c.telephone||''):'';
+  document.getElementById('cou-co').value=c?(c.courriel||''):'';
+  document.getElementById('cou-edit-delete').style.display=c?'inline-block':'none';
+  document.getElementById('cou-edit-ov').classList.add('on');
+  setTimeout(function(){var p=document.getElementById('cou-prenom');if(p)p.focus();},50);
+}
+function closeCourtierEdit(){var ov=document.getElementById('cou-edit-ov');if(ov)ov.classList.remove('on');_courtierEditingId=null;}
+function saveCourtier(){
+  var prenom=(document.getElementById('cou-prenom').value||'').trim();
+  var nom=(document.getElementById('cou-nom').value||'').trim();
+  if(!prenom||!nom){alert('Le prénom et le nom sont requis.');return;}
+  var agence=(document.getElementById('cou-agence').value||'').trim();
+  var tel=(document.getElementById('cou-tel').value||'').trim();
+  var co=(document.getElementById('cou-co').value||'').trim();
+  pushUndo(_courtierEditingId?'Modif courtier':'Ajout courtier');
+  if(!db.courtiers)db.courtiers=[];
+  var now=_todayStr();
+  if(_courtierEditingId){
+    var c=_courtierById(_courtierEditingId);
+    if(!c){toast('⚠ Courtier introuvable');closeCourtierEdit();return;}
+    c.prenom=prenom;c.nom=nom;c.agence=agence;c.telephone=tel;c.courriel=co;c.lastModified=now;
+    toast('✓ Courtier mis à jour');
+    var stay=_courtierEditingId;
+    closeCourtierEdit();
+    // Si on éditait depuis la fiche info, on revient à la fiche info ; sinon on revient au picker
+    if(_currentCourtierTab&&_currentCourtierRecId){openCourtierInfo(stay);}
+  } else {
+    var nc={id:newId(),prenom:prenom,nom:nom,agence:agence,telephone:tel,courriel:co,lastModified:now};
+    db.courtiers.push(nc);
+    toast('✓ Courtier ajouté');
+    closeCourtierEdit();
+    // Si on est dans le contexte d'une PA, on assigne directement
+    if(_currentCourtierTab&&_currentCourtierRecId){_courtierAssign(nc.id);return;}
+  }
+  sdb();rall();
+}
+function _courtierDelete(){
+  if(!_courtierEditingId)return;
+  var c=_courtierById(_courtierEditingId);if(!c)return;
+  // Compter combien de PA utilisent ce courtier
+  var used=(db.pa||[]).filter(function(p){return p.courtierId===_courtierEditingId;}).length;
+  var msg='Supprimer '+_courtierFullName(c)+' ?';
+  if(used>0)msg+='\n\n⚠ '+used+' PA utilise(nt) ce courtier — leur champ "Courtier" sera vidé.';
+  if(!confirm(msg))return;
+  pushUndo('Suppr courtier');
+  // Détacher de toutes les PA
+  (db.pa||[]).forEach(function(p){if(p.courtierId===_courtierEditingId)p.courtierId='';});
+  // Retirer de db.courtiers
+  db.courtiers=db.courtiers.filter(function(x){return x.id!==_courtierEditingId;});
+  sdb();closeCourtierEdit();closeCourtierInfo();rall();
+  toast('✓ Courtier supprimé');
+}
+// Helpers : sélecteur courtier depuis le formulaire d'édition PA (au lieu du tableau)
+var _courtierFormIsColl=false;
+function _openCourtierPickerFromForm(isColl){
+  // Mode spécial : le picker assigne au champ caché fcourtierid (pas à un record direct)
+  _currentCourtierTab='__form__';_currentCourtierRecId='__form__';
+  _courtierFormIsColl=!!isColl;
+  _currentCourtierIsColl=!!isColl;
+  var ov=document.getElementById('cou-pick-ov');if(!ov)return;
+  document.getElementById('cou-pick-search').value='';
+  _renderCourtierPickList('');
+  ov.classList.add('on');
+  setTimeout(function(){var s=document.getElementById('cou-pick-search');if(s)s.focus();},50);
+}
+function _clearCourtierFromForm(){
+  var hid=document.getElementById('fcourtierid');if(hid)hid.value='';
+  var lbl=document.getElementById('fcourtierlabel');if(!lbl)return;
+  // En mode collaborateur (pa-en-vente), label "Double rep." (mauve) ; sinon "(aucun)" (gris)
+  if(_courtierFormIsColl){
+    lbl.innerHTML='🤝 Double représentation (toi des 2 côtés)';
+    lbl.style.color='#7E22CE';lbl.style.fontWeight='600';
+  } else {
+    lbl.textContent='(aucun)';lbl.style.color='#94A3B8';lbl.style.fontWeight='400';
+  }
+  var btns=lbl.parentNode.querySelectorAll('button');
+  if(btns.length>=1)btns[0].textContent=_courtierFormIsColl?'Assigner courtier':'Assigner';
+  if(btns.length>=2)btns[1].style.display='none';
+}
+// Override _courtierAssign pour gérer le mode "form"
+var _origCourtierAssign=_courtierAssign;
+_courtierAssign=function(courtierId){
+  if(_currentCourtierTab==='__form__'){
+    var c=_courtierById(courtierId);
+    var hid=document.getElementById('fcourtierid');if(hid)hid.value=courtierId;
+    var lbl=document.getElementById('fcourtierlabel');
+    if(lbl&&c){
+      lbl.innerHTML=esc(_courtierFullName(c))+(c.agence?' <span style="color:#94A3B8;font-size:11px">· '+esc(c.agence)+'</span>':'');
+      lbl.style.color='#0F172A';
+    }
+    var btns=lbl?lbl.parentNode.querySelectorAll('button'):[];
+    if(btns.length>=1)btns[0].textContent='Changer';
+    if(btns.length>=2){btns[1].style.display='inline-block';}
+    else if(lbl){var x=document.createElement('button');x.type='button';x.className='tpl-btn muted';x.title='Retirer';x.textContent='✕';x.onclick=_clearCourtierFromForm;lbl.parentNode.appendChild(x);}
+    closeCourtierPicker();
+    toast('✓ '+(c?_courtierFullName(c):'Courtier')+' sélectionné — n\'oubliez pas d\'enregistrer la fiche PA');
+    _currentCourtierTab=null;_currentCourtierRecId=null;
+    return;
+  }
+  _origCourtierAssign(courtierId);
+};
+
+// Listener clavier + clic outside pour les 3 modals courtier
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(document.getElementById('cou-pick-ov').classList.contains('on'))closeCourtierPicker();if(document.getElementById('cou-info-ov').classList.contains('on'))closeCourtierInfo();if(document.getElementById('cou-edit-ov').classList.contains('on'))closeCourtierEdit();}});
+document.getElementById('cou-pick-ov').addEventListener('click',function(e){if(e.target===this)closeCourtierPicker();});
+document.getElementById('cou-info-ov').addEventListener('click',function(e){if(e.target===this)closeCourtierInfo();});
+document.getElementById('cou-edit-ov').addEventListener('click',function(e){if(e.target===this)closeCourtierEdit();});
+// Recherche live dans le picker
+document.getElementById('cou-pick-search').addEventListener('input',function(){_renderCourtierPickList(this.value);});
+
 function _getMailProvider(){try{return localStorage.getItem('crmpro-mail-provider')||'system';}catch(e){return 'system';}}
 function setMailProvider(v){try{localStorage.setItem('crmpro-mail-provider',v||'system');}catch(e){}toast('✓ Service courriel : '+(v==='gmail'?'Gmail web':v==='outlook-web'?'Outlook web':'Outlook desktop'));}
 
@@ -3919,6 +4636,7 @@ var TRIANGLE_SMS_NUMBER='+1 581 802 0831'; // Numéro Twilio QC (581 - Est du Qu
 var _smsPollTimer=null;
 var _smsPendingCache=[];
 var _smsConfirmIndex=0;
+var _smsCfCourtierId=''; // Étape 24 : courtier lié à la demande en cours de confirmation (broker request)
 
 function _getLicenseKey(){
   try{
@@ -4096,17 +4814,75 @@ function _renderSmsConfirmModal(){
   document.getElementById('smsCf-courriel').value=p.courriel||'';
   document.getElementById('smsCf-source').value=p.source||'SMS';
   document.getElementById('smsCf-notes').value=p.notes||'';
-  // Sélecteur de propriété
+  // Étape 24 — section courtier (toujours visible). Auto-suggestion si is_broker_request détecté.
+  _smsCfCourtierId=''; // reset à chaque entry
+  var section=document.getElementById('smsConfirmCourtierSection');
+  var hint=document.getElementById('smsConfirmCourtierHint');
+  if(p.is_broker_request&&(p.courtier_prenom||p.courtier_nom)){
+    // Le LLM a détecté un courtier — auto-lookup
+    var couLabel=((p.courtier_prenom||'')+' '+(p.courtier_nom||'')).trim();
+    var existing=(db.courtiers||[]).find(function(c){return norm(c.prenom)===norm(p.courtier_prenom)&&norm(c.nom)===norm(p.courtier_nom);});
+    if(existing){
+      _smsCfCourtierId=existing.id;
+      _smsCfRenderCourtierStatus();
+    } else {
+      // Pas de fiche existante — suggestion à confirmer
+      section.style.borderLeftColor='#0EA5E9';
+      section.style.background='#EFF6FF';
+      hint.innerHTML='<strong style="color:#0EA5E9">🤝 Courtier détecté par le parser : '+esc(couLabel)+(p.courtier_agence?' ('+esc(p.courtier_agence)+')':'')+'</strong><br>Crée la fiche pour lier la demande.';
+      document.getElementById('smsConfirmCourtierStatus').innerHTML='<span style="color:#0EA5E9;font-weight:600">Suggestion : '+esc(couLabel)+'</span>'+(p.courtier_agence?' · '+esc(p.courtier_agence):'');
+      document.getElementById('smsConfirmCourtierStatus').style.color='#0EA5E9';
+      document.getElementById('smsConfirmCourtierStatus').style.fontStyle='normal';
+      document.getElementById('smsConfirmCourtierBtnCreate').textContent='+ Créer cette fiche';
+    }
+  } else {
+    // Pas de détection : état neutre, user choisit
+    section.style.borderLeftColor='#94A3B8';
+    section.style.background='#F8FAFC';
+    hint.innerHTML='Laisse vide si demande directe d\'un client. Lie un courtier si c\'est un inscripteur/collaborateur.';
+    document.getElementById('smsConfirmCourtierBtnCreate').textContent='+ Créer fiche';
+    _smsCfRenderCourtierStatus();
+  }
+  // Sélecteur de propriété — Étape 24 : matching plus tolérant (civic + nom de rue + ville normalisés)
   var sel=document.getElementById('smsCf-property');
   var vs=db.v||[];
-  var matchHint=(p.address_hint||'').toLowerCase();
   var bestMatch=null;
   var opts=['<option value="">— Aucune (créer en Acheteur général) —</option>'];
+  // Helper : normalise une adresse pour matching (lowercase, sans accents, sans virgule, sans "rue/avenue/boul.", civic seul si présent)
+  var _normAddr=function(s){
+    if(!s)return {full:'',civic:'',street:'',city:''};
+    var nrm=norm(s).replace(/[,.]/g,' ').replace(/\s+/g,' ').trim();
+    // Extraire civic (premier nombre)
+    var civicMatch=nrm.match(/^(\d+[a-z]?)/i);
+    var civic=civicMatch?civicMatch[1]:'';
+    // Strip civic + mots génériques de rue
+    var rest=nrm.replace(/^\d+[a-z]?\s*/i,'').replace(/\b(rue|avenue|boul|boulevard|chemin|route|place|rang|montee|cote|terrasse|impasse|allee|cours)\b/g,'').replace(/\s+/g,' ').trim();
+    // City = dernier segment (souvent après une virgule, mais on a déjà strip ; alors on prend les 2 derniers mots si > 4 mots, sinon string complète)
+    var parts=rest.split(' ');
+    var street=parts.slice(0,Math.max(1,parts.length-2)).join(' ');
+    var city=parts.length>2?parts.slice(-2).join(' '):'';
+    return {full:nrm,civic:civic,street:street||rest,city:city,rest:rest};
+  };
+  var hintN=_normAddr(p.address_hint||'');
   vs.forEach(function(v){
     var lbl='🏡 '+(v.adresse||'(sans adresse)')+' · '+((v.prenom||'')+' '+(v.nom||'')).trim();
-    var isMatch=matchHint&&v.adresse&&v.adresse.toLowerCase().indexOf(matchHint.substring(0,12))>=0;
+    var vN=_normAddr(v.adresse||'');
+    var matchScore=0;
+    if(hintN.civic&&vN.civic&&hintN.civic===vN.civic)matchScore+=3;
+    if(hintN.street&&vN.street&&hintN.street.length>=3){
+      if(vN.street.indexOf(hintN.street)>=0||hintN.street.indexOf(vN.street)>=0)matchScore+=4;
+      else {
+        // Match par mot-clé : si au moins un mot de 4+ char en commun
+        var words=hintN.street.split(' ').filter(function(w){return w.length>=4;});
+        var hit=words.some(function(w){return vN.street.indexOf(w)>=0;});
+        if(hit)matchScore+=2;
+      }
+    }
+    if(hintN.city&&vN.city&&(vN.city.indexOf(hintN.city)>=0||hintN.city.indexOf(vN.city)>=0))matchScore+=1;
+    var isMatch=matchScore>=3; // seuil : civic exact OU rue qui matche
     if(isMatch&&!bestMatch)bestMatch=v.id;
-    opts.push('<option value="'+v.id+'"'+(isMatch?' data-match="1"':'')+'>'+esc(lbl)+'</option>');
+    var matchTag=isMatch?' ⬅ MATCH':'';
+    opts.push('<option value="'+v.id+'"'+(isMatch?' data-match="1"':'')+'>'+esc(lbl)+matchTag+'</option>');
   });
   sel.innerHTML=opts.join('');
   if(bestMatch)sel.value=bestMatch;
@@ -4131,8 +4907,104 @@ async function smsCfDismiss(){
   await _smsClearOne(e.id);
 }
 
+// Étape 24 — Refonte : section courtier toujours visible dans le modal SMS confirm
+function _smsCfRenderCourtierStatus(){
+  var statusEl=document.getElementById('smsConfirmCourtierStatus');
+  var clearBtn=document.getElementById('smsConfirmCourtierBtnClear');
+  var pickBtn=document.getElementById('smsConfirmCourtierBtnPick');
+  var createBtn=document.getElementById('smsConfirmCourtierBtnCreate');
+  if(_smsCfCourtierId){
+    var c=_courtierById(_smsCfCourtierId);
+    if(c){
+      statusEl.innerHTML='✓ Lié à <strong style="color:#15803D">'+esc(_courtierFullName(c))+'</strong>'+(c.agence?' <span style="color:#94A3B8">· '+esc(c.agence)+'</span>':'');
+      statusEl.style.color='#0F172A';
+      statusEl.style.fontStyle='normal';
+      clearBtn.style.display='inline-block';
+      pickBtn.textContent='Changer';
+      createBtn.style.display='none';
+      return;
+    }
+  }
+  statusEl.innerHTML='— Direct (aucun courtier) —';
+  statusEl.style.color='#94A3B8';
+  statusEl.style.fontStyle='italic';
+  clearBtn.style.display='none';
+  pickBtn.textContent='📇 Lier existant';
+  createBtn.style.display='inline-block';
+}
+function _smsCfClearCourtier(){
+  _smsCfCourtierId='';
+  _smsCfRenderCourtierStatus();
+  // Restore neutral hint
+  var section=document.getElementById('smsConfirmCourtierSection');
+  section.style.borderLeftColor='#94A3B8';
+  section.style.background='#F8FAFC';
+  document.getElementById('smsConfirmCourtierHint').innerHTML='Laisse vide si demande directe d\'un client. Lie un courtier si c\'est un inscripteur/collaborateur.';
+}
+function _smsCfPickCourtier(){
+  // Réutilise openCourtierPicker en mode "form" : à la sélection, on capte l'id
+  _currentCourtierTab='__sms_form__';_currentCourtierRecId='__sms_form__';
+  _courtierFormIsColl=true;_currentCourtierIsColl=true;
+  var ov=document.getElementById('cou-pick-ov');if(!ov)return;
+  document.getElementById('cou-pick-search').value='';
+  _renderCourtierPickList('');
+  ov.classList.add('on');
+  setTimeout(function(){var s=document.getElementById('cou-pick-search');if(s)s.focus();},50);
+}
+function _smsCfCreateCourtier(){
+  var e=_smsPendingCache[_smsConfirmIndex];if(!e)return;
+  var p=e.parsed||{};
+  _courtierEditingId=null;
+  // Pré-remplir avec les infos LLM si présentes (utile en mode broker request)
+  setTimeout(function(){
+    var inP=document.getElementById('cou-prenom');if(inP)inP.value=p.courtier_prenom||'';
+    var inN=document.getElementById('cou-nom');if(inN)inN.value=p.courtier_nom||'';
+    var inA=document.getElementById('cou-agence');if(inA)inA.value=p.courtier_agence||'';
+    var inT=document.getElementById('cou-tel');if(inT)inT.value=p.courtier_telephone||'';
+    var inC=document.getElementById('cou-co');if(inC)inC.value=p.courtier_courriel||'';
+    var focusEl=document.getElementById((p.courtier_prenom?'cou-tel':'cou-prenom'));if(focusEl)focusEl.focus();
+  },30);
+  // Hook saveCourtier pour capter l'id et le poser dans _smsCfCourtierId
+  var _origSave=saveCourtier;
+  saveCourtier=function(){
+    var prenomVal=(document.getElementById('cou-prenom').value||'').trim();
+    var nomVal=(document.getElementById('cou-nom').value||'').trim();
+    if(!prenomVal||!nomVal){alert('Le prénom et le nom sont requis.');return;}
+    // Anti-doublon : si un courtier existe déjà avec le même nom, lier au lieu de créer
+    var existing=(db.courtiers||[]).find(function(c){return norm(c.prenom)===norm(prenomVal)&&norm(c.nom)===norm(nomVal);});
+    if(existing&&!_courtierEditingId){
+      _smsCfCourtierId=existing.id;
+      _smsCfRenderCourtierStatus();
+      closeCourtierEdit();
+      toast('✓ Courtier existant lié (anti-doublon)');
+      saveCourtier=_origSave;
+      return;
+    }
+    _origSave();
+    var last=db.courtiers[db.courtiers.length-1];
+    if(last){_smsCfCourtierId=last.id;_smsCfRenderCourtierStatus();}
+    saveCourtier=_origSave;
+  };
+  openCourtierEdit(null);
+}
+// Override _courtierAssign pour gérer le mode "__sms_form__"
+var _origCourtierAssignSms=_courtierAssign;
+_courtierAssign=function(courtierId){
+  if(_currentCourtierTab==='__sms_form__'){
+    _smsCfCourtierId=courtierId;
+    _smsCfRenderCourtierStatus();
+    closeCourtierPicker();
+    var c=_courtierById(courtierId);
+    toast('✓ '+(c?_courtierFullName(c):'Courtier')+' lié à la demande');
+    _currentCourtierTab=null;_currentCourtierRecId=null;
+    return;
+  }
+  _origCourtierAssignSms(courtierId);
+};
+
 async function smsCfSave(){
   var e=_smsPendingCache[_smsConfirmIndex];if(!e)return;
+  var p=e.parsed||{};
   var prenom=document.getElementById('smsCf-prenom').value.trim();
   var nom=document.getElementById('smsCf-nom').value.trim();
   var tel=document.getElementById('smsCf-tel').value.trim();
@@ -4140,19 +5012,27 @@ async function smsCfSave(){
   var source=document.getElementById('smsCf-source').value;
   var notes=document.getElementById('smsCf-notes').value.trim();
   var propertyId=document.getElementById('smsCf-property').value;
-  if(!prenom&&!nom&&!tel&&!courriel){alert('Entre au moins un nom ou un contact.');return;}
+  var hasCourtier=!!_smsCfCourtierId;
+  var hasClient=!!(prenom||nom||tel||courriel);
+  // Au moins un courtier OU un client (sinon on créé une fiche vide qui sert à rien)
+  if(!hasCourtier&&!hasClient){
+    alert('⚠ Lie un courtier OU entre au moins un nom/contact client.\n\nUne demande doit avoir au moins une source identifiable.');return;
+  }
+  // Étape 24 — anti-doublons (screenshot/SMS capture)
+  if(propertyId&&!_confirmDuplicateOrProceed(propertyId,_smsCfCourtierId,prenom,nom,tel,courriel,notes))return;
   pushUndo('Demande SMS captée');
   if(propertyId){
-    // Push dans db.demandes pour cette propriété
+    // Push dans db.demandes pour cette propriété (avec courtierId si broker request)
     db.demandes.push({
       id:newId(),propertyId:propertyId,
       prenom:prenom,nom:nom,telephone:tel,courriel:courriel,
+      courtierId:_smsCfCourtierId||'',
       source:source||'SMS',
       date:_todayStr(),
       notes:notes,
       status:'new',statusDate:_todayStr(),lastModified:_todayStr()
     });
-    toast('✓ Demande ajoutée');
+    toast(hasCourtier?'✓ Demande médiée par courtier ajoutée':'✓ Demande ajoutée');
   } else {
     // Pas de propriété → Acheteur général
     db.a.push({
@@ -4329,12 +5209,22 @@ function _updateBmailVisibility(tab){
   }
 }
 
-// Substitution des placeholders {{prenom}} et {{nom}} dans un texte
-function _substituteTplVars(text,prenom,nom){
+// Substitution des placeholders {{prenom}} et {{nom}} dans un texte (+ {{cou_prenom}}, {{cou_nom}}, {{cou_agence}} si courtier fourni)
+function _substituteTplVars(text,prenom,nom,courtier){
   if(!text)return '';
-  return String(text)
+  var out=String(text)
     .replace(/\{\{\s*prenom\s*\}\}/gi,prenom||'')
     .replace(/\{\{\s*nom\s*\}\}/gi,nom||'');
+  if(courtier&&typeof courtier==='object'){
+    out=out
+      .replace(/\{\{\s*cou_prenom\s*\}\}/gi,courtier.prenom||'')
+      .replace(/\{\{\s*cou_nom\s*\}\}/gi,courtier.nom||'')
+      .replace(/\{\{\s*cou_agence\s*\}\}/gi,courtier.agence||'');
+  } else {
+    // Vider les placeholders courtier non substitués
+    out=out.replace(/\{\{\s*cou_(prenom|nom|agence)\s*\}\}/gi,'');
+  }
+  return out;
 }
 
 function sendMailFromTemplate(tplId){
@@ -4352,6 +5242,18 @@ function sendMailFromTemplate(tplId){
     closeTplPicker();
     return;
   }
+  // Mode courtier (Étape 24) : pas de fiche client à lookup, on utilise les infos du courtier
+  if(ctx.courtierMode){
+    var couPrenom=(ctx.courtier&&ctx.courtier.prenom)||'';
+    var couNom=(ctx.courtier&&ctx.courtier.nom)||'';
+    var subjC=_substituteTplVars(tpl.subject,couPrenom,couNom,ctx.courtier);
+    var bodyC=_substituteTplVars(tpl.body,couPrenom,couNom,ctx.courtier);
+    var sigBodyC=(db.signature&&db.signature.body)?db.signature.body:'';
+    if(sigBodyC)bodyC=bodyC+'\n\n'+_substituteTplVars(sigBodyC,couPrenom,couNom,ctx.courtier);
+    _openMailto(ctx.courriel,subjC,bodyC);
+    closeTplPicker();
+    return;
+  }
   // Mode single (original)
   var dataTab=_storeTab(ctx.section);
   var rec=null;
@@ -4362,11 +5264,14 @@ function sendMailFromTemplate(tplId){
   }
   var prenom=rec?(rec.prenom||''):'';
   var nom=rec?(rec.nom||''):'';
-  var subject=_substituteTplVars(tpl.subject,prenom,nom);
-  var body=_substituteTplVars(tpl.body,prenom,nom);
+  // Si la PA a un courtierId associé, le passer comme contexte (permet les placeholders {{cou_*}} dans les templates pa)
+  var courtierCtx=null;
+  if(rec&&rec.courtierId)courtierCtx=_courtierById(rec.courtierId);
+  var subject=_substituteTplVars(tpl.subject,prenom,nom,courtierCtx);
+  var body=_substituteTplVars(tpl.body,prenom,nom,courtierCtx);
   // Étape 22 — append signature (texte seul, l'image n'est pas supportée par mailto:)
   var sigBody=(db.signature&&db.signature.body)?db.signature.body:'';
-  if(sigBody)body=body+'\n\n'+_substituteTplVars(sigBody,prenom,nom);
+  if(sigBody)body=body+'\n\n'+_substituteTplVars(sigBody,prenom,nom,courtierCtx);
   if(!ctx.courriel){toast('⚠ Pas de courriel sur cette fiche — ouverture vide');}
   _openMailto(ctx.courriel,subject,body);
   closeTplPicker();
@@ -4894,6 +5799,8 @@ function renderCalendar(){
 // ─── DASHBOARD ──────────────────────────────────────────────
 function _dashCommAch(rec){var m=parseFloat(rec.montant)||0,c=parseFloat(rec.commission)||0;return m*c/100;}
 function _dashCommVend(rec){var m=parseFloat(rec.montant)||0,ct=parseFloat(rec.commTot)||0,ca=parseFloat(rec.commAutre)||0;return m*Math.max(0,ct-ca)/100;}
+// Étape 24 — Commission d'une référence : montant Sophie direct (déjà calculé/saisi)
+function _dashCommRef(rec){return parseFloat(rec.commissionSophie)||0;}
 function _dashDedup(arr){var seen={},out=[];arr.forEach(function(r){if(r.linkId){if(seen[r.linkId])return;seen[r.linkId]=true;var sib=arr.filter(function(s){return s.linkId===r.linkId;});var rep=sib.filter(function(s){return parseFloat(s.montant)>0;})[0]||sib[0];out.push(rep);} else out.push(r);});return out;}
 function _dashFmtMny(v){if(!v||isNaN(v))return'0 $';if(v>=1000000)return(Math.round(v/100000)/10).toString().replace('.',',')+' M$';if(v>=1000)return(Math.round(v/100)/10).toString().replace('.',',')+' k$';return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' $';}
 function _dashFmtPct(curr,prev){if(!prev||prev===0){if(!curr||curr===0)return{label:'—',cls:'neu'};return{label:'NOUV.',cls:'pos'};}var d=Math.round((curr-prev)/prev*100);if(d>0)return{label:'+'+d+'%',cls:'pos'};if(d<0)return{label:d+'%',cls:'neg'};return{label:'0%',cls:'neu'};}
@@ -4912,10 +5819,13 @@ function _dashFilterByPeriod(arr,year,month){
 function _dashCommYearMonth(year,month){
   var ac=_dashDedup(_dashFilterByPeriod(db.ac,year,month));
   var vc=_dashDedup(_dashFilterByPeriod(db.vc,year,month));
+  // Étape 24 — Références conclues : filtre par dateConclusion + statut=concluded
+  var rec=(db.refs||[]).filter(function(r){return r.statut==='concluded';});
+  rec=_dashFilterByPeriod(rec,year,month);
   return {
-    count:ac.length+vc.length,
-    comm:ac.reduce(function(s,r){return s+_dashCommAch(r);},0)+vc.reduce(function(s,r){return s+_dashCommVend(r);},0),
-    ac:ac,vc:vc
+    count:ac.length+vc.length+rec.length,
+    comm:ac.reduce(function(s,r){return s+_dashCommAch(r);},0)+vc.reduce(function(s,r){return s+_dashCommVend(r);},0)+rec.reduce(function(s,r){return s+_dashCommRef(r);},0),
+    ac:ac,vc:vc,rec:rec
   };
 }
 
@@ -4943,8 +5853,17 @@ function renderDashboard(){
   // Pipeline value (montants en cours)
   var paUniq=_dashDedup(db.pa);
   var vUniq=_dashDedup(db.v);
-  var pipelineVal=paUniq.reduce(function(s,r){return s+(parseFloat(r.montant)||0);},0)+vUniq.reduce(function(s,r){return s+(parseFloat(r.montant)||parseFloat(r.prix)||0);},0);
-  var pipelineCommEst=paUniq.reduce(function(s,r){return s+_dashCommAch(r);},0)+vUniq.reduce(function(s,r){return s+_dashCommVend(r);},0);
+  // Étape 24 — Références actives dans le pipeline (commission Sophie estimée si saisie)
+  var refsActives=(db.refs||[]).filter(function(r){return r.statut!=='concluded';});
+  // Étape 24 — Refonte calcul "Commissions à venir" :
+  //  - PA côté acheteur (pa SANS propertyId) : commission Sophie = pa.montant × pa.commission% (négociée avec son client)
+  //  - V inscriptions : SEULEMENT celles qui ont une PA active dessus (pa avec propertyId=v.id) → utilise v.montant × (commTot-commAutre)%
+  //    Rationale : un mandat de vente sans offre n'est pas une commission à venir, juste une opportunité
+  //  - Refs actives : commissionSophie direct
+  var paAch=paUniq.filter(function(p){return !p.propertyId;}); // PA côté achat (négo avec acheteur de Sophie)
+  var vWithPa=vUniq.filter(function(v){return paUniq.some(function(p){return p.propertyId===v.id;});}); // Inscriptions avec PA reçue
+  var pipelineVal=paUniq.reduce(function(s,r){return s+(parseFloat(r.montant)||0);},0)+vWithPa.reduce(function(s,r){return s+(parseFloat(r.montant)||parseFloat(r.prix)||0);},0);
+  var pipelineCommEst=paAch.reduce(function(s,r){return s+_dashCommAch(r);},0)+vWithPa.reduce(function(s,r){return s+_dashCommVend(r);},0)+refsActives.reduce(function(s,r){return s+_dashCommRef(r);},0);
 
   // Funnel
   var nbProspects=db.cp.length+db.vp.length+db.a.length;
@@ -4975,47 +5894,97 @@ function renderDashboard(){
 
   // Moyenne commission par transaction (année)
   var avgCommYTD=yearData.count>0?Math.round(yearData.comm/yearData.count):0;
+  var avgCommPrev=prevYearData.count>0?Math.round(prevYearData.comm/prevYearData.count):0;
+  var deltaAvg=_dashFmtPct(avgCommYTD,avgCommPrev);
+
+  // Étape 24 — Encaissé décomposé par source (commissions YTD par tab)
+  var commAc=yearData.ac.reduce(function(s,r){return s+_dashCommAch(r);},0);
+  var commVc=yearData.vc.reduce(function(s,r){return s+_dashCommVend(r);},0);
+  var commRecs=(yearData.rec||[]).reduce(function(s,r){return s+_dashCommRef(r);},0);
+  // Étape 24 — En cours décomposé par source
+  var commPaAch=paAch.reduce(function(s,r){return s+_dashCommAch(r);},0);
+  var commVwithPa=vWithPa.reduce(function(s,r){return s+_dashCommVend(r);},0);
+  var commRefsAct=refsActives.reduce(function(s,r){return s+_dashCommRef(r);},0);
+  // Étape 24 — Projection annuelle + comparaison 2025 année complète
+  var projected2026=yearData.comm+pipelineCommEst;
+  var full2025=0,full2025Count=0;
+  for(var fm=0;fm<12;fm++){var fd=_dashCommYearMonth(curYear-1,fm);full2025+=fd.comm;full2025Count+=fd.count;}
+  var deltaProj=_dashFmtPct(projected2026,full2025);
 
   var html='';
-  // SECTION : MOIS
-  html+='<div class="dash-section dash-mois">'
-    +'<div class="dash-section-head"><div class="dash-section-title">R&eacute;sum&eacute; du mois</div><div class="dash-section-period">'+monthName+'</div></div>'
-    +'<div class="dash-kpis">'
-    +'<div class="dash-kpi accent-cyan"><div class="dash-kpi-label">Transactions conclues</div><div class="dash-kpi-value">'+monthData.count+'</div><div class="dash-kpi-sub">'+prevPeriodLabel+' : '+prevMonthData.count+'</div><div class="dash-kpi-delta '+deltaMoisDeals.cls+'">'+deltaMoisDeals.label+'</div></div>'
-    +'<div class="dash-kpi accent-lime"><div class="dash-kpi-label">Commissions</div><div class="dash-kpi-value">'+_dashFmtMny(monthData.comm)+'</div><div class="dash-kpi-sub">'+prevPeriodLabel+' : '+_dashFmtMny(prevMonthData.comm)+'</div><div class="dash-kpi-delta '+deltaMoisComm.cls+'">'+deltaMoisComm.label+'</div></div>'
-    +'<div class="dash-kpi accent-amber"><div class="dash-kpi-label">Pipeline actif</div><div class="dash-kpi-value">'+nbActifs+'</div><div class="dash-kpi-sub">'+paUniq.length+' PA &middot; '+vUniq.length+' en vente</div></div>'
-    +'<div class="dash-kpi accent-red"><div class="dash-kpi-label">Commissions &agrave; venir</div><div class="dash-kpi-value">'+_dashFmtMny(pipelineCommEst)+'</div><div class="dash-kpi-sub">Estim&eacute;es sur le pipeline actif</div></div>'
+
+  // ═══ BLOC 1 — HERO : 3 KPIs (Encaissé / En cours / Rythme) ═══
+  html+='<div class="dash-section">'
+    +'<div class="dash-section-head"><div class="dash-section-title">Vue d\'ensemble &mdash; '+curYear+'</div><div class="dash-section-period">'+ytdLabel+'</div></div>'
+    +'<div class="dash-kpis-3">'
+    +'<div class="dash-kpi accent-lime"><div class="dash-kpi-label">&#128176; Encaiss&eacute; '+curYear+'</div><div class="dash-kpi-value">'+_dashFmtMny(yearData.comm)+'</div><div class="dash-kpi-sub">'+yearData.count+' transaction'+(yearData.count!==1?'s':'')+(prevYearData.comm?' &middot; Vs '+(curYear-1)+' m&ecirc;me p&eacute;riode : '+_dashFmtMny(prevYearData.comm):' &middot; Aucune r&eacute;f&eacute;rence '+(curYear-1))+'</div><div class="dash-kpi-delta '+deltaAnnComm.cls+'">'+deltaAnnComm.label+'</div></div>'
+    +'<div class="dash-kpi accent-amber"><div class="dash-kpi-label">&#128202; En cours</div><div class="dash-kpi-value">'+_dashFmtMny(pipelineCommEst)+'</div><div class="dash-kpi-sub">'+paAch.length+' PA achats &middot; '+vWithPa.length+' PA re&ccedil;ues &middot; '+refsActives.length+' r&eacute;f.</div></div>'
+    +'<div class="dash-kpi accent-cyan"><div class="dash-kpi-label">&#128200; Rythme</div><div class="dash-kpi-value">'+_dashFmtMny(avgCommYTD)+'</div><div class="dash-kpi-sub">Moyenne par transaction'+(avgCommPrev?' &middot; '+(curYear-1)+' : '+_dashFmtMny(avgCommPrev):'')+'</div>'+(avgCommPrev?'<div class="dash-kpi-delta '+deltaAvg.cls+'">'+deltaAvg.label+'</div>':'')+'</div>'
     +'</div></div>';
 
-  // SECTION : ANNÉE — hero 2 blocs (transactions + commissions) avec comparaison intégrée
-  html+='<div class="dash-section dash-annee">'
-    +'<div class="dash-section-head"><div class="dash-section-title">Cette ann&eacute;e &mdash; '+curYear+'</div><div class="dash-section-period">'+ytdLabel+' &middot; comparaison avec '+(curYear-1)+' m&ecirc;me p&eacute;riode</div></div>'
-    +'<div class="dash-year-hero">'
-    // Bloc 1 : Transactions
-    +'<div class="dash-year-block">'
-    +'<div class="dash-year-block-label">&#127942; Transactions conclues</div>'
-    +'<div class="dash-year-block-num">'+yearData.count+'</div>'
-    +'<div class="dash-year-block-unit">transaction'+(yearData.count!==1?'s':'')+' depuis le 1<sup>er</sup> janvier</div>'
-    +'<div class="dash-year-block-delta '+deltaAnnDeals.cls+'">'+deltaAnnDeals.label+' vs '+(curYear-1)+'</div>'
-    +'<div class="dash-year-block-compare">'
-    +'<div class="dash-year-compare-row"><div class="dash-year-compare-year">'+curYear+'</div><div class="dash-year-compare-track"><div class="dash-year-compare-fill current" style="width:'+(yearData.count/maxYoY*100)+'%">'+yearData.count+'</div></div></div>'
-    +'<div class="dash-year-compare-row"><div class="dash-year-compare-year">'+(curYear-1)+'</div><div class="dash-year-compare-track"><div class="dash-year-compare-fill previous" style="width:'+(prevYearData.count/maxYoY*100)+'%">'+prevYearData.count+'</div></div></div>'
+  // ═══ BLOC 2 — ENCAISSÉ décomposé par source + YoY ═══
+  html+='<div class="dash-section">'
+    +'<div class="dash-section-head"><div class="dash-section-title">&#128176; Encaiss&eacute; '+curYear+' &mdash; par source</div><div class="dash-section-period">D\'o&ugrave; viennent tes commissions</div></div>'
+    +'<div class="dash-decomp">'
+    +'<div class="dash-decomp-row'+(yearData.ac.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;ac&quot;]\').click()':'')+'">'
+      +'<div class="dash-decomp-icon">&#128273;</div>'
+      +'<div class="dash-decomp-label">Achats conclus<div class="dash-decomp-meta">'+yearData.ac.length+' transaction'+(yearData.ac.length!==1?'s':'')+'</div></div>'
+      +'<div class="dash-decomp-amount">'+_dashFmtMny(commAc)+'</div>'
+      +'<div class="dash-decomp-arrow">'+(yearData.ac.length>0?'&rarr;':'')+'</div>'
     +'</div>'
-    +'<div class="dash-year-block-detail"><strong>'+yearData.ac.length+'</strong> achat'+(yearData.ac.length!==1?'s':'')+' conclu'+(yearData.ac.length!==1?'s':'')+' &middot; <strong>'+yearData.vc.length+'</strong> vente'+(yearData.vc.length!==1?'s':'')+' conclue'+(yearData.vc.length!==1?'s':'')+'</div>'
+    +'<div class="dash-decomp-row'+(yearData.vc.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;vc&quot;]\').click()':'')+'">'
+      +'<div class="dash-decomp-icon">&#127969;</div>'
+      +'<div class="dash-decomp-label">Ventes conclues<div class="dash-decomp-meta">'+yearData.vc.length+' transaction'+(yearData.vc.length!==1?'s':'')+'</div></div>'
+      +'<div class="dash-decomp-amount">'+_dashFmtMny(commVc)+'</div>'
+      +'<div class="dash-decomp-arrow">'+(yearData.vc.length>0?'&rarr;':'')+'</div>'
     +'</div>'
-    // Bloc 2 : Commissions
-    +'<div class="dash-year-block commissions">'
-    +'<div class="dash-year-block-label">&#128176; Commissions encaiss&eacute;es</div>'
-    +'<div class="dash-year-block-num">'+_dashFmtMny(yearData.comm)+'</div>'
-    +'<div class="dash-year-block-unit">depuis le 1<sup>er</sup> janvier</div>'
-    +'<div class="dash-year-block-delta '+deltaAnnComm.cls+'">'+deltaAnnComm.label+' vs '+(curYear-1)+'</div>'
-    +'<div class="dash-year-block-compare">'
+    +'<div class="dash-decomp-row'+((yearData.rec&&yearData.rec.length>0)?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;rec&quot;]\').click()':'')+'">'
+      +'<div class="dash-decomp-icon">&#129309;</div>'
+      +'<div class="dash-decomp-label">R&eacute;f&eacute;rences<div class="dash-decomp-meta">'+(yearData.rec?yearData.rec.length:0)+' commission'+((yearData.rec&&yearData.rec.length!==1)?'s':'')+' de r&eacute;f&eacute;rence</div></div>'
+      +'<div class="dash-decomp-amount">'+_dashFmtMny(commRecs)+'</div>'
+      +'<div class="dash-decomp-arrow">'+((yearData.rec&&yearData.rec.length>0)?'&rarr;':'')+'</div>'
+    +'</div>'
+    +'<div class="dash-decomp-total">'
+      +'<div style="font-size:13px;color:#475569">TOTAL ENCAISS&Eacute; '+curYear+'</div>'
+      +'<div style="font-size:18px;color:#0F172A;font-variant-numeric:tabular-nums">'+_dashFmtMny(yearData.comm)+'</div>'
+    +'</div>'
+    +'</div>'
+    +'<div class="dash-year-block-compare" style="margin-top:14px">'
     +'<div class="dash-year-compare-row"><div class="dash-year-compare-year">'+curYear+'</div><div class="dash-year-compare-track"><div class="dash-year-compare-fill current" style="width:'+(yearData.comm/maxYoYComm*100)+'%">'+_dashFmtMny(yearData.comm)+'</div></div></div>'
     +'<div class="dash-year-compare-row"><div class="dash-year-compare-year">'+(curYear-1)+'</div><div class="dash-year-compare-track"><div class="dash-year-compare-fill previous" style="width:'+(prevYearData.comm/maxYoYComm*100)+'%">'+_dashFmtMny(prevYearData.comm)+'</div></div></div>'
     +'</div>'
-    +'<div class="dash-year-block-detail">Moyenne <strong>'+_dashFmtMny(avgCommYTD)+'</strong> par transaction</div>'
+    +'<div style="font-size:11px;color:#64748B;margin-top:8px;font-style:italic">Comparaison '+(curYear-1)+' m&ecirc;me p&eacute;riode (1<sup>er</sup> jan &mdash; '+now.toLocaleDateString('fr-CA',{day:'numeric',month:'long'})+')</div>'
+    +'</div>';
+
+  // ═══ BLOC 3 — EN COURS décomposé (transparence) ═══
+  html+='<div class="dash-section">'
+    +'<div class="dash-section-head"><div class="dash-section-title">&#128202; En cours &mdash; pipeline ferme</div><div class="dash-section-period">Commissions projet&eacute;es sur les PA actives uniquement</div></div>'
+    +'<div class="dash-decomp">'
+    +'<div class="dash-decomp-row'+(paAch.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;pa&quot;]\').click()':'')+'">'
+      +'<div class="dash-decomp-icon">&#128196;</div>'
+      +'<div class="dash-decomp-label">PA d\'achats (tes clients ach&egrave;tent)<div class="dash-decomp-meta">'+paAch.length+' promesse'+(paAch.length!==1?'s':'')+' en cours c&ocirc;t&eacute; acheteur</div></div>'
+      +'<div class="dash-decomp-amount">'+_dashFmtMny(commPaAch)+'</div>'
+      +'<div class="dash-decomp-arrow">'+(paAch.length>0?'&rarr;':'')+'</div>'
     +'</div>'
-    +'</div></div>';
+    +'<div class="dash-decomp-row'+(vWithPa.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;pa-en-vente&quot;]\').click()':'')+'">'
+      +'<div class="dash-decomp-icon">&#128196;</div>'
+      +'<div class="dash-decomp-label">PA re&ccedil;ues sur tes inscriptions<div class="dash-decomp-meta">'+vWithPa.length+' inscription'+(vWithPa.length!==1?'s':'')+' avec offre active</div></div>'
+      +'<div class="dash-decomp-amount">'+_dashFmtMny(commVwithPa)+'</div>'
+      +'<div class="dash-decomp-arrow">'+(vWithPa.length>0?'&rarr;':'')+'</div>'
+    +'</div>'
+    +'<div class="dash-decomp-row'+(refsActives.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;rea&quot;]\').click()':'')+'">'
+      +'<div class="dash-decomp-icon">&#129309;</div>'
+      +'<div class="dash-decomp-label">R&eacute;f&eacute;rences actives<div class="dash-decomp-meta">'+refsActives.length+' r&eacute;f&eacute;rence'+(refsActives.length!==1?'s':'')+' en attente de conclusion</div></div>'
+      +'<div class="dash-decomp-amount">'+_dashFmtMny(commRefsAct)+'</div>'
+      +'<div class="dash-decomp-arrow">'+(refsActives.length>0?'&rarr;':'')+'</div>'
+    +'</div>'
+    +'<div class="dash-decomp-total">'
+      +'<div style="font-size:13px;color:#475569">TOTAL EN COURS</div>'
+      +'<div style="font-size:18px;color:#0F172A;font-variant-numeric:tabular-nums">'+_dashFmtMny(pipelineCommEst)+'</div>'
+    +'</div>'
+    +'</div>'
+    +'<div style="font-size:11px;color:#64748B;margin-top:4px;font-style:italic">Les mandats sans offre active ne sont pas comptabilis&eacute;s (voir l\'onglet Mes inscriptions).</div>'
+    +'</div>';
 
   // SECTION : PROGRESSION DU PIPELINE
   html+='<div class="dash-section dash-funnel">'
@@ -5042,6 +6011,22 @@ function renderDashboard(){
   html+='<div class="dash-section dash-trend">'
     +'<div class="dash-section-head"><div class="dash-section-title">Performance 12 derniers mois</div><div class="dash-section-period">Transactions conclues par mois</div></div>'
     +'<div class="dash-card"><div class="dash-bars">'+barsHtml+'</div></div>'
+    +'</div>';
+
+  // ═══ BLOC 6 — PROJECTION ANNUELLE ═══
+  html+='<div class="dash-section">'
+    +'<div class="dash-section-head"><div class="dash-section-title">&#127919; Projection '+curYear+'</div><div class="dash-section-period">Si toutes les PA actives aboutissent comme pr&eacute;vu</div></div>'
+    +'<div class="dash-projection">'
+    +'<div class="dash-projection-label">TOTAL PROJET&Eacute; '+curYear+'</div>'
+    +'<div class="dash-projection-num">'+_dashFmtMny(projected2026)+'</div>'
+    +'<div class="dash-projection-detail">'
+      +_dashFmtMny(yearData.comm)+' <strong>encaiss&eacute;</strong> + '+_dashFmtMny(pipelineCommEst)+' <strong>en cours</strong>'
+    +'</div>'
+    +'<div class="dash-projection-vs">'
+      +'Vs '+(curYear-1)+' ann&eacute;e compl&egrave;te : <strong>'+_dashFmtMny(full2025)+'</strong>'
+      +(full2025>0?' &middot; <span class="dash-kpi-delta '+deltaProj.cls+'" style="display:inline-block;padding:2px 8px;margin-left:6px;font-size:11px">'+deltaProj.label+'</span>':' (aucune donn&eacute;e historique)')
+    +'</div>'
+    +'</div>'
     +'</div>';
 
   wrap.innerHTML=html;
@@ -5161,6 +6146,15 @@ function ie(td){
   // Track activity on Acheteurs (relance par inactivité)
   var _touchAch=function(){if(tab==="a")rec.lastModified=_todayStr();};
   if(type==="bool"){pushUndo("Case "+field);rec[field]=!val;_touchAch();sdb();setTimeout(rall,10);return;}
+  // Étape 24 — courtier : si vide → picker ; sinon → fiche info (avec boutons Changer/Modifier/Retirer)
+  if(type==="courtier"||type==="courtier-coll"){
+    // Le contexte "coll" passe le flag pour wirer les templates courtiers-coll au lieu de inscripteurs
+    var isColl=(type==="courtier-coll");
+    if(rec.courtierId&&_courtierById(rec.courtierId)){openCourtierInfo(rec.courtierId,tab,id,isColl);}
+    else {openCourtierPicker(tab,id,isColl);}
+    return;
+  }
+  // Étape 24 — centris : clic ouvre l'inline edit standard pour saisir le numéro (le 🔗 a son propre handler)
   if(type==="cond"){
     // Close any existing cond menu
     document.querySelectorAll('.cond-menu.open').forEach(function(m){m.parentNode.removeChild(m);});
@@ -5279,10 +6273,24 @@ function formForTab(tab,e){
       var dateVal=(!isDone&&val)?val:'';
       return'<div class="fg"><label>'+lbl+'</label><div style="display:flex;align-items:center;gap:6px"><input type="datetime-local" id="'+id+'d" step="900" value="'+esc(_toDtLocal(dateVal))+'" style="flex:1"><label style="display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;cursor:pointer"><input type="checkbox" id="'+id+'c"'+(isDone?' checked':'')+' style="width:auto"> Fait</label></div></div>';
     };
+    // Étape 24 — Courtier collaborateur (côté acheteur). Vide = double rep, set = autre courtier représente l'acheteur
+    var couCurPaev=e.courtierId?_courtierById(e.courtierId):null;
+    var couHtmlPaev='<div class="fg"><label>Représentation</label>'
+      +'<div style="display:flex;gap:6px;align-items:center">'
+      +'<input type="hidden" id="fcourtierid" value="'+esc(e.courtierId||'')+'">'
+      +'<div id="fcourtierlabel" style="flex:1;padding:7px 10px;border:1.5px solid #CBD5E1;border-radius:6px;background:#F8FAFC;font-size:13px;color:'+(couCurPaev?'#0F172A':'#7E22CE')+';font-weight:'+(couCurPaev?'400':'600')+'">'
+      +(couCurPaev?esc(_courtierFullName(couCurPaev))+(couCurPaev.agence?' <span style="color:#94A3B8;font-size:11px">· '+esc(couCurPaev.agence)+'</span>':''):'🤝 Double représentation (toi des 2 côtés)')
+      +'</div>'
+      +'<button type="button" class="tpl-btn" onclick="_openCourtierPickerFromForm(true)">'+(couCurPaev?'Changer':'Assigner courtier')+'</button>'
+      +(couCurPaev?'<button type="button" class="tpl-btn muted" onclick="_clearCourtierFromForm()" title="Repasser en double rep">✕</button>':'')
+      +'</div>'
+      +'<div style="font-size:10px;color:#94A3B8;margin-top:3px">Si l\'acheteur est représenté par un autre courtier (collaborateur), assigne-le ici. Sinon laisse en double représentation.</div>'
+      +'</div>';
     return'<div class="g2"><div class="fg"><label>Prénom (acheteur)</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom (acheteur)</label><input id="fnom" value="'+esc(e.nom)+'"></div></div>'
       +'<div class="fg"><label>Statut PA</label><select id="fstatutpa"><option value="">—</option>'+selOpts(STATUT_PA,e.statutPa)+'</select></div>'
       +'<div class="g2"><div class="fg"><label>Téléphone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div>'
       +'<div class="fg"><label>Adresse (mandat vendeur)</label><div style="padding:9px 12px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;font-size:13px;color:#475569">🏡 '+_addr+'<div style="font-size:10px;color:#94A3B8;margin-top:3px">Éditable depuis l\'onglet En Vente</div></div></div>'
+      +couHtmlPaev
       +'<div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>'
       +'<div class="fsec">Documents PA</div><div class="g4"><div class="fg"><label>Fiche MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"><label>Décl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div></div>'
       +'<div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div>'
@@ -5298,7 +6306,10 @@ function formForTab(tab,e){
       var dateVal=(!isDone&&val)?val:'';
       return'<div class="fg"><label>'+lbl+'</label><div style="display:flex;align-items:center;gap:6px"><input type="datetime-local" id="'+id+'d" step="900" value="'+esc(_toDtLocal(dateVal))+'" style="flex:1"><label style="display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;cursor:pointer"><input type="checkbox" id="'+id+'c"'+(isDone?' checked':'')+' style="width:auto"> Fait</label></div></div>';
     };
-    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>Statut PA</label><select id="fstatutpa"><option value="">\u2014</option>'+selOpts(STATUT_PA,e.statutPa)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Documents PA</div><div class="g4"><div class="fg"><label>Fiche MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFpa("finsp","Inspection",e.inspection)+condFpa("ffin","Financement",e.financement)+'</div><div class="g2">'+condFpa("fr21","R2.1",e.r21)+condFpa("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFpa("fassur","Assur. immeuble",e.assurImm)+condFpa("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFpa("feau","Test eau",e.testEau)+condFpa("fnot","Notaire",e.notaire)+'</div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant promesse ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div>';
+    // \u00c9tape 24 \u2014 Courtier inscripteur : s\u00e9lecteur compact (affiche le courtier assign\u00e9 + bouton pour ouvrir le picker)
+    var couCur=e.courtierId?_courtierById(e.courtierId):null;
+    var couHtml='<div class="fg"><label>Courtier inscripteur</label><div style="display:flex;gap:6px;align-items:center"><input type="hidden" id="fcourtierid" value="'+esc(e.courtierId||'')+'"><div id="fcourtierlabel" style="flex:1;padding:7px 10px;border:1.5px solid #CBD5E1;border-radius:6px;background:#F8FAFC;font-size:13px;color:'+(couCur?'#0F172A':'#94A3B8')+'">'+(couCur?esc(_courtierFullName(couCur))+(couCur.agence?' <span style="color:#94A3B8;font-size:11px">\u00b7 '+esc(couCur.agence)+'</span>':''):'(aucun)')+'</div><button type="button" class="tpl-btn" onclick="_openCourtierPickerFromForm()">'+(couCur?'Changer':'Assigner')+'</button>'+(couCur?'<button type="button" class="tpl-btn muted" onclick="_clearCourtierFromForm()" title="Retirer">\u2715</button>':'')+'</div></div>';
+    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>Statut PA</label><select id="fstatutpa"><option value="">\u2014</option>'+selOpts(STATUT_PA,e.statutPa)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>No. Centris</label><input id="fnocentris" value="'+esc(e.noCentris||'')+'" placeholder="ex: 21246703"></div>'+couHtml+'</div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Documents PA</div><div class="g4"><div class="fg"><label>Fiche MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFpa("finsp","Inspection",e.inspection)+condFpa("ffin","Financement",e.financement)+'</div><div class="g2">'+condFpa("fr21","R2.1",e.r21)+condFpa("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFpa("fassur","Assur. immeuble",e.assurImm)+condFpa("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFpa("feau","Test eau",e.testEau)+condFpa("fnot","Notaire",e.notaire)+'</div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant promesse ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div>';
   }
   if(tab==="vp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>Type propri\u00e9t\u00e9</label><select id="ftypeprop"><option value="">\u2014</option>'+selOpts(TYPE_PROP,e.typeProp)+'</select></div><div class="fg"><label>Prix demand\u00e9 ($)</label><input type="number" id="fprix" value="'+esc(e.prix)+'"></div></div><div class="fg"><label>Dernier contact</label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10))+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="v"){
@@ -5312,10 +6323,44 @@ function formForTab(tab,e){
   if(tab==="ac")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Date conclusion</label><input type="datetime-local" id="fdateconc" value="'+esc(_toDtLocal(e.dateConclusion))+'"></div><div class="fg"><label>Adresse</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="vc")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Date conclusion</label><input type="datetime-local" id="fdateconc" value="'+esc(_toDtLocal(e.dateConclusion))+'"></div><div class="fg"><label>Adresse</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fsec">Transaction</div><div class="fg"><label>Montant ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="g2"><div class="fg"><label>Commission totale (%)</label><input type="number" step="0.01" id="fcommtot" value="'+esc(e.commTot)+'"></div><div class="fg"><label>Commission autre courtier (%)</label><input type="number" step="0.01" id="fcommautre" value="'+esc(e.commAutre)+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="ca")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Cat\u00e9gorie</label><input id="fcat" value="'+esc(e.categorie)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
+  // \u00c9tape 24 \u2014 Form R\u00e9f\u00e9rence (rea + rec) : client + coll\u00e8gue + montants + dates
+  if(tab==="rea"||tab==="rec"){
+    var couCurRef=e.courtierId?_courtierById(e.courtierId):null;
+    var couHtmlRef='<div class="fg"><label>Coll\u00e8gue r\u00e9f\u00e9r\u00e9 *</label>'
+      +'<div style="display:flex;gap:6px;align-items:center">'
+      +'<input type="hidden" id="fcourtierid" value="'+esc(e.courtierId||'')+'">'
+      +'<div id="fcourtierlabel" style="flex:1;padding:7px 10px;border:1.5px solid #CBD5E1;border-radius:6px;background:#F8FAFC;font-size:13px;color:'+(couCurRef?'#0F172A':'#94A3B8')+'">'
+      +(couCurRef?esc(_courtierFullName(couCurRef))+(couCurRef.agence?' <span style="color:#94A3B8;font-size:11px">\u00b7 '+esc(couCurRef.agence)+'</span>':''):'(\u00e0 s\u00e9lectionner)')
+      +'</div>'
+      +'<button type="button" class="tpl-btn" onclick="_openCourtierPickerFromForm(false)">'+(couCurRef?'Changer':'S\u00e9lectionner')+'</button>'
+      +(couCurRef?'<button type="button" class="tpl-btn muted" onclick="_clearCourtierFromForm()" title="Retirer">\u2715</button>':'')
+      +'</div></div>';
+    var isRec=(tab==="rec");
+    return '<div class="g2"><div class="fg"><label>Pr\u00e9nom (client)</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom (client)</label><input id="fnom" value="'+esc(e.nom)+'"></div></div>'
+      +'<div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div>'
+      +'<div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div>'
+      +couHtmlRef
+      +'<div class="g2"><div class="fg"><label>Date de r\u00e9f\u00e9rence</label><input type="date" id="fdateref" value="'+esc(String(e.dateReference||"").substring(0,10))+'"></div>'
+      +'<div class="fg"><label>Date conclusion'+(isRec?' *':'')+'</label><input type="date" id="fdateconc" value="'+esc(String(e.dateConclusion||"").substring(0,10))+'"></div></div>'
+      +'<div class="fsec">Calcul commission</div>'
+      +'<div class="g2"><div class="fg"><label>Commission coll\u00e8gue ($) <span style="font-size:10px;color:#94A3B8">(optionnel)</span></label><input type="number" id="fcommcol" value="'+esc(e.commissionCollegue||"")+'" oninput="_refCalcSophie()"></div>'
+      +'<div class="fg"><label>% r\u00e9f\u00e9rence (d\u00e9faut 25%)</label><input type="number" step="0.01" id="fpctref" value="'+esc(e.pctReference||"25")+'" oninput="_refCalcSophie()"></div></div>'
+      +'<div class="fg"><label>Commission Sophie ($) *</label><input type="number" id="fcommsoph" value="'+esc(e.commissionSophie||"")+'"><div style="font-size:10px;color:#94A3B8;margin-top:3px">Si tu remplis Commission coll\u00e8gue + % r\u00e9f, ce champ se calcule auto. Sinon saisi le montant direct.</div></div>'
+      +'<div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
+  }
   return '';
 }
+// \u00c9tape 24 \u2014 auto-calcul commission Sophie = coll\u00e8gue \u00d7 % r\u00e9f\u00e9rence
+function _refCalcSophie(){
+  var col=parseFloat((document.getElementById('fcommcol')||{}).value)||0;
+  var pct=parseFloat((document.getElementById('fpctref')||{}).value)||0;
+  if(col>0&&pct>0){
+    var soph=Math.round(col*pct/100*100)/100;
+    var inp=document.getElementById('fcommsoph');if(inp)inp.value=soph;
+  }
+}
 
-var TAB_LABELS={cp:"Prospect acheteur",a:"Acheteur",pa:"Promesse en cours",vp:"Prospect vendeur",v:"Inscription",ac:"Achat conclu",vc:"Vente conclue",ca:"Autre contact","pa-en-vente":"Double représentation"};
+var TAB_LABELS={cp:"Prospect acheteur",a:"Acheteur",pa:"Promesse en cours",vp:"Prospect vendeur",v:"Inscription",ac:"Achat conclu",vc:"Vente conclue",ca:"Autre contact","pa-en-vente":"Promesse reçue",rea:"Référence active",rec:"Référence conclue"};
 function openAdd(){eid=null;document.getElementById("mt").textContent="Nouveau "+TAB_LABELS[ctab];document.getElementById("mb").innerHTML=formForTab(ctab,null);document.getElementById("ov").style.display="block";setTimeout(function(){var fi=document.getElementById("fprenom");if(fi)fi.focus();},50);}
 function doEdit(tab,id){var _st=_storeTab(tab);var entry=null;for(var i=0;i<db[_st].length;i++){if(db[_st][i].id===id){entry=db[_st][i];break;}}if(!entry)return;eid=id;ctab=tab;document.querySelectorAll(".tbtn").forEach(function(b){b.classList.remove("on");});document.querySelectorAll(".pane").forEach(function(p){p.classList.remove("on");});var btn=document.querySelector('[data-tab="'+tab+'"]');if(btn)btn.classList.add("on");var pn=document.getElementById("pane-"+tab);if(pn)pn.classList.add("on");setCardTitle(tab);document.querySelector(".card").classList.remove("settings-mode","accueil-mode","pancartes-mode");document.getElementById("mt").textContent="Modifier "+(TAB_LABELS[tab]||TAB_LABELS[_st]||"fiche");document.getElementById("mb").innerHTML=formForTab(tab,entry);document.getElementById("ov").style.display="block";}
 function closeModal(){document.getElementById("ov").style.display="none";eid=null;var btnSave=document.getElementById("btns");if(btnSave)btnSave.style.display="";}
@@ -5332,12 +6377,13 @@ function saveEntry(){
   }
   else if(ctab==="pa"){
     function gcondPa(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
-    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),inspection:gcondPa("finsp"),financement:gcondPa("ffin"),r21:gcondPa("fr21"),r22:gcondPa("fr22"),assurImm:gcondPa("fassur"),fosseSept:gcondPa("ffosse"),testEau:gcondPa("feau"),notaire:gcondPa("fnot"),ged:gc("fged"),montant:gv("fmontant"),commission:gv("fcomm")};
+    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),noCentris:gv("fnocentris"),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),inspection:gcondPa("finsp"),financement:gcondPa("ffin"),r21:gcondPa("fr21"),r22:gcondPa("fr22"),assurImm:gcondPa("fassur"),fosseSept:gcondPa("ffosse"),testEau:gcondPa("feau"),notaire:gcondPa("fnot"),ged:gc("fged"),montant:gv("fmontant"),commission:gv("fcomm")};
   }
   else if(ctab==="pa-en-vente"){
     // Étape 19 — même structure que pa, sans Montant/Commission ni Inspection (déjà sur fiche En Vente)
+    // Étape 24 — courtierId = courtier collaborateur (vide = double rep)
     function gcondPaev(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
-    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),financement:gcondPaev("ffin"),r21:gcondPaev("fr21"),r22:gcondPaev("fr22"),assurImm:gcondPaev("fassur"),fosseSept:gcondPaev("ffosse"),testEau:gcondPaev("feau"),notaire:gcondPaev("fnot"),ged:gc("fged")};
+    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),financement:gcondPaev("ffin"),r21:gcondPaev("fr21"),r22:gcondPaev("fr22"),assurImm:gcondPaev("fassur"),fosseSept:gcondPaev("ffosse"),testEau:gcondPaev("feau"),notaire:gcondPaev("fnot"),ged:gc("fged")};
   }
   else if(ctab==="vp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),typeProp:gv("ftypeprop"),prix:gv("fprix"),dateContact:gv("fdate"),notes:gv("fnotes")};
   else if(ctab==="v"){
@@ -5347,6 +6393,18 @@ function saveEntry(){
   else if(ctab==="ac")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),dateConclusion:gv("fdateconc"),adresse:gv("faddr"),montant:gv("fmontant"),commission:gv("fcomm"),notes:gv("fnotes")};
   else if(ctab==="vc")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),dateConclusion:gv("fdateconc"),adresse:gv("faddr"),montant:gv("fmontant"),commTot:gv("fcommtot"),commAutre:gv("fcommautre"),notes:gv("fnotes")};
   else if(ctab==="ca")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),categorie:gv("fcat"),notes:gv("fnotes")};
+  // Étape 24 — Références (rea + rec utilisent le même form, statut différencié par ctab)
+  else if(ctab==="rea"||ctab==="rec"){
+    entry={
+      prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),
+      adresse:gv("faddr"),courtierId:gv("fcourtierid"),
+      dateReference:gv("fdateref"),dateConclusion:gv("fdateconc"),
+      commissionCollegue:gv("fcommcol"),pctReference:gv("fpctref"),commissionSophie:gv("fcommsoph"),
+      notes:gv("fnotes"),
+      statut:(ctab==="rec"?'concluded':'active'),
+      lastModified:_todayStr()
+    };
+  }
   // R\u00e9cup\u00e9rer l'ancien record pour comparer les dates (sync calendar)
   var _stc=_storeTab(ctab);
   var oldRec=null;
@@ -5507,7 +6565,7 @@ function checkExportWarning(){try{var last=localStorage.getItem("sc-lastexport")
 function dismissExportWarn(){var warn=document.getElementById("exportWarn");if(warn)warn.style.display='none';try{localStorage.setItem("sc-lastexport",Date.now().toString());}catch(e){}}
 
 // ─── Tabs ────────────────────────────────────────────────────
-var CARD_TITLES={cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Doubles représentations",templates:"Templates de courriels"};
+var CARD_TITLES={cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Promesses reçues",templates:"Templates de courriels",rea:"Références actives",rec:"Références conclues"};
 function setCardTitle(tab){var el=document.getElementById("cardTitle");if(el)el.textContent=CARD_TITLES[tab]||"";_updateBmailVisibility(tab);}
 document.getElementById("tbar").addEventListener("click",function(e){
   var btn=e.target.closest(".tbtn");if(!btn)return;
@@ -5518,7 +6576,7 @@ document.getElementById("tbar").addEventListener("click",function(e){
   setCardTitle(tab);
   var card=document.querySelector(".card");
   card.classList.remove("settings-mode","accueil-mode","pancartes-mode","calendar-mode","dashboard-mode","demandes-mode","paev-mode","templates-mode");
-  if(tab==="settings"){card.classList.add("settings-mode");var mps=document.getElementById('mailProviderSelect');if(mps)mps.value=_getMailProvider();_initSettingsTabs();smsRefreshStatus();outlookRefreshStatus();return;}
+  if(tab==="settings"){card.classList.add("settings-mode");var mps=document.getElementById('mailProviderSelect');if(mps)mps.value=_getMailProvider();var adt=document.getElementById('antidupToggle');if(adt)adt.checked=_isAntidupEnabled();_initSettingsTabs();smsRefreshStatus();outlookRefreshStatus();return;}
   if(tab==="templates"){card.classList.add("templates-mode");renderTemplates();return;}
   if(tab==="accueil"){card.classList.add("accueil-mode");renderAccueil();return;}
   if(tab==="pancartes"){card.classList.add("pancartes-mode");renderPancartes();return;}

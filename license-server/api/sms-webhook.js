@@ -13,7 +13,7 @@
 // On répond avec un TwiML vide (200 OK) — pas de reply auto-TwiML, on envoie via API séparée
 // pour avoir plus de flexibilité (ex: déléguer en background si parsing prend > 10s).
 
-const { findLicenseByPhone, pushPending, logSms, parseSmsViaLlm, parseImageViaLlm, downloadTwilioMedia, sendTwilioReply, normalizePhone } = require('../lib/sms');
+const { findLicenseByPhone, pushPending, logSms, parseSmsViaLlm, parseImageViaLlm, downloadTwilioMedia, sendTwilioReply, normalizePhone, _hashPayload, _normalizeTextForHash, isFingerprintSeen, markFingerprint } = require('../lib/sms');
 
 // Génère un ID court pour la queue entry
 function _shortId() {
@@ -105,9 +105,30 @@ module.exports = async (req, res) => {
   try { await logSms(licenseKey, { from: fromNorm, text: text.substring(0, 500), msgSid, hasImage, numMedia, stage: 'received' }); }
   catch (e) { /* non-fatal */ }
 
+  // Étape 24 — anti-doublons : fingerprint SHA-256 (KILL SWITCH via env var ANTIDUP_ENABLED)
+  // Off par défaut pendant phase de test ; flip à "true" sur Vercel quand prêt pour prod
+  // Pour MMS : hash base64 (calculé après download)
+  // Pour SMS texte : hash du body normalisé
+  // Si même fingerprint dans les 24h → skip silencieusement
+  const ANTIDUP_ENABLED = String(process.env.ANTIDUP_ENABLED || 'false').toLowerCase() === 'true';
+  let textFp = null;
+  if (ANTIDUP_ENABLED && !hasImage && text) {
+    textFp = _hashPayload(_normalizeTextForHash(text));
+    try {
+      const seen = await isFingerprintSeen(licenseKey, textFp);
+      if (seen) {
+        await logSms(licenseKey, { from: fromNorm, fp: textFp.substring(0,12), stage: 'dup-skip-text', preview: text.substring(0, 60) });
+        try { await sendTwilioReply(fromRaw, '↺ TRI-ANGLE : déjà reçu ce message dans les dernières 24h, ignoré.'); } catch (_) {}
+        _twimlEmpty(res);
+        return;
+      }
+    } catch (e) { console.warn('[fp-check text]', e.message); /* non-fatal */ }
+  }
+
   // Parser via LLM — vision si image, texte sinon
   let parsed;
   let imageBase64Preview = ''; // Pour stocker un thumbnail (optionnel, futur usage)
+  let imageFp = null;
   try {
     if (hasImage) {
       // Log MediaUrl0 + verif env vars
@@ -127,6 +148,20 @@ module.exports = async (req, res) => {
         });
       } catch (_) {}
       const dl = await downloadTwilioMedia(body.MediaUrl0);
+      // Étape 24 — fingerprint sur le contenu base64 de l'image AVANT d'appeler le LLM (économie d'API)
+      // Skip si ANTIDUP_ENABLED=false (mode test)
+      if (ANTIDUP_ENABLED) {
+        imageFp = _hashPayload(dl.base64);
+        try {
+          const seen = await isFingerprintSeen(licenseKey, imageFp);
+          if (seen) {
+            await logSms(licenseKey, { from: fromNorm, fp: imageFp.substring(0,12), stage: 'dup-skip-image', size: dl.base64.length });
+            try { await sendTwilioReply(fromRaw, '↺ TRI-ANGLE : déjà reçu cette image dans les dernières 24h, ignorée.'); } catch (_) {}
+            _twimlEmpty(res);
+            return;
+          }
+        } catch (e) { console.warn('[fp-check image]', e.message); /* non-fatal */ }
+      }
       parsed = await parseImageViaLlm(dl.base64, dl.contentType, text);
       // On garde une référence à l'image pour le UI (thumbnail base64 si petite)
       if (dl.base64.length < 200000) imageBase64Preview = dl.base64;
@@ -140,7 +175,10 @@ module.exports = async (req, res) => {
     catch (_) {}
     // Fallback : push avec needs_review=true, le user éditera dans l'app
     parsed = {
-      prenom: '', nom: '', telephone: '', courriel: '', source: hasImage ? 'Autre' : 'SMS',
+      is_broker_request: false,
+      prenom: '', nom: '', telephone: '', courriel: '',
+      courtier_prenom: '', courtier_nom: '', courtier_agence: '', courtier_telephone: '', courtier_courriel: '',
+      source: hasImage ? 'Autre' : 'SMS',
       address_hint: '', notes: (text.substring(0, 200) || '(screenshot non parsable)') + ' [err: ' + e.message.substring(0, 200) + ']',
       screenshot_type: hasImage ? 'unknown' : '', confidence: 'low'
     };
@@ -165,6 +203,15 @@ module.exports = async (req, res) => {
     try { await sendTwilioReply(fromRaw, '⚠ TRI-ANGLE : erreur serveur. Réessaie plus tard ou note manuellement.'); } catch (_) {}
     _twimlEmpty(res);
     return;
+  }
+
+  // Étape 24 — marque le fingerprint dans Redis (TTL 24h) après push réussi
+  // Si le user re-envoie le même texte/image dans cette fenêtre, on skip (uniquement si ANTIDUP_ENABLED)
+  if (ANTIDUP_ENABLED) {
+    try {
+      if (textFp) await markFingerprint(licenseKey, textFp, { type: 'text', preview: text.substring(0, 60) });
+      if (imageFp) await markFingerprint(licenseKey, imageFp, { type: 'image', screenshotType: parsed.screenshot_type || '' });
+    } catch (e) { console.warn('[fp-mark]', e.message); /* non-fatal */ }
   }
 
   // Reply SMS de confirmation

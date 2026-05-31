@@ -4,10 +4,12 @@
 //   - phone_map (hash)            : {phone (+1...) → licenseKey}
 //   - pending:{licenseKey} (list) : queue JSON de demandes en attente de confirmation
 //   - sms_log:{licenseKey} (list) : journal des SMS reçus (rotated, max 50 récents)
+//   - fp:{licenseKey}:{sha}       : fingerprint anti-doublons (Étape 24, TTL 24h)
 //
 // Format normalisé d'un téléphone : E.164, ex "+15145550100"
 
 const { redis } = require('./kv');
+const crypto = require('crypto');
 
 const PHONE_MAP = 'phone_map';
 const QUEUE_MAX = 100;     // taille max de la queue pending (pour éviter overflow)
@@ -105,6 +107,29 @@ async function clearPending(licenseKey, ids) {
   return all.length - kept.length;
 }
 
+// ─── Anti-doublons : fingerprint SHA-256 (Étape 24) ───────
+// Pour chaque MMS/SMS reçu, on hash le payload et stocke la signature dans Redis 24h.
+// Si on reçoit la MÊME signature dans cette fenêtre → on skip silencieusement.
+function _hashPayload(input) {
+  return crypto.createHash('sha256').update(String(input || '')).digest('hex');
+}
+function _normalizeTextForHash(text) {
+  // Normalise pour ignorer espaces/casse/ponctuation : "Allo  :)" et "allo:)" hashent pareil
+  return String(text || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+async function isFingerprintSeen(licenseKey, hash) {
+  if (!licenseKey || !hash) return false;
+  const key = `fp:${licenseKey}:${hash}`;
+  const v = await redis.get(key);
+  return !!v;
+}
+async function markFingerprint(licenseKey, hash, meta) {
+  if (!licenseKey || !hash) return;
+  const key = `fp:${licenseKey}:${hash}`;
+  await redis.set(key, JSON.stringify({ at: new Date().toISOString(), ...(meta || {}) }));
+  await redis.expire(key, 60 * 60 * 24); // 24h TTL
+}
+
 // ─── SMS log (journal pour debug) ─────────────────────────
 async function logSms(licenseKey, payload) {
   if (!licenseKey) return;
@@ -121,20 +146,30 @@ async function parseSmsViaLlm(rawText) {
 
   const sysPrompt = `Tu es un assistant qui extrait des informations de demandes immobilières envoyées par un courtier. Le courtier copie-colle du texte reçu via Messenger, Centris, courriel, téléphone ou autre, puis te l'envoie par SMS.
 
+⚠ CAS IMPORTANT : Demande via UN AUTRE COURTIER (collaborateur). Si le texte vient d'Espace Centris ou similaire et dit "Nouvelle demande de visite par [Nom]", ou si le texte mentionne explicitement qu'un courtier organise une visite/demande pour son client (souvent : pas d'infos sur le client final, juste le courtier), alors c'est une demande MÉDIÉE PAR COURTIER. Mets is_broker_request=true et extrais les infos du COURTIER (pas du client final).
+
 Ton job : retourner UN SEUL objet JSON, sans markdown, avec ces champs :
 {
-  "prenom": "...",            // prénom de l'acheteur potentiel (ou chaîne vide si inconnu)
-  "nom": "...",               // nom de famille (chaîne vide si inconnu)
-  "telephone": "...",         // tel trouvé dans le texte (chaîne vide si aucun)
-  "courriel": "...",          // courriel trouvé (chaîne vide si aucun)
+  "is_broker_request": true | false,  // true si demande médiée par un courtier collaborateur (sans infos client direct)
+  "prenom": "...",                    // prénom de l'acheteur potentiel CLIENT (vide si broker request ou inconnu)
+  "nom": "...",                       // nom de famille du CLIENT (vide si broker request ou inconnu)
+  "telephone": "...",                 // tel du CLIENT (vide si aucun)
+  "courriel": "...",                  // courriel du CLIENT (vide si aucun)
+  "courtier_prenom": "...",           // prénom du COURTIER si broker request (vide sinon)
+  "courtier_nom": "...",              // nom du COURTIER si broker request (vide sinon)
+  "courtier_agence": "...",           // agence/bannière du courtier (RE/MAX, Royal LePage, Via Capitale, etc.) si visible (vide sinon)
+  "courtier_telephone": "...",        // tél du courtier si visible (vide sinon)
+  "courtier_courriel": "...",         // courriel du courtier si visible (vide sinon)
   "source": "Centris" | "Messenger" | "Courriel" | "Téléphone" | "SMS" | "Walk-in" | "Autre",
-  "address_hint": "...",      // adresse de la propriété mentionnée (chaîne vide si aucune)
-  "notes": "...",             // ce que la personne veut faire/demander, max 200 caractères
-  "confidence": "high" | "medium" | "low"  // ton degré de certitude sur prenom/nom
+  "address_hint": "...",              // adresse de la propriété mentionnée (vide si aucune)
+  "notes": "...",                     // contexte : date/heure visite, demande, etc., max 250 caractères
+  "confidence": "high" | "medium" | "low"
 }
 
 Règles :
-- Si tu ne peux pas extraire un prénom ET un nom, mets confidence="low"
+- Pour broker request : confidence basée sur les infos COURTIER (high si prenom+nom courtier extraits)
+- Pour demande client direct : confidence basée sur prenom+nom client (existant comportement)
+- Si tu ne peux pas extraire un prénom ET un nom (client ou courtier selon le cas), mets confidence="low"
 - Si le texte est très court ou ambigu, mets confidence="low" et explique dans notes
 - N'invente JAMAIS d'info. Champs vides = "" (chaîne vide)
 - Réponds SEULEMENT avec l'objet JSON, rien d'autre.`;
@@ -191,16 +226,25 @@ Le screenshot peut venir de :
 - Instagram DM
 - Tout autre canal
 
+⚠ CAS IMPORTANT — Demande de visite via UN AUTRE COURTIER (Centris Espace Pro) :
+Reconnais ce pattern visuel : header "Espace Centris" (logo Centris en haut), titre "Nouvelle demande de visite par [Nom Courtier]", photo de profil + nom du courtier (acheteur du côté client), date/heure de visite, parfois un commentaire du courtier. Dans ce cas, il n'y a PAS d'infos sur le client final — seulement le courtier qui représente l'acheteur. Mets is_broker_request=true et extrais les infos du COURTIER.
+
 Ton job : analyser l'image et retourner UN SEUL objet JSON, sans markdown, avec ces champs :
 {
-  "prenom": "...",                  // prénom du potentiel acheteur (chaîne vide si inconnu)
-  "nom": "...",                     // nom de famille (chaîne vide si inconnu)
-  "telephone": "...",               // téléphone trouvé (format quelconque, chaîne vide si aucun)
-  "courriel": "...",                // courriel trouvé (chaîne vide si aucun)
+  "is_broker_request": true | false,  // true si demande Centris/etc. médiée par un courtier collaborateur (pas d'infos client)
+  "prenom": "...",                    // prénom du CLIENT acheteur (vide si broker request ou inconnu)
+  "nom": "...",                       // nom du CLIENT (vide si broker request ou inconnu)
+  "telephone": "...",                 // tél du CLIENT (vide si aucun)
+  "courriel": "...",                  // courriel du CLIENT (vide si aucun)
+  "courtier_prenom": "...",           // prénom du COURTIER si broker request (vide sinon)
+  "courtier_nom": "...",              // nom du COURTIER si broker request (vide sinon)
+  "courtier_agence": "...",           // agence visible (RE/MAX, Royal LePage, Via Capitale, KW Realty, etc.) — vide si non visible
+  "courtier_telephone": "...",        // tél du courtier si visible (rare sur Espace Centris)
+  "courtier_courriel": "...",         // courriel du courtier si visible (rare)
   "source": "Centris" | "Messenger" | "Courriel" | "Téléphone" | "SMS" | "Walk-in" | "Autre",
-  "address_hint": "...",            // adresse / propriété mentionnée (chaîne vide si aucune)
-  "notes": "...",                   // ce que la personne veut/demande, max 250 caractères
-  "screenshot_type": "...",         // un mot court décrivant la source détectée (ex: "Messenger conversation", "Centris listing inquiry", "Email")
+  "address_hint": "...",              // adresse / propriété mentionnée (vide si aucune)
+  "notes": "...",                     // contexte : date/heure visite, commentaire courtier, etc., max 250 car.
+  "screenshot_type": "...",           // ex: "Centris broker visit request", "Messenger conversation", "Email", "SMS"
   "confidence": "high" | "medium" | "low"
 }
 
@@ -215,9 +259,10 @@ Règles pour identifier la SOURCE (très important — sois précis) :
 
 Règles pour les autres champs :
 - Le NOM est ce qui apparaît dans l'en-tête de la conversation (Messenger), le "From:" du courriel, ou le profil. Ce n'est PAS toi le destinataire — c'est l'expéditeur de la demande.
+- Pour broker request (Espace Centris) : le NOM extrait est celui du COURTIER (champs courtier_*), pas du client. Mets prenom/nom du client vides.
 - Si tu vois clairement prénom ET nom → confidence="high"
 - Si juste prénom OU pseudo → confidence="medium"
-- Si tu ne peux extraire ni nom ni téléphone ni courriel → confidence="low"
+- Si tu ne peux extraire ni nom ni téléphone ni courriel (et pas un broker request avec courtier identifié) → confidence="low"
 - Si tu vois une adresse civique précise (numéro + rue), mets-la dans address_hint
 - N'invente JAMAIS d'info. Champs inconnus = "" (chaîne vide)
 - Réponds SEULEMENT avec l'objet JSON, rien d'autre.`;
@@ -376,5 +421,10 @@ module.exports = {
   parseSmsViaLlm,
   parseImageViaLlm,
   downloadTwilioMedia,
-  sendTwilioReply
+  sendTwilioReply,
+  // Étape 24 — anti-doublons fingerprint
+  _hashPayload,
+  _normalizeTextForHash,
+  isFingerprintSeen,
+  markFingerprint
 };
