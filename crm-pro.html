@@ -117,7 +117,9 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .card.paev-mode > .card-header,
 .card.paev-mode > .hint,
 .card.templates-mode > .card-header,
-.card.templates-mode > .hint{display:none}
+.card.templates-mode > .hint,
+.card.aide-mode > .card-header,
+.card.aide-mode > .hint{display:none}
 
 /* ── PAGE PANCARTES ───────────────────────────────────── */
 .pancartes-wrap{padding:24px 26px}
@@ -388,7 +390,65 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .vpill:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(15,23,42,.18)}
 .vpill.dem{background:#F59E0B}
 .vpill.pa{background:#DC2626}
+.vpill.int{background:#8B5CF6}
+.vpill.int-empty{background:#EDE9FE;color:#7C3AED;font-size:13px;padding:1px 8px;font-weight:700}
+.vpill.int-calm{background:transparent;color:#A78BFA;font-size:13px;padding:1px 6px;font-weight:700}
+.vpill.int-calm:hover{background:#F5F3FF}
+.int-visite-chip{display:block;margin-top:3px;font-size:10px;font-weight:600;color:#1E40AF;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:1px 6px;cursor:pointer;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.int-visite-chip:hover{background:#DBEAFE}
+
+/* ── Aide / Tutoriels (Étape 28) ── */
+.tbtn-aide{color:#38BDF8}
+.aide-layout{display:flex;height:calc(100vh - 0px);min-height:560px}
+.aide-menu{width:288px;flex-shrink:0;background:#F8FAFC;border-right:1px solid #E2E8F0;overflow-y:auto;padding:14px 0}
+.aide-sec-title{font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.08em;padding:14px 18px 5px}
+.aide-item{display:flex;align-items:center;gap:8px;padding:8px 18px;font-size:13px;color:#334155;cursor:pointer;border-left:3px solid transparent;line-height:1.3}
+.aide-item:hover{background:#EEF2F7;color:#0F172A}
+.aide-item.on{background:#E0F2FE;color:#0369A1;border-left-color:#0EA5E9;font-weight:600}
+.aide-item-num{flex-shrink:0;font-size:10px;font-weight:700;color:#94A3B8;min-width:20px}
+.aide-item.on .aide-item-num{color:#0EA5E9}
+.aide-content{flex:1;min-width:0;overflow-y:auto;padding:34px 44px;background:#fff}
+.aide-art{max-width:760px}
+.aide-art h1{font-size:24px;font-weight:800;color:#0F172A;margin-bottom:6px;letter-spacing:-.01em}
+.aide-art .aide-art-sec{font-size:11px;font-weight:700;color:#0EA5E9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.aide-art h2{font-size:16px;font-weight:700;color:#0F172A;margin:26px 0 10px}
+.aide-art p{font-size:14px;line-height:1.65;color:#334155;margin-bottom:12px}
+.aide-art ol,.aide-art ul{margin:0 0 14px 4px;padding-left:22px}
+.aide-art li{font-size:14px;line-height:1.6;color:#334155;margin-bottom:7px}
+.aide-art strong{color:#0F172A;font-weight:600}
+.aide-art .aide-tip{display:flex;gap:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px 14px;margin:16px 0;font-size:13px;line-height:1.55;color:#166534}
+.aide-art .aide-tip .aide-tip-ico{flex-shrink:0;font-size:16px}
+.aide-art .aide-note{display:flex;gap:10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin:16px 0;font-size:13px;line-height:1.55;color:#854D0E}
+.aide-art .aide-kbd{display:inline-block;background:#F1F5F9;border:1px solid #CBD5E1;border-radius:5px;padding:1px 7px;font-size:12px;font-family:ui-monospace,monospace;color:#0F172A}
+.aide-welcome{text-align:center;color:#94A3B8;padding-top:80px}
+.aide-welcome svg{width:54px;height:54px;stroke:#CBD5E1;margin-bottom:14px}
+.aide-welcome p{font-size:14px}
 .vpill-cell{white-space:nowrap}
+
+/* Intérêts acheteurs — modal (Étape 27) */
+.int-card{border:1px solid #E2E8F0;border-radius:10px;padding:12px;margin-bottom:12px;background:#FAFAFE}
+.int-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.int-stat-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 10px;border-radius:10px;color:#fff}
+.int-stat-badge.st-traiter{background:#EF4444}
+.int-stat-badge.st-visite{background:#F59E0B}
+.int-stat-badge.st-plan{background:#0EA5E9}
+.int-stat-badge.st-offre{background:#8B5CF6}
+.int-stat-badge.st-ecartee{background:#94A3B8}
+.int-del{border:none;background:none;cursor:pointer;font-size:14px;opacity:.6;line-height:1}
+.int-del:hover{opacity:1}
+.int-fg{margin-bottom:8px}
+.int-fg label{display:block;font-size:11px;font-weight:600;color:#475569;margin-bottom:3px}
+.int-fg input,.int-fg select,.int-fg textarea{width:100%;padding:7px 9px;border:1.5px solid #CBD5E1;border-radius:6px;font-size:13px;font-family:inherit;color:#0F172A;background:#fff}
+.int-fg textarea{resize:vertical}
+.int-g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.int-empty-msg{padding:20px;text-align:center;color:#94A3B8;font-style:italic;font-size:13px;line-height:1.5;background:#F8FAFC;border:1px dashed #E2E8F0;border-radius:8px}
+.int-centris-link{display:inline-block;margin-top:4px;font-size:11px;color:#0EA5E9;text-decoration:none;font-weight:600}
+.int-centris-link:hover{text-decoration:underline}
+.int-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed #E2E8F0}
+.int-actions .tpl-btn{font-size:11px;padding:6px 10px}
+.int-visite-banner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;border-radius:8px;padding:7px 10px;font-size:12px;margin-bottom:8px}
+.int-visite-del{margin-left:auto;border:none;background:none;color:#DC2626;cursor:pointer;font-size:11px;font-weight:600;padding:2px 4px}
+.int-visite-del:hover{text-decoration:underline}
 
 /* ── PAGE ACCUEIL ─────────────────────────────────────── */
 .accueil-wrap{padding:24px 26px}
@@ -409,6 +469,8 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .acc-row-icon{font-size:14px;flex-shrink:0;width:24px;text-align:center}
 .acc-row-main{flex:1;min-width:0;font-size:12px;color:#0F172A;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acc-row-meta{font-size:11px;color:#64748B;font-weight:500;flex-shrink:0;white-space:nowrap}
+.acc-row-sub{font-size:11px;color:#64748B;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.acc-row.urgent .acc-row-sub{color:#DC2626}
 .acc-row-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
 .acc-badge-urgent{background:#FEE2E2;color:#B91C1C}
 .acc-badge-soon{background:#FEF3C7;color:#92400E}
@@ -894,6 +956,35 @@ body.app-readonly th .rz{pointer-events:none}
 
 /* ── DASHBOARD ─────────────────────────────────────────── */
 .dash-wrap{padding:18px 22px 32px;max-width:1200px;margin:0 auto}
+/* Carte Tâches à faire (Étape 29) */
+.dash-todo{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:18px 20px;margin-top:24px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.dash-todo-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.dash-todo-title{font-size:15px;font-weight:700;color:#0F172A}
+.dash-todo-count{font-size:11px;font-weight:700;color:#0EA5E9;background:#E0F2FE;padding:2px 9px;border-radius:10px}
+.dash-todo-add{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.dash-todo-add #todo-input{flex:1;min-width:180px;padding:9px 12px;border:1.5px solid #CBD5E1;border-radius:8px;font-size:13px;font-family:inherit;color:#0F172A}
+.dash-todo-add #todo-date{padding:9px 10px;border:1.5px solid #CBD5E1;border-radius:8px;font-size:13px;font-family:inherit;color:#0F172A}
+.dash-todo-add #todo-input:focus,.dash-todo-add #todo-date:focus{outline:none;border-color:#0EA5E9;box-shadow:0 0 0 2px rgba(14,165,233,.15)}
+.dash-todo-addbtn{background:#0EA5E9;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap}
+.dash-todo-addbtn:hover{background:#0284C7}
+.dash-todo-list{display:flex;flex-direction:column;gap:2px}
+.dash-todo-empty{text-align:center;color:#94A3B8;font-style:italic;font-size:13px;padding:18px}
+.todo-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;transition:background .1s}
+.todo-row:hover{background:#F8FAFC}
+.todo-row input[type=checkbox]{width:17px;height:17px;cursor:pointer;flex-shrink:0;accent-color:#0EA5E9}
+.todo-txt{flex:1;min-width:0;font-size:13px;color:#0F172A;line-height:1.4}
+.todo-row.done .todo-txt{text-decoration:line-through;color:#94A3B8}
+.todo-ech{font-size:11px;font-weight:600;color:#64748B;background:#F1F5F9;padding:2px 8px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+.todo-ech.soon{color:#0369A1;background:#E0F2FE}
+.todo-ech.late{color:#B91C1C;background:#FEE2E2}
+.todo-cal{border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;flex-shrink:0;line-height:1;opacity:.45;filter:grayscale(1)}
+.todo-cal:hover{opacity:1;filter:none}
+.todo-cal.on{opacity:1;filter:none}
+.todo-del{border:none;background:none;color:#CBD5E1;cursor:pointer;font-size:14px;padding:2px 6px;flex-shrink:0;line-height:1}
+.todo-del:hover{color:#DC2626}
+.dash-todo-foot{margin-top:10px}
+.todo-clear{border:none;background:none;color:#64748B;font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit}
+.todo-clear:hover{color:#DC2626}
 .dash-section{margin-bottom:28px}
 .dash-section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap}
 .dash-section-title{font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.12em;display:flex;align-items:center;gap:8px}
@@ -1182,6 +1273,7 @@ body.app-readonly th .rz{pointer-events:none}
   </div>
   <nav class="sb-nav" id="tbar">
     <div class="sb-section">
+      <button class="tbtn tbtn-aide" data-tab="aide"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span> Aide</button>
       <button class="tbtn on" data-tab="accueil"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Accueil</button>
       <button class="tbtn" data-tab="calendar"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Calendrier</button>
       <button class="tbtn" data-tab="dashboard"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span> Dashboard</button>
@@ -1250,24 +1342,22 @@ body.app-readonly th .rz{pointer-events:none}
 <div class="hero-dark">
   <div class="stats">
     <div class="stat stat-pale" id="rel-card"><div class="slbl">En relance</div><div class="sval" id="s-rel">0</div></div>
-    <div class="stat stat-purple"><div class="slbl">Promesses actives</div><div class="sval" id="s-cp">0</div><small class="smny" id="s-cp-mny"></small></div>
-    <div class="stat stat-teal"><div class="slbl">En vente</div><div class="sval" id="s-act">0</div><small class="smny" id="s-act-mny"></small></div>
-    <div class="stat stat-amber">
-      <div class="slbl">Conclues <span id="s-done-yr" style="font-size:9px;opacity:.7;font-weight:400;color:#64748B"></span></div>
+    <div class="stat stat-teal" id="visites-card"><div class="slbl">Visites c&eacute;dul&eacute;es</div><div class="sval" id="s-visites">0</div></div>
+    <div class="stat stat-amber" id="dem-traiter-card">
+      <div class="slbl">Demandes &agrave; traiter</div>
       <div style="display:flex;gap:18px;align-items:flex-start;margin-top:4px">
         <div style="flex:1">
-          <div style="font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Achats</div>
-          <div class="sval" id="s-doneA" style="font-size:24px">0</div>
-          <small class="smny" id="s-doneA-mny" style="margin-top:4px;font-size:11px;padding:2px 7px"></small>
+          <div style="font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Acheteurs</div>
+          <div class="sval" id="s-dem-ach" style="font-size:24px">0</div>
         </div>
         <div style="width:1px;background:#334155;align-self:stretch"></div>
         <div style="flex:1">
-          <div style="font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Ventes</div>
-          <div class="sval" id="s-doneV" style="font-size:24px">0</div>
-          <small class="smny" id="s-doneV-mny" style="margin-top:4px;font-size:11px;padding:2px 7px"></small>
+          <div style="font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Inscriptions</div>
+          <div class="sval" id="s-dem-insc" style="font-size:24px">0</div>
         </div>
       </div>
     </div>
+    <div class="stat stat-pale" id="stat-vide-card"><div class="slbl">&mdash;</div><div class="sval" style="color:#475569">&nbsp;</div></div>
   </div>
 </div><!-- /.hero-dark -->
 <div class="main">
@@ -1282,11 +1372,29 @@ body.app-readonly th .rz{pointer-events:none}
       <button class="bmail" id="bmail" style="display:none" title="Envoyer un courriel à tous les enregistrements visibles de cet onglet">&#9993; Envoyer à tous</button>
       <button class="badd" id="badd">+ Ajouter</button>
     </div>
+    <!-- ── PANE : Aide / Tutoriels (Étape 28) ── -->
+    <div class="pane" id="pane-aide">
+      <div class="aide-layout">
+        <div class="aide-menu" id="aide-menu"></div>
+        <div class="aide-content" id="aide-content"></div>
+      </div>
+    </div>
     <!-- ── PANE : Accueil ── -->
     <div class="pane on" id="pane-accueil">
       <div class="accueil-wrap">
         <div class="accueil-greet">Bonjour <span id="acc-name"></span>&#128075;</div>
         <div class="accueil-sub" id="acc-date-line"></div>
+        <!-- Étape 29 — Carte « Tâches à faire » (To-Do), en priorité tout en haut -->
+        <div class="dash-todo" id="dash-todo-card" style="margin-bottom:16px">
+          <div class="dash-todo-head"><span class="dash-todo-title">✅ Tâches à faire</span><span class="dash-todo-count" id="dash-todo-count"></span></div>
+          <div class="dash-todo-add">
+            <input type="text" id="todo-input" placeholder="Nouvelle tâche…" maxlength="200" onkeydown="if(event.key==='Enter')_tacheAdd()">
+            <input type="date" id="todo-date" title="Échéance (obligatoire)">
+            <button class="dash-todo-addbtn" onclick="_tacheAdd()">+ Ajouter</button>
+          </div>
+          <div class="dash-todo-list" id="dash-todo-list"></div>
+          <div class="dash-todo-foot" id="dash-todo-foot"></div>
+        </div>
         <div class="accueil-grid">
           <div class="acc-card" id="acc-rdv-card">
             <div class="acc-card-head">
@@ -1338,6 +1446,13 @@ body.app-readonly th .rz{pointer-events:none}
               <div class="acc-card-count" id="acc-dem-count">0</div>
             </div>
             <div class="acc-list" id="acc-dem-list"></div>
+          </div>
+          <div class="acc-card" id="acc-int-card">
+            <div class="acc-card-head">
+              <div class="acc-card-title"><span class="acc-dot" style="background:#8B5CF6"></span> &#128142; Int&eacute;r&ecirc;ts acheteurs</div>
+              <div class="acc-card-count" id="acc-int-count">0</div>
+            </div>
+            <div class="acc-list" id="acc-int-list"></div>
           </div>
         </div>
       </div>
@@ -1806,6 +1921,7 @@ body.app-readonly th .rz{pointer-events:none}
         <div class="fg"><label>Nom *</label><input id="not-nom" autocomplete="off"></div>
       </div>
       <div class="fg"><label>Étude / firme</label><input id="not-agence" placeholder="ex: Étude notariale Tremblay & Associés" autocomplete="off"></div>
+      <div class="fg"><label>Adresse</label><input id="not-adresse" placeholder="ex: 123 rue Principale, Thetford Mines, QC" autocomplete="off"></div>
       <div class="g2">
         <div class="fg"><label>Téléphone</label><input id="not-tel" autocomplete="off"></div>
         <div class="fg"><label>Courriel</label><input type="email" id="not-co" autocomplete="off"></div>
@@ -1815,6 +1931,22 @@ body.app-readonly th .rz{pointer-events:none}
       <button class="tpl-btn muted" onclick="deleteNotaireFromEdit()" id="not-edit-delete" style="display:none;margin-right:auto;color:#DC2626">🗑 Supprimer</button>
       <button class="tpl-btn muted" onclick="closeNotaireEdit()">Annuler</button>
       <button class="tpl-btn primary" onclick="saveNotaire()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal : Intérêts acheteurs (Étape 27) — propriétés externes convoitées ── -->
+<!-- z-index 1490 < 1500 pour laisser le picker courtier s'afficher par-dessus -->
+<div class="tpl-modal-ov" id="int-modal-ov" style="z-index:1490">
+  <div class="tpl-modal" style="width:min(640px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">💎 Propriétés d'intérêt — <span id="int-modal-name">—</span></div>
+      <button class="tpl-btn muted" onclick="closeInteretsModal()">✕</button>
+    </div>
+    <div class="tpl-modal-body" id="int-modal-body" style="max-height:62vh;overflow-y:auto"></div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn primary" onclick="_intAdd()">+ Ajouter une propriété</button>
+      <button class="tpl-btn muted" style="margin-left:auto" onclick="closeInteretsModal()">Terminé</button>
     </div>
   </div>
 </div>
@@ -1881,6 +2013,7 @@ body.app-readonly th .rz{pointer-events:none}
           <span class="tpl-ph-chip" onclick="insertTplPlaceholder('{{nom}}')" title="Nom du client">{{nom}}</span>
           <span class="tpl-ph-chip" onclick="insertTplPlaceholder('{{notaire}}')" title="Nom du notaire choisi dans la colonne Notaire (promesses)">{{notaire}}</span>
           <span class="tpl-ph-chip" onclick="insertTplPlaceholder('{{date_notaire}}')" title="Date/heure du rendez-vous notaire (colonne Notaire des promesses)">{{date_notaire}}</span>
+          <span class="tpl-ph-chip" onclick="insertTplPlaceholder('{{adresse_notaire}}')" title="Adresse du notaire choisi (fiche notaire de la banque)">{{adresse_notaire}}</span>
         </div>
       </div>
       <div class="tpl-fg"><label>Corps du courriel</label><textarea id="tpl-f-body" placeholder="Bonjour {{prenom}},&#10;&#10;..."></textarea></div>
@@ -1931,6 +2064,7 @@ var COLS = {
   a: [
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:100},
     {lbl:"Nom",f:"nom",t:"text",w:100},
+    {lbl:"Int\u00e9r\u00eats",f:null,t:"pills-int",w:110},
     {lbl:"\u00c9tat",f:"etat",t:"select",o:"ETAT_ACH",w:90},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
@@ -2082,6 +2216,7 @@ var COLS = {
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:120},
     {lbl:"Nom",f:"nom",t:"text",w:120},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"No. Centris",f:"centris",t:"centris",w:100,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
     {lbl:"Date conclusion",f:"dateConclusion",t:"date",w:110,cls:"mu"},
@@ -2094,6 +2229,7 @@ var COLS = {
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:120},
     {lbl:"Nom",f:"nom",t:"text",w:120},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"No. Centris",f:"centris",t:"centris",w:100,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
     {lbl:"Date conclusion",f:"dateConclusion",t:"date",w:110,cls:"mu"},
@@ -2123,6 +2259,8 @@ db.signature = {body:""}; // Étape 22 : signature courriel (texte + image data 
 db.courtiers = []; // Étape 24 : master list courtiers inscripteurs ({id, prenom, nom, agence, telephone, courriel, lastModified}) — référencée par db.pa[i].courtierId
 db.refs = []; // Étape 24 : références (Sophie réfère un client à un collègue → touche une commission %). {id, prenom, nom, telephone, courriel, adresse, courtierId, dateReference, dateConclusion, montantTransaction, commissionCollegue, pctReference, commissionSophie, notes, statut, lastModified}
 db.notaires = []; // Étape 26 : master list notaires ({id, prenom, nom, agence, telephone, courriel, lastModified}) — référencée par db.pa[i].notaireId
+db.taches = []; // Étape 29 : tâches à faire (Accueil) — {id, texte, echeance, done, dateAjout}
+db.tacheCal = {}; // Étape 29 : map date (AAAA-MM-JJ) → eventId calendrier (1 événement groupé par jour, 8h30)
 var ctab = "cp", eid = null;
 var THR = {cp:14, vp:14, a:20};
 var SEARCH = {};
@@ -2140,7 +2278,8 @@ TABS_UI.forEach(function(t){
   ST[t] = {c1:-1, d1:1, c2:-1, d2:1};
 });
 // Tri par d\u00e9faut sp\u00e9cifique \u00e0 l'onglet Acheteurs : Adresse (asc) puis \u00c9tat (desc)
-ST.a = {c1:3, d1:1, c2:2, d2:-1};
+// \u00c9tape 27 \u2014 colonne "Int\u00e9r\u00eats" ins\u00e9r\u00e9e en index 2 : Adresse 3\u21924, \u00c9tat 2\u21923
+ST.a = {c1:4, d1:1, c2:3, d2:-1};
 // Tri par d\u00e9faut PA Active : Adresse (asc) puis Statut (desc)
 ST.pa = {c1:3, d1:1, c2:2, d2:-1};
 ST['pa-en-vente'] = {c1:3, d1:1, c2:2, d2:-1};
@@ -2207,6 +2346,8 @@ async function writeAutoSave(){
       payload.courtiers=db.courtiers||[];
       payload.refs=db.refs||[];
       payload.notaires=db.notaires||[];
+      payload.taches=db.taches||[];
+      payload.tacheCal=db.tacheCal||{};
       payload.thresholds=THR;
       var res=await window.electronAPI.saveJSON(JSON.stringify(payload,null,2));
       if(res.ok)showSaveStatus("\u2705 Sauvegard\u00e9 automatiquement \u00e0 "+res.time);
@@ -2224,6 +2365,8 @@ async function writeAutoSave(){
     payload.courtiers=db.courtiers||[];
     payload.refs=db.refs||[];
     payload.notaires=db.notaires||[];
+    payload.taches=db.taches||[];
+    payload.tacheCal=db.tacheCal||{};
     payload.thresholds=THR;
     var fh=await _autoDir.getFileHandle("CRM-Pro-autosauve.json",{create:true});
     var wr=await fh.createWritable();await wr.write(JSON.stringify(payload,null,2));await wr.close();
@@ -2307,6 +2450,14 @@ async function autoImportFromFile(){
       if(!db.refs)db.refs=[];
       mergeArray(db.refs,imported.refs);
     }
+    if(imported.taches&&Array.isArray(imported.taches)){
+      if(!db.taches)db.taches=[];
+      mergeArray(db.taches,imported.taches);
+    }
+    if(imported.tacheCal&&typeof imported.tacheCal==='object'){
+      db.tacheCal=db.tacheCal||{};
+      for(var _tk in imported.tacheCal){if(imported.tacheCal.hasOwnProperty(_tk))db.tacheCal[_tk]=imported.tacheCal[_tk];}
+    }
     if(imported.notaires&&Array.isArray(imported.notaires)){
       if(!db.notaires)db.notaires=[];
       mergeArray(db.notaires,imported.notaires);
@@ -2333,6 +2484,8 @@ function ldb(){
   try{var xco=localStorage.getItem("crmpro-courtiers");db.courtiers=xco?JSON.parse(xco):[];}catch(e){db.courtiers=[];}
   try{var xrf=localStorage.getItem("crmpro-refs");db.refs=xrf?JSON.parse(xrf):[];}catch(e){db.refs=[];}
   try{var xno=localStorage.getItem("crmpro-notaires");db.notaires=xno?JSON.parse(xno):[];}catch(e){db.notaires=[];}
+  try{var xta=localStorage.getItem("crmpro-taches");db.taches=xta?JSON.parse(xta):[];}catch(e){db.taches=[];}
+  try{var xtc=localStorage.getItem("crmpro-tachecal");db.tacheCal=xtc?JSON.parse(xtc):{};}catch(e){db.tacheCal={};}
   // Étape 24 — migration : ancien key 'courtiers' (v0.3.15 dev) → 'courtiers-insc'
   try{var migT=false;(db.templates||[]).forEach(function(t){if(t.section==='courtiers'){t.section='courtiers-insc';migT=true;}});if(migT)localStorage.setItem("crmpro-templates",JSON.stringify(db.templates));}catch(e){}
   try{var t=localStorage.getItem("crmprothr");if(t){var pt=JSON.parse(t);THR.cp=pt.cp||14;THR.vp=pt.vp||14;THR.a=pt.a||20;}}catch(e){}
@@ -2401,8 +2554,8 @@ function _maybeSeedExamples(){
 }
 
 var UNDO=[],UNDO_MAX=10;
-function pushUndo(label){var snap={label:label};TABS.forEach(function(t){snap[t]=JSON.parse(JSON.stringify(db[t]));});snap.demandes=JSON.parse(JSON.stringify(db.demandes||[]));snap.templates=JSON.parse(JSON.stringify(db.templates||[]));snap.signature=JSON.parse(JSON.stringify(db.signature||{body:""}));snap.courtiers=JSON.parse(JSON.stringify(db.courtiers||[]));snap.refs=JSON.parse(JSON.stringify(db.refs||[]));snap.notaires=JSON.parse(JSON.stringify(db.notaires||[]));UNDO.push(snap);if(UNDO.length>UNDO_MAX)UNDO.shift();}
-function undo(){if(!UNDO.length){toast("Rien \u00e0 annuler");return;}var snap=UNDO.pop();TABS.forEach(function(t){db[t]=snap[t];});if(snap.demandes)db.demandes=snap.demandes;if(snap.templates)db.templates=snap.templates;if(snap.signature)db.signature=snap.signature;if(snap.courtiers)db.courtiers=snap.courtiers;if(snap.refs)db.refs=snap.refs;if(snap.notaires)db.notaires=snap.notaires;sdb();rall();toast("\u21a9 Annul\u00e9 : "+snap.label);}
+function pushUndo(label){var snap={label:label};TABS.forEach(function(t){snap[t]=JSON.parse(JSON.stringify(db[t]));});snap.demandes=JSON.parse(JSON.stringify(db.demandes||[]));snap.templates=JSON.parse(JSON.stringify(db.templates||[]));snap.signature=JSON.parse(JSON.stringify(db.signature||{body:""}));snap.courtiers=JSON.parse(JSON.stringify(db.courtiers||[]));snap.refs=JSON.parse(JSON.stringify(db.refs||[]));snap.notaires=JSON.parse(JSON.stringify(db.notaires||[]));snap.taches=JSON.parse(JSON.stringify(db.taches||[]));snap.tacheCal=JSON.parse(JSON.stringify(db.tacheCal||{}));UNDO.push(snap);if(UNDO.length>UNDO_MAX)UNDO.shift();}
+function undo(){if(!UNDO.length){toast("Rien \u00e0 annuler");return;}var snap=UNDO.pop();TABS.forEach(function(t){db[t]=snap[t];});if(snap.demandes)db.demandes=snap.demandes;if(snap.templates)db.templates=snap.templates;if(snap.signature)db.signature=snap.signature;if(snap.courtiers)db.courtiers=snap.courtiers;if(snap.refs)db.refs=snap.refs;if(snap.notaires)db.notaires=snap.notaires;if(snap.taches)db.taches=snap.taches;if(snap.tacheCal)db.tacheCal=snap.tacheCal;sdb();rall();toast("\u21a9 Annul\u00e9 : "+snap.label);}
 document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="z"&&!e.target.matches("input,textarea,select")){e.preventDefault();undo();}});
 
 function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
@@ -2417,6 +2570,8 @@ function sdb(){
   try{localStorage.setItem("crmpro-courtiers",JSON.stringify(db.courtiers||[]));}catch(e){ok=false;}
   try{localStorage.setItem("crmpro-refs",JSON.stringify(db.refs||[]));}catch(e){ok=false;}
   try{localStorage.setItem("crmpro-notaires",JSON.stringify(db.notaires||[]));}catch(e){ok=false;}
+  try{localStorage.setItem("crmpro-taches",JSON.stringify(db.taches||[]));}catch(e){ok=false;}
+  try{localStorage.setItem("crmpro-tachecal",JSON.stringify(db.tacheCal||{}));}catch(e){ok=false;}
   if(!ok)toast("\u26a0 Stockage plein! Exportez vos donn\u00e9es imm\u00e9diatement.");
   _dbDirty=true;scheduleAutoSave();
 }
@@ -2657,6 +2812,18 @@ document.addEventListener('contextmenu',function(e){
 
 function _findRecord(tab,id){var storeTab=_storeTab(tab);var a=db[storeTab]||[];for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
 function _buildActionsForRecord(tab,recId){
+  // Étape 26/29 — Répertoires (banque courtiers / notaires) : menu Actions dédié
+  if(tab==='bank-courtiers'||tab==='bank-notaires'){
+    var isNot=(tab==='bank-notaires');
+    var c=isNot?_notaireById(recId):_courtierById(recId);
+    if(!c)return[];
+    var its=[];
+    if(c.courriel)its.push({icon:'&#9993;',label:'Envoyer un courriel',fn:function(){_bankEmail(recId,isNot?'notaires':'courtiers');}});
+    its.push({icon:'&#9998;',label:'Modifier',fn:function(){if(isNot)openNotaireEdit(recId);else openCourtierEdit(recId);}});
+    its.push({divider:true});
+    its.push({icon:'&#128465;',label:'Supprimer',danger:true,fn:function(){if(isNot)deleteNotaireDirect(recId);else deleteCourtierDirect(recId);}});
+    return its;
+  }
   // Demandes (active + archived)
   if(tab==='demandes'||tab==='demandes-archived'){
     var d=_findDemande(recId);if(!d)return[];
@@ -2899,6 +3066,26 @@ function renderTab(tab){
         if(nPa>0)pillsH+='<button class="vpill pa" title="'+nPa+' PA active(s) — voir" onclick="event.stopPropagation();jumpToPaEnVente(\''+rec.id+'\')">📄 '+nPa+'</button>';
         if(!pillsH)pillsH='<span style="color:#CBD5E1">—</span>';
         h+=ctd(pillsH,'vpill-cell',j);
+      } else if(col.t==="pills-int"){
+        // Étape 27 — pastille "intérêts acheteurs". Règle : alerte UNIQUEMENT s'il y a des intérêts
+        // "à traiter" (nouveaux). Les intérêts en cours (visite/planifiée/offre) = marqueur discret neutre.
+        var ints=rec.interets||[];
+        var pillH;
+        if(!ints.length){
+          pillH='<button class="vpill int-empty" title="Ajouter un intérêt (propriété externe)" onclick="event.stopPropagation();openInteretsModal(\''+rec.id+'\')">+</button>';
+        } else {
+          var nAtraiter=_countInteretsATraiter(rec);
+          if(nAtraiter>0){
+            pillH='<button class="vpill int" title="'+nAtraiter+' intérêt(s) à traiter — cliquer pour gérer" onclick="event.stopPropagation();openInteretsModal(\''+rec.id+'\')">💎 '+nAtraiter+'</button>';
+          } else {
+            // Intérêts présents mais aucun à traiter → marqueur neutre discret (pas d'alerte)
+            pillH='<button class="vpill int-calm" title="'+_countInteretsActifs(rec)+' intérêt(s) en cours — cliquer pour gérer" onclick="event.stopPropagation();openInteretsModal(\''+rec.id+'\')">💎</button>';
+          }
+          // Étape 27 — affiche la prochaine visite planifiée sous la pastille
+          var nextV=_nextVisiteFor(rec);
+          if(nextV)pillH+='<div class="int-visite-chip" title="Visite prévue — cliquer pour gérer" onclick="event.stopPropagation();openInteretsModal(\''+rec.id+'\')">📅 '+esc(_intVisiteLabel(nextV))+'</div>';
+        }
+        h+=ctd(pillH,'vpill-cell',j);
       } else if(col.t==="calc"){
         if(col.lbl==="Jours"){
           var days=dsince(rec.dateContact);
@@ -2959,129 +3146,482 @@ function renderTab(tab){
   tbEl.innerHTML=h;
 }
 
-function ust(){
-  // PA Active : nombre de PA (pas de personnes) en cours dans le tab 'pa' + total commission $
-  // Les acheteurs li\u00e9s (couples) comptent comme 1 PA \u2014 on prend le repr\u00e9sentant qui a le montant rempli
-  var paActifs=db.pa.filter(function(x){return x.statutPa!=='Accept\u00e9e';});
-  var seenLinks={},paUniques=[];
-  paActifs.forEach(function(r){
-    if(r.linkId){
-      if(!seenLinks[r.linkId]){
-        seenLinks[r.linkId]=true;
-        var siblingsPa=paActifs.filter(function(s){return s.linkId===r.linkId;});
-        var repPa=siblingsPa.filter(function(s){return parseFloat(s.montant)>0;})[0]||siblingsPa[0];
-        paUniques.push(repPa);
-      }
-    } else paUniques.push(r);
+// \u2500\u2500\u2500 Helper g\u00e9n\u00e9ral : recadre un popup d\u00e9j\u00e0 dans le DOM pour qu'il tienne dans la fen\u00eatre \u2500\u2500\u2500
+// el doit \u00eatre en position:fixed et d\u00e9j\u00e0 attach\u00e9 au body. anchorRect (optionnel) = zone \u00e0 \u00e9viter
+// de recouvrir (on pr\u00e9f\u00e8re afficher sous, sinon au-dessus). Marge de 8px aux bords.
+function _fitPopup(el, anchorRect){
+  if(!el)return;
+  var M=8;
+  var vw=window.innerWidth, vh=window.innerHeight;
+  var r=el.getBoundingClientRect();
+  var w=r.width, h=r.height;
+  // Horizontal : garder dans [M, vw-w-M]
+  var left=r.left;
+  if(left+w>vw-M)left=vw-w-M;
+  if(left<M)left=M;
+  // Vertical : si une ancre est fournie et que \u00e7a d\u00e9borde en bas, basculer au-dessus de l'ancre
+  var top=r.top;
+  if(anchorRect && top+h>vh-M && anchorRect.top-h-4>=M){
+    top=anchorRect.top-h-4;
+  }
+  if(top+h>vh-M)top=vh-h-M;
+  if(top<M)top=M;
+  el.style.left=left+'px';
+  el.style.top=top+'px';
+  el.style.right='auto';
+}
+
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+// \u2500\u2500\u2500 Aide / Tutoriels (\u00c9tape 28) \u2500\u2500\u2500
+// Chaque tuto = {sec, num, titre, html}. html='' \u2192 "contenu \u00e0 venir" (placeholder).
+// Pour r\u00e9diger un tuto : remplir le champ html (HTML simple : <p>, <ol>, <h2>,
+// <div class="aide-tip">, <div class="aide-note">, <span class="aide-kbd">).
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+var TUTORIELS=[
+  {sec:'D\u00e9marrage', num:1, titre:'Bienvenue dans TRI-ANGLE', html:
+    '<p>TRI-ANGLE est ton poste de pilotage pour g\u00e9rer tes clients, tes propri\u00e9t\u00e9s et tes transactions, du premier contact jusqu\u2019\u00e0 la conclusion.</p>'
+    +'<h2>L\u2019organisation g\u00e9n\u00e9rale</h2>'
+    +'<p>Le menu de gauche regroupe tes sections par \u00e9tape du cycle immobilier :</p>'
+    +'<ul>'
+    +'<li><strong>Prospects</strong> \u2014 les gens que tu cultives (acheteurs et vendeurs potentiels).</li>'
+    +'<li><strong>Achats</strong> \u2014 tes acheteurs actifs et leurs promesses d\u2019achat.</li>'
+    +'<li><strong>En vente</strong> \u2014 tes inscriptions, les demandes re\u00e7ues et les promesses re\u00e7ues.</li>'
+    +'<li><strong>R\u00e9pertoires</strong> \u2014 tes banques de courtiers et de notaires, r\u00e9utilisables partout.</li>'
+    +'<li><strong>R\u00e9f\u00e9rences, Pancartes, Conclus, Archives</strong> \u2014 le reste de ton activit\u00e9.</li>'
+    +'</ul>'
+    +'<h2>Les 3 r\u00e9flexes pour bien d\u00e9marrer</h2>'
+    +'<ol>'
+    +'<li>Connecte ton <strong>dossier de sauvegarde</strong> (voir le tuto \u00ab Sauvegarde automatique \u00bb).</li>'
+    +'<li>Regarde ta page <strong>Accueil</strong> chaque matin : elle te dit quoi faire aujourd\u2019hui.</li>'
+    +'<li>Ajoute tes premiers contacts avec le bouton <strong>+ Ajouter</strong> en haut \u00e0 droite.</li>'
+    +'</ol>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Tu peux revenir dans cette section <strong>Aide</strong> \u00e0 tout moment : chaque sujet explique une fonctionnalit\u00e9 pr\u00e9cise, \u00e9tape par \u00e9tape.</div></div>'},
+  {sec:'D\u00e9marrage', num:2, titre:'Configurer ta sauvegarde automatique', html:
+    '<p>TRI-ANGLE enregistre tes donn\u00e9es dans un <strong>dossier de ton choix</strong> \u2014 id\u00e9alement un dossier synchronis\u00e9 dans le nuage (Dropbox, OneDrive). Ainsi tes donn\u00e9es sont sauvegard\u00e9es en continu et accessibles si tu changes d\u2019ordinateur.</p>'
+    +'<h2>Choisir le dossier</h2>'
+    +'<ol>'
+    +'<li>Clique sur le bouton <strong>\ud83d\udcc2 (dossier)</strong> en haut, ou va dans <strong>Param\u00e8tres &rarr; Sauvegarde</strong>.</li>'
+    +'<li>S\u00e9lectionne un dossier dans ton Dropbox ou OneDrive (ex. \u00ab TRI-ANGLE Backup \u00bb).</li>'
+    +'<li>C\u2019est tout : \u00e0 partir de l\u00e0, chaque modification est sauvegard\u00e9e automatiquement.</li>'
+    +'</ol>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Un dossier dans le nuage = tes donn\u00e9es prot\u00e9g\u00e9es m\u00eame si ton ordinateur brise. Fortement recommand\u00e9.</div></div>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Pense aussi \u00e0 faire un <strong>export</strong> de temps en temps (Param\u00e8tres &rarr; Sauvegarde &rarr; Exporter) : c\u2019est une copie de s\u00e9curit\u00e9 compl\u00e8te que tu gardes \u00e0 part.</div></div>'},
+  {sec:'D\u00e9marrage', num:3, titre:'La page d\u2019Accueil et les cartes du haut', html:
+    '<p>La page <strong>Accueil</strong> est ton tableau de bord du jour. Tout en haut, quatre cartes te donnent l\u2019essentiel en un coup d\u2019\u0153il :</p>'
+    +'<ul>'
+    +'<li><strong>En relance</strong> \u2014 les prospects et acheteurs qu\u2019il faut recontacter (inactifs depuis trop longtemps).</li>'
+    +'<li><strong>Visites c\u00e9dul\u00e9es</strong> \u2014 le nombre de visites planifi\u00e9es \u00e0 venir.</li>'
+    +'<li><strong>Demandes \u00e0 traiter</strong> \u2014 s\u00e9par\u00e9 en deux : c\u00f4t\u00e9 <strong>Acheteurs</strong> (int\u00e9r\u00eats \u00e0 traiter) et c\u00f4t\u00e9 <strong>Inscriptions</strong> (demandes re\u00e7ues sur tes propri\u00e9t\u00e9s).</li>'
+    +'<li>Une quatri\u00e8me carte, r\u00e9serv\u00e9e pour un usage \u00e0 venir.</li>'
+    +'</ul>'
+    +'<h2>Tes t\u00e2ches \u00e0 faire</h2>'
+    +'<p>Tout en haut de l\u2019Accueil, la carte <strong>\u2705 T\u00e2ches \u00e0 faire</strong> est ta liste personnelle. Tape une t\u00e2che, choisis son <strong>\u00e9ch\u00e9ance</strong> (obligatoire), puis <strong>+ Ajouter</strong> (ou Entr\u00e9e). Coche-la quand c\u2019est fait (elle se barre), supprime-la avec \u2715, ou efface tout d\u2019un coup les compl\u00e9t\u00e9es. Les \u00e9ch\u00e9ances d\u00e9pass\u00e9es s\u2019affichent en rouge.</p>'
+    +'<p><strong>Ajouter une t\u00e2che \u00e0 ton agenda :</strong> clique le bouton <strong>\ud83d\udcc5</strong> d\u2019une t\u00e2che pour l\u2019envoyer \u00e0 ton calendrier (Google ou Outlook). Toutes les t\u00e2ches d\u2019une m\u00eame journée que tu ajoutes sont regroup\u00e9es dans <strong>un seul \u00e9v\u00e9nement</strong> ce jour-l\u00e0 (\u00e0 8h30), pour \u00e9viter la confusion. Reclique \ud83d\udcc5\u2713 pour retirer la t\u00e2che de l\u2019\u00e9v\u00e9nement.</p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019ajout au calendrier n\u2019est possible que si un calendrier est connect\u00e9 (Param\u00e8tres \u2192 Int\u00e9grations).</div></div>'
+    +'<h2>Les listes de l\u2019Accueil</h2>'
+    +'<p>Sous les cartes, tu trouves tes rendez-vous du jour, les promesses \u00e0 suivre, les conditions qui arrivent \u00e0 \u00e9ch\u00e9ance, et les \u00e9l\u00e9ments \u00e0 relancer \u2014 chacun cliquable pour aller directement \u00e0 la fiche concern\u00e9e.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Prends l\u2019habitude d\u2019ouvrir l\u2019Accueil en d\u00e9but de journ\u00e9e : si tout est \u00e0 z\u00e9ro, tu es \u00e0 jour\u00a0!</div></div>'},
+  {sec:'D\u00e9marrage', num:4, titre:'Importer / migrer tes contacts', html:
+    '<p>Tu arrives d\u2019un autre outil (Excel, un autre CRM) ? Tu peux r\u00e9cup\u00e9rer tes donn\u00e9es dans TRI-ANGLE plut\u00f4t que de tout retaper.</p>'
+    +'<h2>Restaurer une sauvegarde TRI-ANGLE</h2>'
+    +'<p>Si tu changes d\u2019ordinateur ou veux repartir d\u2019un export, va dans <strong>Param\u00e8tres &rarr; Sauvegarde &rarr; Importer</strong> et s\u00e9lectionne ton fichier <strong>.json</strong>. Tes contacts, propri\u00e9t\u00e9s et r\u00e9glages sont r\u00e9tablis.</p>'
+    +'<h2>Partir d\u2019une autre source</h2>'
+    +'<p>Pour un import depuis Excel ou un autre logiciel, pr\u00e9pare ta liste (nom, t\u00e9l\u00e9phone, courriel) et ajoute les fiches dans la bonne section avec le bouton <strong>+ Ajouter</strong>. Pour un gros volume, contacte le support : un format d\u2019import peut \u00eatre pr\u00e9par\u00e9.</p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019import remplace ou fusionne selon le cas \u2014 fais toujours un <strong>export de s\u00e9curit\u00e9</strong> avant d\u2019importer un gros fichier.</div></div>'},
+  {sec:'Prospects', num:5, titre:'G\u00e9rer tes prospects acheteurs', html:
+    '<p>Les <strong>Prospects acheteurs</strong> sont les gens qui cherchent \u00e0 acheter mais n\u2019ont pas encore sign\u00e9 avec toi. C\u2019est ton pipeline d\u2019entr\u00e9e : on les cultive jusqu\u2019\u00e0 ce qu\u2019ils deviennent des acheteurs actifs.</p>'
+    +'<h2>Ajouter un prospect</h2>'
+    +'<ol>'
+    +'<li>Va dans <strong>Prospects acheteurs</strong>, clique <strong>+ Ajouter</strong>.</li>'
+    +'<li>Remplis les infos : nom, t\u00e9l\u00e9phone, courriel, type de b\u00e2timent recherch\u00e9, fourchette de prix, secteur, niveau de pr\u00e9-qualification.</li>'
+    +'<li>Note la <strong>date du dernier contact</strong> : elle sert au calcul des relances.</li>'
+    +'</ol>'
+    +'<h2>Faire avancer un prospect</h2>'
+    +'<p>Quand un prospect est pr\u00eat \u00e0 passer \u00e0 l\u2019action, utilise le menu <strong>\u2630 Actions</strong> de sa ligne &rarr; <strong>Promouvoir en Acheteur</strong>. Sa fiche passe alors dans la section Achats.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Tiens la colonne \u00ab Dernier contact \u00bb \u00e0 jour : c\u2019est ce qui d\u00e9clenche les rappels de relance pour ne perdre personne.</div></div>'},
+  {sec:'Prospects', num:6, titre:'G\u00e9rer tes prospects vendeurs', html:
+    '<p>Les <strong>Prospects vendeurs</strong> sont les propri\u00e9taires qui pourraient te confier un mandat, mais n\u2019ont pas encore sign\u00e9. M\u00eame logique que les prospects acheteurs, c\u00f4t\u00e9 vente.</p>'
+    +'<h2>Ajouter un prospect vendeur</h2>'
+    +'<ol>'
+    +'<li>Dans <strong>Prospects vendeurs</strong>, clique <strong>+ Ajouter</strong>.</li>'
+    +'<li>Saisis les infos du propri\u00e9taire et de la propri\u00e9t\u00e9 vis\u00e9e (adresse, type, prix demand\u00e9 envisag\u00e9).</li>'
+    +'<li>Renseigne la <strong>date du dernier contact</strong> pour le suivi des relances.</li>'
+    +'</ol>'
+    +'<h2>D\u00e9crocher le mandat</h2>'
+    +'<p>Quand le vendeur signe, ouvre le menu <strong>\u2630 Actions</strong> &rarr; <strong>Promouvoir en Vendeur</strong> : la fiche devient une inscription dans la section En vente.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Un prospect vendeur bien suivi, c\u2019est une inscription future. Relance-les r\u00e9guli\u00e8rement avant que la concurrence ne le fasse.</div></div>'},
+  {sec:'Prospects', num:7, titre:'Le syst\u00e8me de relance', html:
+    '<p>TRI-ANGLE te signale automatiquement les contacts qu\u2019il faut <strong>relancer</strong>, pour qu\u2019aucun lead ne tombe dans l\u2019oubli.</p>'
+    +'<h2>Comment \u00e7a marche</h2>'
+    +'<p>Chaque prospect a une <strong>date de dernier contact</strong>. Quand le nombre de jours d\u00e9passe un seuil, la fiche devient \u00ab \u00e0 relancer \u00bb. Les acheteurs actifs, eux, sont signal\u00e9s selon leur derni\u00e8re activit\u00e9 (inactivit\u00e9).</p>'
+    +'<h2>O\u00f9 voir les relances</h2>'
+    +'<ul>'
+    +'<li>La carte <strong>En relance</strong> en haut de l\u2019app (et de l\u2019Accueil) affiche le total.</li>'
+    +'<li>La liste <strong>\u00c0 relancer</strong> sur l\u2019Accueil d\u00e9taille chaque cas avec la raison (\u00ab sans contact depuis X jours \u00bb).</li>'
+    +'<li>Une <strong>pastille</strong> appara\u00eet sur les lignes concern\u00e9es dans chaque section.</li>'
+    +'</ul>'
+    +'<h2>R\u00e9gler les seuils</h2>'
+    +'<p>Tu peux ajuster le nombre de jours avant relance dans <strong>Param\u00e8tres</strong> (prospects acheteurs, vendeurs, et acheteurs actifs s\u00e9par\u00e9ment).</p>'
+    +'<h2>Marquer comme contact\u00e9</h2>'
+    +'<p>Apr\u00e8s avoir rejoint la personne, utilise <strong>\u2630 Actions &rarr; Marquer contact\u00e9</strong> (ou mets \u00e0 jour la date) : la relance dispara\u00eet jusqu\u2019au prochain d\u00e9lai.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Objectif quotidien : ramener la carte \u00ab En relance \u00bb \u00e0 z\u00e9ro. C\u2019est ta to-do list de prospection.</div></div>'},
+  {sec:'Achats', num:8, titre:'G\u00e9rer tes acheteurs', html:
+    '<p>La section <strong>Mes acheteurs</strong> regroupe tes clients acheteurs actifs \u2014 ceux avec qui tu travailles concr\u00e8tement \u00e0 trouver une propri\u00e9t\u00e9.</p>'
+    +'<h2>La fiche acheteur</h2>'
+    +'<p>Chaque fiche contient les coordonn\u00e9es, l\u2019\u00e9tat du dossier, et des cases de conformit\u00e9 importantes : <strong>CCA</strong> (contrat de courtage achat), <strong>Loi 25</strong>, <strong>Conseiller en s\u00e9curit\u00e9</strong>, <strong>CANAFE</strong>, <strong>pr\u00e9-qualification</strong>. Coche-les au fur et \u00e0 mesure pour garder tes dossiers conformes.</p>'
+    +'<h2>Les int\u00e9r\u00eats (colonne \ud83d\udc8e)</h2>'
+    +'<p>La colonne <strong>Int\u00e9r\u00eats</strong> te permet de suivre les propri\u00e9t\u00e9s que ton acheteur veut visiter \u2014 voir le tuto d\u00e9di\u00e9 \u00ab Int\u00e9r\u00eats acheteurs \u00bb.</p>'
+    +'<h2>Quand une offre est d\u00e9pos\u00e9e</h2>'
+    +'<p>Cr\u00e9e une <strong>promesse d\u2019achat</strong> : soit depuis un int\u00e9r\u00eat (bouton \u2192 Promesse d\u2019achat), soit directement. La promesse appara\u00eet dans <strong>Promesses en cours</strong>.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Un acheteur inactif depuis trop longtemps remonte dans tes relances : garde le contact vivant !</div></div>'},
+  {sec:'Achats', num:9, titre:'Int\u00e9r\u00eats acheteurs : suivre les propri\u00e9t\u00e9s convoit\u00e9es', html:
+    '<p>Un <strong>int\u00e9r\u00eat acheteur</strong>, c\u2019est une propri\u00e9t\u00e9 qui n\u2019est <em>pas</em> la tienne (inscrite par un autre courtier) mais que ton acheteur veut visiter. Cette fonction te permet de capturer, suivre et faire avancer chacun de ces int\u00e9r\u00eats.</p>'
+    +'<h2>La pastille \ud83d\udc8e sur la fiche acheteur</h2>'
+    +'<p>Dans l\u2019onglet <strong>Mes acheteurs</strong>, la colonne \u00ab Int\u00e9r\u00eats \u00bb affiche :</p>'
+    +'<ul>'
+    +'<li>un <strong>+</strong> discret quand l\u2019acheteur n\u2019a aucun int\u00e9r\u00eat;</li>'
+    +'<li>une pastille violette <strong>\ud83d\udc8e N</strong> quand il y a des int\u00e9r\u00eats <strong>\u00e0 traiter</strong> (action requise);</li>'
+    +'<li>un <strong>\ud83d\udc8e</strong> neutre quand les int\u00e9r\u00eats sont d\u00e9j\u00e0 en cours (rien d\u2019urgent).</li>'
+    +'</ul>'
+    +'<h2>G\u00e9rer un int\u00e9r\u00eat</h2>'
+    +'<ol>'
+    +'<li>Clique sur la pastille \u2192 le panneau des int\u00e9r\u00eats s\u2019ouvre.</li>'
+    +'<li><strong>+ Ajouter une propri\u00e9t\u00e9</strong> : note l\u2019adresse, le n\u00b0 Centris, le courtier inscripteur, la source.</li>'
+    +'<li>Fais avancer le <strong>statut</strong> : \u00c0 traiter \u2192 Visite \u00e0 organiser \u2192 Visite planifi\u00e9e \u2192 Offre d\u00e9pos\u00e9e \u2192 \u00c9cart\u00e9e.</li>'
+    +'</ol>'
+    +'<h2>Les 3 actions</h2>'
+    +'<ul>'
+    +'<li><strong>\ud83d\udcc5 Organiser la visite</strong> \u2014 choisis date et heure, et l\u2019\u00e9v\u00e9nement est ajout\u00e9 \u00e0 ton calendrier.</li>'
+    +'<li><strong>\ud83d\udcc4 \u2192 Promesse d\u2019achat</strong> \u2014 transforme l\u2019int\u00e9r\u00eat en promesse (c\u00f4t\u00e9 acheteur), en gardant l\u2019adresse et le courtier.</li>'
+    +'<li><strong>\u2709 Courriel</strong> \u2014 \u00e9cris \u00e0 l\u2019acheteur depuis tes gabarits.</li>'
+    +'</ul>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Les int\u00e9r\u00eats \u00ab \u00e0 traiter \u00bb apparaissent aussi sur ta page <strong>Accueil</strong> et dans la carte \u00ab Demandes \u00e0 traiter \u00bb, pour ne rien oublier.</div></div>'},
+  {sec:'Achats', num:10, titre:'Organiser une visite + \u00e9v\u00e9nement calendrier', html:
+    '<p>Depuis un <strong>int\u00e9r\u00eat acheteur</strong>, tu peux planifier une visite et l\u2019ajouter directement \u00e0 ton calendrier \u2014 sans changer d\u2019application.</p>'
+    +'<h2>Planifier la visite</h2>'
+    +'<ol>'
+    +'<li>Ouvre la fiche de l\u2019acheteur, clique sa pastille <strong>\ud83d\udc8e Int\u00e9r\u00eats</strong>.</li>'
+    +'<li>Sur la propri\u00e9t\u00e9 vis\u00e9e, choisis la <strong>date</strong> et l\u2019<strong>heure</strong> de visite.</li>'
+    +'<li>Clique <strong>\ud83d\udcc5 Organiser la visite</strong>. Le statut passe \u00e0 \u00ab Visite planifi\u00e9e \u00bb.</li>'
+    +'</ol>'
+    +'<h2>L\u2019\u00e9v\u00e9nement calendrier</h2>'
+    +'<p>Si ton calendrier (Google ou Outlook) est connect\u00e9, un \u00e9v\u00e9nement est cr\u00e9\u00e9 automatiquement avec l\u2019acheteur, l\u2019adresse, le n\u00b0 Centris, le courtier inscripteur et tes notes. Sinon, la date est quand m\u00eame enregistr\u00e9e dans TRI-ANGLE.</p>'
+    +'<h2>Voir et annuler</h2>'
+    +'<p>La visite s\u2019affiche sous la pastille de l\u2019acheteur (puce \ud83d\udcc5) et compte dans la carte <strong>Visites c\u00e9dul\u00e9es</strong>. Pour l\u2019annuler, rouvre l\u2019int\u00e9r\u00eat et clique <strong>\u2715 Annuler</strong> : l\u2019\u00e9v\u00e9nement est aussi retir\u00e9 du calendrier.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Connecte ton calendrier une fois (voir le tuto Calendrier) et toutes tes visites s\u2019y retrouvent sans effort.</div></div>'},
+  {sec:'Achats', num:11, titre:'Les promesses en cours (c\u00f4t\u00e9 acheteur)', html:
+    '<p>La section <strong>Promesses en cours</strong> suit les promesses d\u2019achat de tes clients acheteurs, du d\u00e9p\u00f4t de l\u2019offre jusqu\u2019\u00e0 la lev\u00e9e des conditions.</p>'
+    +'<h2>Le suivi des conditions</h2>'
+    +'<p>Chaque promesse a des colonnes de <strong>conditions</strong> (inspection, financement, etc.) o\u00f9 tu inscris une date/heure. Ces dates alimentent ton calendrier et tes rappels d\u2019\u00e9ch\u00e9ance sur l\u2019Accueil.</p>'
+    +'<h2>Le notaire</h2>'
+    +'<p>La colonne <strong>Notaire</strong> te permet de fixer la date du rendez-vous et de choisir le notaire dans ta banque (voir le tuto Notaires).</p>'
+    +'<h2>Conclure ou annuler</h2>'
+    +'<ul>'
+    +'<li><strong>\u2630 Actions &rarr; Marquer conclu</strong> : la transaction passe dans Achats conclus.</li>'
+    +'<li><strong>\u2630 Actions &rarr; Retour Acheteurs</strong> : si la promesse tombe, le client revient dans tes acheteurs actifs.</li>'
+    +'</ul>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Surveille la carte \u00ab Promesses \u00e0 suivre \u00bb et les conditions \u00e0 \u00e9ch\u00e9ance sur l\u2019Accueil : ce sont tes dates critiques \u00e0 ne pas manquer.</div></div>'},
+  {sec:'En vente', num:12, titre:'Cr\u00e9er et g\u00e9rer une inscription', html:
+    '<p>Une <strong>inscription</strong>, c\u2019est une propri\u00e9t\u00e9 que tu as en mandat de vente. La section <strong>Mes inscriptions</strong> centralise tout le suivi du mandat.</p>'
+    +'<h2>Cr\u00e9er l\u2019inscription</h2>'
+    +'<p>Clique <strong>+ Ajouter</strong> et saisis le vendeur, l\u2019adresse, le n\u00b0 Centris et les d\u00e9tails. Tu peux promouvoir un prospect vendeur en inscription via son menu Actions.</p>'
+    +'<h2>La check-list du mandat</h2>'
+    +'<p>De nombreuses cases t\u2019aident \u00e0 ne rien oublier : \u00e9valuation, Loi 25, CANAFE, contrat de vente, d\u00e9claration du vendeur, MLS, taxes, zonage, certificat de localisation, photos, mesures, pancarte, etc. Coche au fur et \u00e0 mesure.</p>'
+    +'<h2>Les pastilles d\u2019activit\u00e9</h2>'
+    +'<p>Sur chaque inscription, des pastilles signalent les <strong>demandes re\u00e7ues</strong> (\ud83d\udce9) et les <strong>promesses</strong> (\ud83d\udcc4) li\u00e9es \u00e0 cette propri\u00e9t\u00e9 \u2014 cliquables pour y acc\u00e9der directement.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Remplis le n\u00b0 Centris : il devient cliquable et t\u2019am\u00e8ne directement \u00e0 la fiche en ligne.</div></div>'},
+  {sec:'En vente', num:13, titre:'Les demandes re\u00e7ues (et pi\u00e8ces jointes par propri\u00e9t\u00e9)', html:
+    '<p>Les <strong>Demandes re\u00e7ues</strong> sont les demandes d\u2019information d\u2019acheteurs (ou de leurs courtiers) sur <em>tes</em> propri\u00e9t\u00e9s inscrites. Tu les traites, les qualifies, et les convertis.</p>'
+    +'<h2>Traiter une demande</h2>'
+    +'<ol>'
+    +'<li>Une nouvelle demande arrive avec le statut <strong>\u00c0 traiter</strong>.</li>'
+    +'<li>Via <strong>\u2630 Actions</strong> : r\u00e9ponds par courriel, mets <strong>En attente</strong>, ou marque <strong>\u00c0 suivre</strong>.</li>'
+    +'<li>Convertis-la : <strong>\u2192 Promesse re\u00e7ue</strong>, <strong>Acheteur actif</strong>, ou <strong>Prospect acheteur</strong> selon le s\u00e9rieux du lead.</li>'
+    +'</ol>'
+    +'<h2>Les demandes m\u00e9di\u00e9es par un courtier</h2>'
+    +'<p>Si la demande vient d\u2019un autre courtier, la colonne <strong>Repr\u00e9sent\u00e9 par</strong> l\u2019indique, et la fiche peut h\u00e9riter automatiquement du courtier lors de la conversion en promesse.</p>'
+    +'<h2>\ud83d\udcce Pi\u00e8ces jointes par propri\u00e9t\u00e9</h2>'
+    +'<p>Depuis cette section, le bouton <strong>\ud83d\udcce PJ</strong> ouvre le dossier de pi\u00e8ces jointes de la propri\u00e9t\u00e9 : fiche, zonage, cadastre, taxes, d\u00e9claration du vendeur, et autres documents. Glisse-d\u00e9pose tes fichiers; ils sont rang\u00e9s dans ton dossier de sauvegarde et peuvent \u00eatre joints \u00e0 tes courriels.</p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Les pi\u00e8ces jointes d\u2019une propri\u00e9t\u00e9 sont supprim\u00e9es automatiquement quand la vente est conclue, pour garder ton dossier propre.</div></div>'},
+  {sec:'En vente', num:14, titre:'Les promesses re\u00e7ues / double repr\u00e9sentation', html:
+    '<p>Les <strong>Promesses re\u00e7ues</strong> sont les promesses d\u2019achat d\u00e9pos\u00e9es sur tes inscriptions. C\u2019est le pendant \u00ab c\u00f4t\u00e9 vente \u00bb des promesses en cours.</p>'
+    +'<h2>Qui repr\u00e9sente l\u2019acheteur ?</h2>'
+    +'<p>La colonne <strong>Repr\u00e9sentation</strong> pr\u00e9cise le cas :</p>'
+    +'<ul>'
+    +'<li><strong>Double repr\u00e9sentation</strong> (badge mauve) : tu repr\u00e9sentes le vendeur ET l\u2019acheteur.</li>'
+    +'<li><strong>Courtier collaborateur</strong> (badge bleu) : un autre courtier repr\u00e9sente l\u2019acheteur \u2014 choisis-le dans ta banque de courtiers.</li>'
+    +'</ul>'
+    +'<h2>Le suivi</h2>'
+    +'<p>Comme pour les promesses en cours : conditions, \u00e9ch\u00e9ances, notaire. Quand tout est lev\u00e9, <strong>Marquer conclu</strong> envoie la transaction dans Ventes conclues.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Les gabarits de courriels \u00ab Courtiers collaborateurs \u00bb te font gagner du temps pour communiquer avec l\u2019autre courtier.</div></div>'},
+  {sec:'En vente', num:15, titre:'Suivre les conditions et les \u00e9ch\u00e9ances', html:
+    '<p>Les <strong>conditions</strong> (inspection, financement, R2.1/R2.2, assurance, fosse septique, test d\u2019eau, notaire\u2026) sont le c\u0153ur du suivi d\u2019une promesse. TRI-ANGLE t\u2019aide \u00e0 ne jamais manquer une date.</p>'
+    +'<h2>Inscrire une date</h2>'
+    +'<p>Clique sur une cellule de condition : un petit calendrier s\u2019ouvre pour choisir <strong>date et heure</strong>. Une fois la condition remplie, marque-la comme faite.</p>'
+    +'<h2>Les rappels</h2>'
+    +'<ul>'
+    +'<li>L\u2019Accueil affiche les <strong>conditions \u00e0 surveiller</strong> (\u00e9ch\u00e9ance \u2264 7 jours), avec les retards en \u00e9vidence.</li>'
+    +'<li>Si ton calendrier est connect\u00e9, chaque date de condition y cr\u00e9e un \u00e9v\u00e9nement.</li>'
+    +'</ul>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Une condition non lev\u00e9e \u00e0 temps peut faire tomber une transaction. La liste \u00ab Conditions \u00e0 surveiller \u00bb est ta s\u00e9curit\u00e9.</div></div>'},
+  {sec:'Capture SMS', num:16, titre:'Configurer la capture SMS', html:
+    '<p>La <strong>Capture SMS</strong> te permet de cr\u00e9er une demande dans TRI-ANGLE simplement en envoyant un texto (ou une capture d\u2019\u00e9cran) \u00e0 un num\u00e9ro d\u00e9di\u00e9. Id\u00e9al quand tu es sur la route.</p>'
+    +'<h2>Activer la capture</h2>'
+    +'<ol>'
+    +'<li>Va dans <strong>Param\u00e8tres &rarr; Int\u00e9grations &rarr; Capture SMS</strong>.</li>'
+    +'<li>Enregistre ton <strong>num\u00e9ro de cellulaire</strong> : c\u2019est lui qui sera reconnu comme exp\u00e9diteur autoris\u00e9.</li>'
+    +'<li>Note le <strong>num\u00e9ro TRI-ANGLE</strong> affich\u00e9 : c\u2019est \u00e0 ce num\u00e9ro que tu enverras tes textos.</li>'
+    +'</ol>'
+    +'<h2>Comment \u00e7a fonctionne</h2>'
+    +'<p>Tu envoies un texto au num\u00e9ro TRI-ANGLE. Une intelligence artificielle lit le message, en extrait les infos (nom, t\u00e9l\u00e9phone, adresse, propri\u00e9t\u00e9\u2026) et cr\u00e9e une demande. L\u2019app v\u00e9rifie r\u00e9guli\u00e8rement les nouveaux messages et te pr\u00e9sente une fen\u00eatre de confirmation avant d\u2019enregistrer.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Enregistre le num\u00e9ro TRI-ANGLE dans tes contacts t\u00e9l\u00e9phone sous \u00ab TRI-ANGLE \u00bb : tu pourras lui transf\u00e9rer une info en deux secondes.</div></div>'},
+  {sec:'Capture SMS', num:17, titre:'Texto ou screenshot \u2192 demande automatique', html:
+    '<p>Une fois la capture configur\u00e9e, tu peux nourrir ton CRM de deux fa\u00e7ons.</p>'
+    +'<h2>Par texto</h2>'
+    +'<p>\u00c9cris l\u2019info en langage normal, ex. : \u00ab <em>Marie Tremblay 418-555-1234 int\u00e9ress\u00e9e au 123 rue Principale</em> \u00bb. L\u2019IA extrait le nom, le t\u00e9l\u00e9phone et la propri\u00e9t\u00e9.</p>'
+    +'<h2>Par capture d\u2019\u00e9cran (screenshot)</h2>'
+    +'<p>Envoie une capture d\u2019une conversation (texto, Messenger, courriel) ou d\u2019une notification Centris : l\u2019IA lit l\u2019image et en tire les m\u00eames infos. Pratique pour ne rien retaper.</p>'
+    +'<h2>La fen\u00eatre de confirmation</h2>'
+    +'<p>Avant d\u2019enregistrer, TRI-ANGLE t\u2019affiche ce qu\u2019il a compris : tu peux corriger, choisir la propri\u00e9t\u00e9 concern\u00e9e, lier un courtier, puis valider. Rien n\u2019est cr\u00e9\u00e9 sans ton accord.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Philosophie : l\u2019IA <strong>attrape</strong> l\u2019info, toi tu <strong>valides</strong>. Tu gardes toujours le contr\u00f4le final.</div></div>'},
+  {sec:'R\u00e9pertoires', num:18, titre:'Ta banque de courtiers', html:
+    '<p>La <strong>banque de courtiers</strong> est ta liste r\u00e9utilisable de courtiers (inscripteurs et collaborateurs). Tu saisis un courtier une fois, puis tu le r\u00e9utilises partout.</p>'
+    +'<h2>Ajouter un courtier</h2>'
+    +'<p>Dans <strong>Courtiers</strong>, clique <strong>+ Nouveau courtier</strong> et saisis nom, agence, t\u00e9l\u00e9phone, courriel.</p>'
+    +'<h2>O\u00f9 il sert</h2>'
+    +'<ul>'
+    +'<li>Colonne <strong>Courtier inscripteur</strong> des promesses en cours.</li>'
+    +'<li>Colonne <strong>Repr\u00e9sentation</strong> des promesses re\u00e7ues (collaborateur).</li>'
+    +'<li>Sur les <strong>demandes re\u00e7ues</strong> et les <strong>int\u00e9r\u00eats acheteurs</strong>.</li>'
+    +'</ul>'
+    +'<p>La colonne <strong>Dossiers</strong> indique combien de fiches utilisent chaque courtier.</p>'
+    +'<h2>\u00c9crire \u00e0 un courtier</h2>'
+    +'<p>Sur chaque ligne, le bouton <strong>\u2630 Actions</strong> ouvre un menu : <strong>Envoyer un courriel</strong> (ouvre tes gabarits \u00ab\u00a0Courtiers inscripteurs\u00a0\u00bb avec l\u2019adresse d\u00e9j\u00e0 remplie), <strong>Modifier</strong> ou <strong>Supprimer</strong>.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Des gabarits de courriels d\u00e9di\u00e9s (\u00ab Courtiers inscripteurs \u00bb et \u00ab Courtiers collaborateurs \u00bb) utilisent les champs {{cou_prenom}}, {{cou_nom}}, {{cou_agence}}.</div></div>'},
+  {sec:'R\u00e9pertoires', num:19, titre:'Ta banque de notaires', html:
+    '<p>La <strong>banque de notaires</strong> fonctionne comme celle des courtiers : une liste r\u00e9utilisable de notaires que tu assignes \u00e0 tes promesses.</p>'
+    +'<h2>Ajouter un notaire</h2>'
+    +'<p>Dans <strong>Notaires</strong>, clique <strong>+ Nouveau notaire</strong> et saisis pr\u00e9nom, nom, \u00e9tude/firme, <strong>adresse</strong>, t\u00e9l\u00e9phone, courriel.</p>'
+    +'<h2>Assigner un notaire \u00e0 une promesse</h2>'
+    +'<p>Dans la colonne <strong>Notaire</strong> d\u2019une promesse, fixe la date du rendez-vous puis choisis le notaire (bouton \u2696\ufe0f). Son nom s\u2019affiche sous la date.</p>'
+    +'<h2>Dans les courriels</h2>'
+    +'<p>Les gabarits peuvent ins\u00e9rer <span class="aide-kbd">{{notaire}}</span> (nom), <span class="aide-kbd">{{date_notaire}}</span> (date du RDV) et <span class="aide-kbd">{{adresse_notaire}}</span> (adresse du notaire) \u2014 remplis automatiquement \u00e0 l\u2019envoi.</p>'
+    +'<h2>\u00c9crire \u00e0 un notaire</h2>'
+    +'<p>Sur chaque ligne de l\u2019onglet Notaires, le bouton <strong>\u2630 Actions \u2192 Envoyer un courriel</strong> ouvre tes gabarits de la section <strong>Notaires</strong>, avec l\u2019adresse d\u00e9j\u00e0 remplie. Tu peux aussi <strong>Modifier</strong> ou <strong>Supprimer</strong> le notaire depuis ce menu.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Enregistre l\u2019adresse du notaire une fois : elle s\u2019ins\u00e8re ensuite toute seule dans tes courriels de confirmation de signature.</div></div>'},
+  {sec:'R\u00e9f\u00e9rences', num:20, titre:'R\u00e9f\u00e9rer un client et suivre ta commission', html:
+    '<p>La section <strong>R\u00e9f\u00e9rences</strong> sert quand tu r\u00e9f\u00e8res un client \u00e0 un coll\u00e8gue (autre secteur, autre sp\u00e9cialit\u00e9) en \u00e9change d\u2019une <strong>commission de r\u00e9f\u00e9rence</strong>.</p>'
+    +'<h2>Cr\u00e9er une r\u00e9f\u00e9rence</h2>'
+    +'<ol>'
+    +'<li>Dans <strong>R\u00e9f\u00e9rences actives</strong>, ajoute le client et le coll\u00e8gue r\u00e9f\u00e9r\u00e9 (choisi dans ta banque de courtiers).</li>'
+    +'<li>Saisis la <strong>commission du coll\u00e8gue</strong> et ton <strong>% de r\u00e9f\u00e9rence</strong> (d\u00e9faut 25 %).</li>'
+    +'<li>TRI-ANGLE calcule automatiquement <strong>ta</strong> commission.</li>'
+    +'</ol>'
+    +'<h2>Conclure</h2>'
+    +'<p>Quand la transaction du coll\u00e8gue se conclut et que tu touches ta part, clique <strong>\u2630 Actions &rarr; Marquer conclue</strong>. La r\u00e9f\u00e9rence passe dans \u00ab R\u00e9f\u00e9rences conclues \u00bb et alimente ton tableau de bord.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Les r\u00e9f\u00e9rences sont un revenu r\u00e9el : en les suivant ici, elles apparaissent dans tes commissions encaiss\u00e9es au Dashboard.</div></div>'},
+  {sec:'Pancartes', num:21, titre:'Suivre les pancartes \u00e0 installer / retirer', html:
+    '<p>La section <strong>Pancartes</strong> t\u2019aide \u00e0 ne pas oublier les pancartes \u00e0 poser sur tes nouvelles inscriptions ni celles \u00e0 r\u00e9cup\u00e9rer apr\u00e8s une vente.</p>'
+    +'<h2>Comment \u00e7a marche</h2>'
+    +'<p>\u00c0 partir de tes inscriptions, TRI-ANGLE liste les pancartes <strong>\u00e0 installer</strong> (mandats r\u00e9cents sans pancarte pos\u00e9e) et <strong>\u00e0 retirer</strong> (propri\u00e9t\u00e9s conclues). L\u2019Accueil affiche un compteur global.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Coche la pancarte comme pos\u00e9e/retir\u00e9e dans la fiche de l\u2019inscription pour garder la liste \u00e0 jour.</div></div>'},
+  {sec:'Courriels & Templates', num:22, titre:'Cr\u00e9er et utiliser des gabarits de courriels', html:
+    '<p>Les <strong>gabarits</strong> (templates) sont des courriels pr\u00e9-r\u00e9dig\u00e9s que tu r\u00e9utilises en un clic, organis\u00e9s par section.</p>'
+    +'<h2>Cr\u00e9er un gabarit</h2>'
+    +'<ol>'
+    +'<li>Va dans <strong>Templates</strong>, choisis la section concern\u00e9e (ex. Acheteurs, Demandes\u2026).</li>'
+    +'<li>Clique <strong>+ Nouveau</strong>, donne-lui un nom, un sujet et un corps.</li>'
+    +'<li>Ins\u00e8re des champs dynamiques (voir tuto suivant) pour personnaliser automatiquement.</li>'
+    +'</ol>'
+    +'<h2>Envoyer depuis un gabarit</h2>'
+    +'<p>Sur n\u2019importe quelle fiche, le bouton <strong>\u2709 courriel</strong> (ou <strong>\u2630 Actions &rarr; Envoyer un courriel</strong>) ouvre la liste des gabarits de la section. Choisis-en un : le brouillon s\u2019ouvre, d\u00e9j\u00e0 personnalis\u00e9 avec le nom du client.</p>'
+    +'<h2>Des gabarits aussi pour tes contacts externes</h2>'
+    +'<p>En plus des sections par \u00e9tape (acheteurs, vendeurs, demandes\u2026), tu as des sections <strong>Courtiers inscripteurs</strong>, <strong>Courtiers collaborateurs</strong> et <strong>Notaires</strong>. Les courriels envoy\u00e9s depuis les onglets <strong>Courtiers</strong> et <strong>Notaires</strong> (menu \u2630 Actions) puisent dans ces gabarits.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Pr\u00e9pare tes gabarits r\u00e9currents (confirmation de visite, suivi, demande de documents) une fois : tu gagnes des heures chaque semaine.</div></div>'},
+  {sec:'Courriels & Templates', num:23, titre:'Les champs dynamiques ({{prenom}}, {{notaire}}\u2026)', html:
+    '<p>Les <strong>champs dynamiques</strong> sont des marqueurs entre doubles accolades qui se remplacent automatiquement par les vraies donn\u00e9es au moment de l\u2019envoi.</p>'
+    +'<h2>Les principaux champs</h2>'
+    +'<ul>'
+    +'<li><span class="aide-kbd">{{prenom}}</span> / <span class="aide-kbd">{{nom}}</span> \u2014 le client de la fiche.</li>'
+    +'<li><span class="aide-kbd">{{cou_prenom}}</span> / <span class="aide-kbd">{{cou_nom}}</span> / <span class="aide-kbd">{{cou_agence}}</span> \u2014 le courtier associ\u00e9.</li>'
+    +'<li><span class="aide-kbd">{{notaire}}</span> / <span class="aide-kbd">{{date_notaire}}</span> / <span class="aide-kbd">{{adresse_notaire}}</span> \u2014 le notaire de la promesse.</li>'
+    +'</ul>'
+    +'<h2>Les ins\u00e9rer</h2>'
+    +'<p>Dans l\u2019\u00e9diteur de gabarit, clique simplement sur la <strong>puce du champ</strong> au-dessus du corps : il s\u2019ins\u00e8re \u00e0 l\u2019endroit du curseur.</p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Si un champ n\u2019a pas de donn\u00e9e correspondante (ex. {{notaire}} sur une fiche sans notaire), il est simplement remplac\u00e9 par du vide \u2014 pas de texte parasite dans ton courriel.</div></div>'},
+  {sec:'Courriels & Templates', num:24, titre:'Choisir ton service courriel', html:
+    '<p>TRI-ANGLE pr\u00e9pare tes brouillons, mais c\u2019est ton service courriel qui les ouvre. Tu choisis lequel dans <strong>Param\u00e8tres &rarr; Int\u00e9grations</strong>.</p>'
+    +'<h2>Les options</h2>'
+    +'<ul>'
+    +'<li><strong>Outlook (application)</strong> \u2014 <strong>recommand\u00e9</strong> : meilleure int\u00e9gration, pi\u00e8ces jointes automatiques, mise en forme et signature fiables.</li>'
+    +'<li><strong>Gmail web / Outlook web</strong> \u2014 ouvre le brouillon dans ton navigateur.</li>'
+    +'<li><strong>Apple Mail</strong> \u2014 sur Mac.</li>'
+    +'</ul>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Le <strong>webmail (Gmail/Outlook web) et Apple Mail sont support\u00e9s</strong>, mais offrent <strong>moins de fonctionnalit\u00e9s</strong> \u2014 notamment, les pi\u00e8ces jointes ne peuvent pas toujours \u00eatre ajout\u00e9es automatiquement. Pour l\u2019exp\u00e9rience compl\u00e8te, utilise <strong>Outlook en application</strong>. Ta signature, elle, se configure directement dans ton Outlook.</div></div>'},
+  {sec:'Courriels & Templates', num:25, titre:'Envoi group\u00e9 (BCC)', html:
+    '<p>L\u2019<strong>envoi group\u00e9</strong> te permet d\u2019\u00e9crire \u00e0 plusieurs contacts d\u2019un coup, en gardant leurs adresses confidentielles.</p>'
+    +'<h2>Comment faire</h2>'
+    +'<ol>'
+    +'<li>Dans une section, clique <strong>\u2709 Envoyer \u00e0 tous</strong> (en-t\u00eate), ou cible une propri\u00e9t\u00e9 pr\u00e9cise.</li>'
+    +'<li>Choisis un gabarit.</li>'
+    +'<li>Le brouillon est cr\u00e9\u00e9 avec tous les destinataires en <strong>BCC (copie cach\u00e9e)</strong> : personne ne voit les adresses des autres.</li>'
+    +'</ol>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>En envoi group\u00e9, les champs personnalis\u00e9s ({{prenom}}\u2026) ne sont pas remplis (un m\u00eame courriel part \u00e0 tout le monde). Garde un texte g\u00e9n\u00e9ral.</div></div>'},
+  {sec:'Courriels & Templates', num:26, titre:'Pi\u00e8ces jointes de gabarit', html:
+    '<p>Tu peux attacher des <strong>pi\u00e8ces jointes permanentes</strong> \u00e0 un gabarit : elles seront jointes automatiquement \u00e0 chaque envoi de ce gabarit.</p>'
+    +'<h2>Ajouter une PJ au gabarit</h2>'
+    +'<p>Dans l\u2019\u00e9diteur de gabarit, utilise la zone <strong>\ud83d\udcce Pi\u00e8ces jointes du gabarit</strong> pour d\u00e9poser tes fichiers (ex. : brochure, formulaire type, guide de l\u2019acheteur).</p>'
+    +'<h2>\u00c0 l\u2019envoi</h2>'
+    +'<p>Les PJ du gabarit se combinent avec les \u00e9ventuelles pi\u00e8ces de la propri\u00e9t\u00e9 (voir tuto Demandes re\u00e7ues). Le brouillon s\u2019ouvre avec tout joint.</p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019attachement automatique fonctionne avec <strong>Outlook en application</strong> (ou Apple Mail). En webmail, le navigateur ne permet pas de joindre automatiquement : TRI-ANGLE t\u2019ouvre alors le dossier des fichiers \u00e0 glisser manuellement.</div></div>'},
+  {sec:'Calendrier', num:27, titre:'Connecter Google ou Outlook', html:
+    '<p>En connectant ton calendrier, toutes tes dates (visites, conditions, rendez-vous notaire) y apparaissent automatiquement.</p>'
+    +'<h2>Se connecter</h2>'
+    +'<ol>'
+    +'<li>Va dans <strong>Param\u00e8tres &rarr; Int\u00e9grations</strong>.</li>'
+    +'<li>Choisis <strong>Google Calendar</strong> ou <strong>Outlook</strong> et autorise l\u2019acc\u00e8s.</li>'
+    +'</ol>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Un seul calendrier \u00e0 la fois est actif. Connecter l\u2019un d\u00e9connecte l\u2019autre (pour \u00e9viter les doublons d\u2019\u00e9v\u00e9nements).</div></div>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Tu n\u2019as besoin de faire cette connexion qu\u2019une seule fois sur ton ordinateur.</div></div>'},
+  {sec:'Calendrier', num:28, titre:'La synchronisation automatique des rendez-vous', html:
+    '<p>Une fois ton calendrier connect\u00e9, TRI-ANGLE y cr\u00e9e et met \u00e0 jour les \u00e9v\u00e9nements tout seul.</p>'
+    +'<h2>Ce qui se synchronise</h2>'
+    +'<ul>'
+    +'<li>Les <strong>visites</strong> planifi\u00e9es depuis les int\u00e9r\u00eats acheteurs.</li>'
+    +'<li>Les <strong>conditions</strong> avec une date (inspection, financement\u2026).</li>'
+    +'<li>Les <strong>rendez-vous notaire</strong>.</li>'
+    +'</ul>'
+    +'<p>Les \u00e9v\u00e9nements TRI-ANGLE sont pr\u00e9fix\u00e9s <strong>(Tri-Angle)</strong> dans ton calendrier. Si tu modifies une date dans l\u2019app, l\u2019\u00e9v\u00e9nement se met \u00e0 jour; si tu l\u2019effaces, il est retir\u00e9.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>L\u2019onglet <strong>Calendrier</strong> de TRI-ANGLE te donne aussi une vue d\u2019ensemble de tes dates sans quitter l\u2019app.</div></div>'},
+  {sec:'Pilotage', num:29, titre:'Lire ton tableau de bord', html:
+    '<p>Le <strong>Tableau de bord</strong> (Dashboard) te donne une lecture honn\u00eate de ton activit\u00e9 et de tes revenus.</p>'
+    +'<h2>Les indicateurs cl\u00e9s</h2>'
+    +'<ul>'
+    +'<li><strong>Encaiss\u00e9</strong> \u2014 tes commissions d\u00e9j\u00e0 touch\u00e9es cette ann\u00e9e (achats, ventes, r\u00e9f\u00e9rences).</li>'
+    +'<li><strong>En cours</strong> \u2014 les commissions \u00e0 venir des transactions actives (promesses + r\u00e9f\u00e9rences actives).</li>'
+    +'<li><strong>Rythme</strong> \u2014 ta commission moyenne par transaction.</li>'
+    +'<li><strong>Projection</strong> \u2014 Encaiss\u00e9 + En cours, compar\u00e9 \u00e0 l\u2019an dernier.</li>'
+    +'</ul>'
+    +'<h2>D\u00e9compositions cliquables</h2>'
+    +'<p>Chaque bloc se d\u00e9compose par source et est cliquable pour aller voir les transactions concern\u00e9es. Un graphique sur 12 mois et un entonnoir compl\u00e8tent la vue.</p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Les mandats sans offre active ne sont <strong>pas</strong> compt\u00e9s dans \u00ab En cours \u00bb : le Dashboard n\u2019invente aucun revenu. Seules les promesses et r\u00e9f\u00e9rences r\u00e9elles comptent.</div></div>'},
+  {sec:'Pilotage', num:30, titre:'Conclure une transaction', html:
+    '<p>Conclure une transaction la d\u00e9place vers tes archives de transactions conclues et alimente ton tableau de bord.</p>'
+    +'<h2>C\u00f4t\u00e9 achat</h2>'
+    +'<p>Sur une <strong>promesse en cours</strong>, <strong>\u2630 Actions &rarr; Marquer conclu</strong> \u2192 la fiche passe dans <strong>Achats conclus</strong>. Saisis le montant et ta commission pour le suivi financier.</p>'
+    +'<h2>C\u00f4t\u00e9 vente</h2>'
+    +'<p>Sur une <strong>inscription</strong> ou une <strong>promesse re\u00e7ue</strong>, <strong>Marquer conclu</strong> \u2192 <strong>Ventes conclues</strong>. Une fen\u00eatre te propose de d\u00e9cider quoi faire des demandes encore actives sur la propri\u00e9t\u00e9 (garder en prospects, archiver\u2026).</p>'
+    +'<p>Le <strong>n\u00b0 Centris</strong> de la propri\u00e9t\u00e9 est conserv\u00e9 : tu le retrouves (cliquable) dans les onglets <strong>Achats conclus</strong> et <strong>Ventes conclues</strong>.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Renseigne toujours le montant final et les pourcentages de commission : c\u2019est ce qui rend ton Dashboard exact.</div></div>'},
+  {sec:'Syst\u00e8me', num:31, titre:'Sauvegarde et restauration', html:
+    '<p>Tes donn\u00e9es t\u2019appartiennent et restent sur ton ordinateur / ton nuage. Deux m\u00e9canismes les prot\u00e8gent.</p>'
+    +'<h2>Sauvegarde automatique</h2>'
+    +'<p>Tant qu\u2019un dossier est connect\u00e9 (voir tuto D\u00e9marrage), chaque changement est enregistr\u00e9 en continu. Id\u00e9alement un dossier Dropbox/OneDrive.</p>'
+    +'<h2>Export / Import manuel</h2>'
+    +'<ul>'
+    +'<li><strong>Exporter</strong> (Param\u00e8tres &rarr; Sauvegarde) : cr\u00e9e un fichier .json complet \u2014 ta copie de s\u00e9curit\u00e9 \u00e0 conserver \u00e0 part.</li>'
+    +'<li><strong>Importer</strong> : restaure tes donn\u00e9es depuis un fichier .json (nouvel ordinateur, retour en arri\u00e8re).</li>'
+    +'</ul>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Bonne habitude : un export manuel de temps en temps, gard\u00e9 dans un endroit diff\u00e9rent de ta sauvegarde auto. Double protection.</div></div>'},
+  {sec:'Syst\u00e8me', num:32, titre:'Licence et abonnement', html:
+    '<p>TRI-ANGLE fonctionne avec une cl\u00e9 de licence. Tu profites d\u2019abord d\u2019un <strong>essai gratuit</strong>, puis d\u2019un abonnement.</p>'
+    +'<h2>Renouveler</h2>'
+    +'<ol>'
+    +'<li>Va dans <strong>Param\u00e8tres &rarr; Compte</strong> pour voir l\u2019\u00e9tat de ta licence et la date d\u2019expiration.</li>'
+    +'<li>Utilise le bouton <strong>Copier le mod\u00e8le de courriel</strong> pour la demande de renouvellement.</li>'
+    +'<li>Effectue le paiement par virement Interac, puis tu re\u00e7ois ta nouvelle cl\u00e9 sous 24 h.</li>'
+    +'</ol>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Si ta licence expire, l\u2019app passe en lecture seule (tu peux toujours consulter et exporter tes donn\u00e9es) \u2014 rien n\u2019est perdu.</div></div>'},
+  {sec:'Syst\u00e8me', num:33, titre:'Mises \u00e0 jour de l\u2019application', html:
+    '<p>TRI-ANGLE s\u2019am\u00e9liore r\u00e9guli\u00e8rement. Les mises \u00e0 jour apportent nouvelles fonctions et corrections.</p>'
+    +'<h2>Sur Windows</h2>'
+    +'<p>Les mises \u00e0 jour s\u2019installent <strong>automatiquement</strong> : au lancement, si une nouvelle version existe, elle se t\u00e9l\u00e9charge et s\u2019applique au red\u00e9marrage de l\u2019app.</p>'
+    +'<h2>Sur Mac</h2>'
+    +'<p>Selon la configuration, tu peux avoir un bouton <strong>T\u00e9l\u00e9charger la mise \u00e0 jour</strong> dans Param\u00e8tres &rarr; Compte. Sinon, ton conseiller TRI-ANGLE te fournira la marche \u00e0 suivre.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Garde toujours la derni\u00e8re version : c\u2019est gratuit et tu profites des nouveaut\u00e9s (comme ce centre d\u2019aide !).</div></div>'},
+  {sec:'Syst\u00e8me', num:34, titre:'Astuces : clic-droit, menu Actions, raccourcis', html:
+    '<p>Quelques gestes qui te font gagner du temps au quotidien.</p>'
+    +'<h2>Le menu \u2630 Actions</h2>'
+    +'<p>Sur chaque ligne, le bouton <strong>\u2630 Actions</strong> regroupe tout ce que tu peux faire avec cette fiche : modifier, envoyer un courriel, convertir, lier, supprimer\u2026 C\u2019est ton couteau suisse.</p>'
+    +'<h2>Le clic-droit</h2>'
+    +'<p>Un <strong>clic-droit</strong> sur une cellule te permet de copier sa valeur, ou de copier toute la ligne. Sur un champ de saisie, tu as couper/copier/coller.</p>'
+    +'<h2>\u00c9dition rapide</h2>'
+    +'<p>Clique directement dans une cellule du tableau pour la modifier sans ouvrir la fiche compl\u00e8te. Pratique pour ajuster une date ou cocher une case.</p>'
+    +'<h2>Raccourci</h2>'
+    +'<p><span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Z</span> annule ta derni\u00e8re action (ajout, modification, suppression).</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Tu peux aussi <strong>redimensionner les colonnes</strong> et r\u00e9ordonner le tri par les en-t\u00eates, pour adapter chaque tableau \u00e0 ta fa\u00e7on de travailler.</div></div>'}
+];
+var _aideCurrent=null;
+function renderAideMenu(){
+  var menu=document.getElementById('aide-menu');if(!menu)return;
+  var h='',lastSec=null;
+  TUTORIELS.forEach(function(tu){
+    if(tu.sec!==lastSec){h+='<div class="aide-sec-title">'+esc(tu.sec)+'</div>';lastSec=tu.sec;}
+    var on=(_aideCurrent===tu.num)?' on':'';
+    h+='<div class="aide-item'+on+'" onclick="showTuto('+tu.num+')"><span class="aide-item-num">'+tu.num+'</span><span>'+esc(tu.titre)+'</span></div>';
   });
-  var paCount=paUniques.length;
-  var paCommTotal=paUniques.reduce(function(s,x){
-    var m=parseFloat(x.montant)||0,c=parseFloat(x.commission)||0;
-    return s+(m*c/100);
-  },0);
+  menu.innerHTML=h;
+}
+function showTuto(num){
+  _aideCurrent=num;
+  var tu=null;for(var i=0;i<TUTORIELS.length;i++){if(TUTORIELS[i].num===num){tu=TUTORIELS[i];break;}}
+  var c=document.getElementById('aide-content');
+  if(c&&tu){
+    var body=tu.html?tu.html:'<p style="color:#94A3B8;font-style:italic">Le contenu de ce tutoriel sera ajout\u00e9 prochainement.</p>';
+    c.innerHTML='<div class="aide-art"><div class="aide-art-sec">'+esc(tu.sec)+'</div><h1>'+esc(tu.titre)+'</h1>'+body+'</div>';
+    c.scrollTop=0;
+  }
+  renderAideMenu();
+}
+function renderAide(){
+  renderAideMenu();
+  if(_aideCurrent==null){
+    var c=document.getElementById('aide-content');
+    if(c)c.innerHTML='<div class="aide-welcome"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><p>Choisis un sujet \u00e0 gauche pour afficher le guide.</p></div>';
+  }
+}
+
+function ust(){
+  // \u2500\u2500\u2500 Cartes stats du haut (\u00c9tape 27, refonte) \u2500\u2500\u2500
+  // Carte 1 \u2014 En relance : prospects cp/vp inactifs + acheteurs inactifs (relance pure, sans int\u00e9r\u00eats)
   var relCount=db.cp.filter(function(x){return x.dateContact&&dsince(x.dateContact)>THR.cp;}).length
     + db.vp.filter(function(x){return x.dateContact&&dsince(x.dateContact)>THR.vp;}).length
     + db.a.filter(function(x){return x.lastModified&&dsince(x.lastModified)>THR.a;}).length;
-  // En vente : nombre de mandats vendeurs (li\u00e9s d\u00e9doublonn\u00e9s) + commission Sophie estim\u00e9e
-  var seenLinksV={},vUniques=[];
-  db.v.forEach(function(r){
-    if(r.linkId){
-      if(!seenLinksV[r.linkId]){
-        seenLinksV[r.linkId]=true;
-        var siblings=db.v.filter(function(s){return s.linkId===r.linkId;});
-        var rep=siblings.filter(function(s){return parseFloat(s.montant)>0;})[0]||siblings[0];
-        vUniques.push(rep);
-      }
-    } else vUniques.push(r);
+  // Carte 2 \u2014 Visites c\u00e9dul\u00e9es : int\u00e9r\u00eats acheteurs avec une visite planifi\u00e9e aujourd'hui ou \u00e0 venir
+  var today=_todayStr();
+  var visitesCount=0;
+  (db.a||[]).forEach(function(rec){
+    (rec.interets||[]).forEach(function(it){
+      if(it.visiteDate&&String(it.visiteDate).substring(0,10)>=today)visitesCount++;
+    });
   });
-  var ventesCount=vUniques.length;
-  var ventesCommSophie=vUniques.reduce(function(s,x){
-    var m=parseFloat(x.montant)||0;
-    var ct=parseFloat(x.commTot)||0;
-    var ca=parseFloat(x.commAutre)||0;
-    var pctSophie=Math.max(0,ct-ca);
-    return s+(m*pctSophie/100);
-  },0);
-  // Transactions conclues : s\u00e9par\u00e9es Achats et Ventes, ann\u00e9e en cours
-  var currentYear=new Date().getFullYear();
-  // Achats conclus : d\u00e9doublonner par linkId
-  var seenLinksAC={},acUniques=[];
-  db.ac.forEach(function(r){
-    var y=(r.dateConclusion||'').substring(0,4);
-    if(y!=String(currentYear))return;
-    if(r.linkId){
-      if(!seenLinksAC[r.linkId]){
-        seenLinksAC[r.linkId]=true;
-        var sib=db.ac.filter(function(s){return s.linkId===r.linkId&&(s.dateConclusion||'').substring(0,4)==String(currentYear);});
-        var rep=sib.filter(function(s){return parseFloat(s.montant)>0;})[0]||sib[0];
-        acUniques.push(rep);
-      }
-    } else acUniques.push(r);
-  });
-  var doneACount=acUniques.length;
-  var doneACommSophie=acUniques.reduce(function(s,x){
-    var m=parseFloat(x.montant)||0,c=parseFloat(x.commission)||0;
-    return s+(m*c/100);
-  },0);
-  // Ventes conclues : d\u00e9doublonner par linkId
-  var seenLinksVC={},vcUniques=[];
-  db.vc.forEach(function(r){
-    var y=(r.dateConclusion||'').substring(0,4);
-    if(y!=String(currentYear))return;
-    if(r.linkId){
-      if(!seenLinksVC[r.linkId]){
-        seenLinksVC[r.linkId]=true;
-        var sib=db.vc.filter(function(s){return s.linkId===r.linkId&&(s.dateConclusion||'').substring(0,4)==String(currentYear);});
-        var rep=sib.filter(function(s){return parseFloat(s.montant)>0;})[0]||sib[0];
-        vcUniques.push(rep);
-      }
-    } else vcUniques.push(r);
-  });
-  var doneVCount=vcUniques.length;
-  var doneVCommSophie=vcUniques.reduce(function(s,x){
-    var m=parseFloat(x.montant)||0;
-    var ct=parseFloat(x.commTot)||0;
-    var ca=parseFloat(x.commAutre)||0;
-    var pctSophie=Math.max(0,ct-ca);
-    return s+(m*pctSophie/100);
-  },0);
-  document.getElementById("s-cp").textContent=paCount;
-  var mnyEl=document.getElementById("s-cp-mny");
-  if(mnyEl){
-    if(paCommTotal>0){
-      var fmt=paCommTotal>=1000?(Math.round(paCommTotal/100)/10).toString().replace('.',',')+' k$':Math.round(paCommTotal).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' $';
-      mnyEl.textContent=fmt;mnyEl.style.display='inline-block';
-    } else {mnyEl.textContent='';mnyEl.style.display='none';}
+  // Carte 3 \u2014 Demandes \u00e0 traiter : (acheteurs = int\u00e9r\u00eats "\u00e0 traiter") | (inscriptions = demandes re\u00e7ues new/qualified sur propri\u00e9t\u00e9s existantes)
+  var demAch=0;(db.a||[]).forEach(function(rec){demAch+=_countInteretsATraiter(rec);});
+  var vIds={};(db.v||[]).forEach(function(v){vIds[v.id]=true;});
+  var demInsc=(db.demandes||[]).filter(function(d){
+    return (d.status==='new'||d.status==='qualified')&&d.propertyId&&vIds[d.propertyId];
+  }).length;
+
+  // Rendu
+  var relEl=document.getElementById("s-rel");
+  if(relEl){
+    relEl.textContent=relCount;
+    var relCard=relEl.parentElement;
+    relCard.className=relCount>0?"stat stat-rose":"stat stat-pale";
   }
-  document.getElementById("s-rel").textContent=relCount;
-  // Couleur r\u00e9active : rose vif si relances actives, gris p\u00e2le si aucune
-  var relCard=document.getElementById("s-rel").parentElement;
-  relCard.className=relCount>0?"stat stat-rose":"stat stat-pale";
-  document.getElementById("s-act").textContent=ventesCount;
-  var actMnyEl=document.getElementById("s-act-mny");
-  if(actMnyEl){
-    if(ventesCommSophie>0){
-      var fmtV=ventesCommSophie>=1000?(Math.round(ventesCommSophie/100)/10).toString().replace('.',',')+' k$':Math.round(ventesCommSophie).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' $';
-      actMnyEl.textContent=fmtV;actMnyEl.style.display='inline-block';
-    } else {actMnyEl.textContent='';actMnyEl.style.display='none';}
+  var visEl=document.getElementById("s-visites");
+  if(visEl){
+    visEl.textContent=visitesCount;
+    var visCard=visEl.parentElement;
+    visCard.className=visitesCount>0?"stat stat-teal":"stat stat-pale";
   }
-  function fmtMny(v){return v>=1000?(Math.round(v/100)/10).toString().replace('.',',')+' k$':Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' $';}
-  var yrEl=document.getElementById("s-done-yr");if(yrEl)yrEl.textContent="("+currentYear+")";
-  // Achats conclus
-  document.getElementById("s-doneA").textContent=doneACount;
-  var doneAMnyEl=document.getElementById("s-doneA-mny");
-  if(doneAMnyEl){
-    if(doneACommSophie>0){doneAMnyEl.textContent=fmtMny(doneACommSophie);doneAMnyEl.style.display='inline-block';}
-    else {doneAMnyEl.textContent='';doneAMnyEl.style.display='none';}
-  }
-  // Ventes conclues
-  document.getElementById("s-doneV").textContent=doneVCount;
-  var doneVMnyEl=document.getElementById("s-doneV-mny");
-  if(doneVMnyEl){
-    if(doneVCommSophie>0){doneVMnyEl.textContent=fmtMny(doneVCommSophie);doneVMnyEl.style.display='inline-block';}
-    else {doneVMnyEl.textContent='';doneVMnyEl.style.display='none';}
-  }
-  document.getElementById("hdate").textContent=new Date().toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  var demAchEl=document.getElementById("s-dem-ach");if(demAchEl)demAchEl.textContent=demAch;
+  var demInscEl=document.getElementById("s-dem-insc");if(demInscEl)demInscEl.textContent=demInsc;
+  var demCard=document.getElementById("dem-traiter-card");
+  if(demCard)demCard.className=(demAch+demInsc)>0?"stat stat-amber":"stat stat-pale";
+
+  var hd=document.getElementById("hdate");
+  if(hd)hd.textContent=new Date().toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
 }
 
 // Sync auto : pa-en-vente.paEcheance → v.paExterneEcheance (one-way, ne touche pas si vide)
@@ -3148,18 +3688,30 @@ function getRelancesList(){
     (db[tab]||[]).forEach(function(r){
       var days=dsince(r.dateContact);
       if(days>thr){
-        out.push({tab:tab,id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",days:days,thr:thr});
+        var lbl=tab==="cp"?"Prospect acheteur":"Prospect vendeur";
+        out.push({tab:tab,id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",days:days,thr:thr,
+          kind:"contact",reason:lbl+" · sans contact depuis "+days+" j"});
       }
     });
   });
   // Acheteurs : relance basée sur la dernière modification (inactivité)
   var thrA=THR.a||20;
   (db.a||[]).forEach(function(r){
-    if(!r.lastModified)return;
-    var days=dsince(r.lastModified);
-    if(days>thrA){
-      out.push({tab:"a",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",days:days,thr:thrA});
+    if(r.lastModified){
+      var days=dsince(r.lastModified);
+      if(days>thrA){
+        out.push({tab:"a",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",days:days,thr:thrA,
+          kind:"inactif",reason:"Acheteur · inactif depuis "+days+" j"});
+      }
     }
+    // Étape 27 — chaque intérêt "à traiter" est aussi une relance à faire (avec l'adresse précise)
+    (r.interets||[]).forEach(function(it){
+      if(it.statut==='a-traiter'){
+        var adr=it.adresse||"propriété à préciser";
+        out.push({tab:"a",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",days:dsince(it.dateAjout||_todayStr()),thr:0,
+          kind:"interet",intId:it.id,reason:"Intérêt à traiter · "+adr});
+      }
+    });
   });
   out.sort(function(a,b){return b.days-a.days;});
   return out;
@@ -3253,16 +3805,16 @@ function renderAccueil(){
       relList.innerHTML='<div class="acc-empty">Aucune relance en attente &#127881;</div>';
     } else {
       relList.innerHTML=rels.slice(0,8).map(function(r){
-        var badge=r.tab==="cp"?"Client":r.tab==="vp"?"Vendeur":r.tab==="a"?"Acheteur":r.tab;
-        return _accRowHtml({
-          tab:r.tab,id:r.id,
-          icon:"&#9888;",
-          main:r.name,
-          meta:r.days+" jours",
-          badge:badge,
-          badgeCls:"acc-badge-late",
-          urgent:true
-        });
+        var badge=r.kind==="interet"?"Intérêt":r.tab==="cp"?"Prospect ach.":r.tab==="vp"?"Prospect vend.":r.tab==="a"?"Acheteur":r.tab;
+        var badgeCls=r.kind==="interet"?"acc-badge-purple":"acc-badge-late";
+        var icon=r.kind==="interet"?"&#128142;":"&#9888;";
+        // Clic : intérêt → ouvre le modal intérêts de l'acheteur ; sinon → fiche
+        var click=r.kind==="interet"?("openInteretsModal('"+r.id+"')"):("doEdit('"+r.tab+"','"+r.id+"')");
+        return '<div class="acc-row urgent" onclick="'+click+'" style="cursor:pointer">'
+          +'<div class="acc-row-icon">'+icon+'</div>'
+          +'<div class="acc-row-main">'+esc(r.name)+'<div class="acc-row-sub">'+esc(r.reason)+'</div></div>'
+          +'<div class="acc-row-badge '+badgeCls+'">'+badge+'</div>'
+          +'</div>';
       }).join("");
       if(rels.length>8)relList.innerHTML+='<div class="acc-empty">+ '+(rels.length-8)+' autres</div>';
     }
@@ -3389,6 +3941,35 @@ function renderAccueil(){
     }
   }
 
+  // ─── Intérêts acheteurs à suivre (statut a-traiter / visite) ───
+  var intRows=[];
+  (db.a||[]).forEach(function(rec){
+    (rec.interets||[]).forEach(function(it){
+      if(it.statut==='a-traiter'||it.statut==='visite')intRows.push({rec:rec,it:it});
+    });
+  });
+  intRows.sort(function(a,b){var w={'a-traiter':0,'visite':1};return (w[a.it.statut]||9)-(w[b.it.statut]||9);});
+  var intList=document.getElementById('acc-int-list');
+  var intCount=document.getElementById('acc-int-count');
+  if(intCount){intCount.textContent=intRows.length;intCount.classList.toggle('dim',intRows.length===0);}
+  if(intList){
+    if(intRows.length===0){
+      intList.innerHTML='<div class="acc-empty">Aucun int&eacute;r&ecirc;t &agrave; suivre &#10003;</div>';
+    } else {
+      intList.innerHTML=intRows.slice(0,8).map(function(r){
+        var who=((r.rec.prenom||'')+' '+(r.rec.nom||'')).trim()||'(sans nom)';
+        var adr=r.it.adresse||'(propriété à préciser)';
+        var sd=_intStatutDef(r.it.statut);
+        return '<div class="acc-row" onclick="openInteretsModal(\''+r.rec.id+'\')">'
+          +'<div class="acc-row-icon">&#128142;</div>'
+          +'<div class="acc-row-main">'+esc(who+' — '+adr)+'</div>'
+          +'<div class="acc-row-badge '+(r.it.statut==='a-traiter'?'acc-badge-late':'acc-badge-warn')+'">'+esc(sd.lbl)+'</div>'
+          +'</div>';
+      }).join('');
+      if(intRows.length>8)intList.innerHTML+='<div class="acc-empty">+ '+(intRows.length-8)+' autres</div>';
+    }
+  }
+
   // ─── Pancartes (widget Accueil) ───
   var pancInstall=getPancartesAInstaller();
   var pancRetire=getPancartesARetirer();
@@ -3457,6 +4038,8 @@ function renderAccueil(){
       condList.innerHTML=html;
     }
   }
+  // Étape 29 — Tâches à faire
+  _renderTaches();
 }
 // Réajuster les colonnes au redimensionnement (debounced)
 var _resizeTimer=null;
@@ -3604,8 +4187,6 @@ function unlinkRecord(tab,id){
   sdb();rall();
   toast("\u2713 Liaison annul\u00e9e");
 }
-// Alias pour compatibilit\u00e9
-function unlinkAcheteur(id){unlinkRecord("a",id);}
 
 function transferVpToV(id){
   var rec=null;for(var i=0;i<db.vp.length;i++){if(db.vp[i].id===id){rec=db.vp[i];break;}}if(!rec)return;
@@ -3858,6 +4439,9 @@ function transferToConclus(fromTab,id){
   var noms=[];
   toTransfer.forEach(function(r){
     var baseEntry={id:newId(),prenom:r.prenom,nom:r.nom,telephone:r.telephone,courriel:r.courriel,dateConclusion:dateConc,adresse:r.adresse||"",notes:r.notes||"",linkId:r.linkId||""};
+    // Préserver le n° Centris (pa: champ noCentris ; v/pa-en-vente: champ centris ou lookup propriété)
+    baseEntry.centris=r.centris||r.noCentris||"";
+    if((fromTab==="a"||fromTab==="pa")&&!baseEntry.centris&&r.propertyId){var _vp=_vById(r.propertyId);if(_vp)baseEntry.centris=_vp.centris||"";}
     if(fromTab==="a"||fromTab==="pa"){
       baseEntry.montant=r.montant||"";
       baseEntry.commission=r.commission||"";
@@ -4037,7 +4621,10 @@ function updateRelanceBadges(){
   try{
     var cpCount=(db.cp||[]).filter(function(x){return x.dateContact&&dsince(x.dateContact)>THR.cp;}).length;
     var vpCount=(db.vp||[]).filter(function(x){return x.dateContact&&dsince(x.dateContact)>THR.vp;}).length;
-    var aCount=(db.a||[]).filter(function(x){return x.lastModified&&dsince(x.lastModified)>THR.a;}).length;
+    var aRelance=(db.a||[]).filter(function(x){return x.lastModified&&dsince(x.lastModified)>THR.a;}).length;
+    // Étape 27 — le badge "Mes acheteurs" compte AUSSI les intérêts À TRAITER (action requise, cohérent avec la pastille de ligne)
+    var aInterets=0;(db.a||[]).forEach(function(x){aInterets+=_countInteretsATraiter(x);});
+    var aCount=aRelance+aInterets;
     var setBadge=function(id,n){var b=document.getElementById(id);if(b){b.textContent=n;b.classList.toggle("zero",n===0);}};
     setBadge("sb-cp-badge",cpCount);
     setBadge("sb-vp-badge",vpCount);
@@ -4053,7 +4640,6 @@ var _demShowArchive={};   // propertyId → bool (afficher historique converted/
 
 function _vById(id){for(var i=0;i<(db.v||[]).length;i++){if(db.v[i].id===id)return db.v[i];}return null;}
 function _isFutureDateTime(s){if(!s)return false;try{var d=new Date(s);return !isNaN(d)&&d.getTime()>Date.now();}catch(e){return false;}}
-function _fmtDateTime(s){if(!s)return '';try{var d=new Date(s);if(isNaN(d))return s;return d.toLocaleString('fr-CA',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return s;}}
 function _vPropertyLabel(v){
   var addr=v.adresse||'(adresse à compléter)';
   var name=((v.prenom||'')+' '+(v.nom||'')).trim()||'(propriétaire ?)';
@@ -4549,7 +5135,8 @@ var TPL_SECTIONS=[
   {key:'demandes',   label:'Demandes reçues',            icon:'📩', color:'#F59E0B', group:'envente'},
   {key:'pa-en-vente',label:'Promesses reçues',           icon:'📄', color:'#DC2626', group:'envente'},
   {key:'courtiers-insc', label:'Courtiers inscripteurs',  icon:'🤝', color:'#64748B', group:'externes'},
-  {key:'courtiers-coll', label:'Courtiers collaborateurs', icon:'🤝', color:'#475569', group:'externes'}
+  {key:'courtiers-coll', label:'Courtiers collaborateurs', icon:'🤝', color:'#475569', group:'externes'},
+  {key:'notaires',       label:'Notaires',                 icon:'⚖️', color:'#0EA5E9', group:'externes'}
 ];
 var TPL_GROUPS=[
   {key:'prospects', label:'Prospects',                   color:'#06B6D4'},
@@ -4557,25 +5144,6 @@ var TPL_GROUPS=[
   {key:'envente',   label:'En vente',                    color:'#84CC16'},
   {key:'externes',  label:'Communications externes',     color:'#64748B'}
 ];
-var TPL_PLACEHOLDERS=[
-  {key:'prenom',           label:'Prénom client'},
-  {key:'nom',              label:'Nom client'},
-  {key:'telephone',        label:'Téléphone'},
-  {key:'courriel',         label:'Courriel'},
-  {key:'adresse',          label:'Adresse propriété'},
-  {key:'prix',             label:'Prix demandé'},
-  {key:'prixMin',          label:'Prix min'},
-  {key:'prixMax',          label:'Prix max'},
-  {key:'typeBat',          label:'Type bâtiment'},
-  {key:'secteur',          label:'Secteur'},
-  {key:'date_jour',        label:'Date du jour'},
-  {key:'courtier_prenom',  label:'Mon prénom (courtier)'},
-  {key:'courtier_nom',     label:'Mon nom (courtier)'},
-  {key:'cou_prenom',       label:'Prénom courtier destinataire'},
-  {key:'cou_nom',          label:'Nom courtier destinataire'},
-  {key:'cou_agence',       label:'Agence courtier destinataire'}
-];
-
 // État du modal
 var _tplEditingId=null;
 var _tplEditingSection=null;
@@ -5041,6 +5609,14 @@ function _clearCourtierFromForm(){
 // Override _courtierAssign pour gérer le mode "form"
 var _origCourtierAssign=_courtierAssign;
 _courtierAssign=function(courtierId){
+  // Étape 27 — assignation courtier sur un intérêt acheteur (contexte sentinelle '__int__')
+  if(_currentCourtierTab==='__int__'){
+    closeCourtierPicker();
+    _currentCourtierTab=null;_currentCourtierRecId=null;
+    if(_intPickIid)_intField(_intPickIid,'courtierId',courtierId);
+    _intPickIid=null;
+    return;
+  }
   if(_currentCourtierTab==='__form__'){
     var c=_courtierById(courtierId);
     var hid=document.getElementById('fcourtierid');if(hid)hid.value=courtierId;
@@ -5098,7 +5674,7 @@ function renderBank(kind){
     wrap.innerHTML=h.join('');_bankBindSearch(kind);return;
   }
   var agenceLbl=isNot?'Étude':'Agence';
-  h.push('<table class="bank-table"><thead><tr><th>Nom</th><th>'+agenceLbl+'</th><th>Téléphone</th><th>Courriel</th><th style="text-align:center">Dossiers</th><th></th></tr></thead><tbody>');
+  h.push('<table class="bank-table"><thead><tr><th>Nom</th><th>'+agenceLbl+'</th>'+(isNot?'<th>Adresse</th>':'')+'<th>Téléphone</th><th>Courriel</th><th style="text-align:center">Dossiers</th><th></th></tr></thead><tbody>');
   list.forEach(function(c){
     var telSafe=esc(c.telephone||'').replace(/[^0-9+]/g,'');
     var coSafe=esc(c.courriel||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
@@ -5108,10 +5684,11 @@ function renderBank(kind){
     h.push('<tr>'
       +'<td><span class="bank-name">'+esc(fullName(c))+'</span></td>'
       +'<td><span class="bank-agence">'+esc(c.agence||'—')+'</span></td>'
+      +(isNot?('<td><span class="bank-agence">'+(c.adresse?esc(c.adresse):'<span style="color:#CBD5E1">—</span>')+'</span></td>'):'')
       +'<td>'+(c.telephone?'<span class="bank-contact" onclick="_courtierCallPhone(\''+telSafe+'\')">'+esc(c.telephone)+'</span>':'<span style="color:#CBD5E1">—</span>')+'</td>'
       +'<td>'+(c.courriel?'<span class="bank-contact" onclick="navigator.clipboard.writeText(\''+coSafe+'\');toast(\'✓ Courriel copié\')" title="Copier">'+esc(c.courriel)+'</span>':'<span style="color:#CBD5E1">—</span>')+'</td>'
       +'<td style="text-align:center"><span class="bank-count">'+cnt+'</span></td>'
-      +'<td><div class="bank-act"><button class="bank-act-btn" onclick="'+editFn+'(\''+c.id+'\')">✎ Modifier</button><button class="bank-act-btn del" onclick="'+delFn+'(\''+c.id+'\')">🗑</button></div></td>'
+      +'<td><div class="bank-act"><button class="actions-trigger" onclick="_bankActionsMenu(\''+c.id+'\',\''+kind+'\',this,event)" title="Actions">&#9776; Actions</button></div></td>'
       +'</tr>');
   });
   h.push('</tbody></table>');
@@ -5121,6 +5698,51 @@ function renderBank(kind){
 function _bankBindSearch(kind){
   var inp=document.getElementById('bank-search-'+kind);if(!inp)return;
   inp.addEventListener('input',function(){_bankSearch[kind]=this.value;var pos=this.selectionStart;renderBank(kind);var ni=document.getElementById('bank-search-'+kind);if(ni){ni.focus();try{ni.setSelectionRange(pos,pos);}catch(e){}}});
+}
+// Courriel vers un courtier/notaire depuis les répertoires → ouvre le sélecteur de gabarits dédié
+function _bankEmail(id,kind){
+  if(kind==='notaires'){
+    var n=_notaireById(id);
+    if(!n||!n.courriel){toast('⚠ Aucun courriel pour ce notaire');return;}
+    _notaireMailFlow(id);
+  } else {
+    var c=_courtierById(id);
+    if(!c||!c.courriel){toast('⚠ Aucun courriel pour ce courtier');return;}
+    // Réutilise le flux courtier existant en mode inscripteur (templates "Courtiers inscripteurs")
+    _currentCourtierId=id;_currentCourtierIsColl=false;_currentCourtierTab=null;_currentCourtierRecId=null;
+    _courtierMailFlow();
+  }
+}
+// Flux courriel notaire : ouvre le picker de gabarits section "notaires"
+function _notaireMailFlow(id){
+  var n=_notaireById(id);if(!n||!n.courriel){toast('⚠ Aucun courriel');return;}
+  var secKey='notaires';
+  _mailPickContext={section:secKey,recordId:null,courriel:n.courriel,name:_notaireFullName(n),notaireMode:true,notaire:n};
+  var sec=_tplFindSection(secKey);
+  var tag=document.getElementById('tpl-pick-section');
+  if(sec){tag.textContent=sec.icon+' '+sec.label;tag.style.background=sec.color;}
+  document.getElementById('tpl-pick-dest').innerHTML='Destinataire : <strong>'+esc(_notaireFullName(n))+'</strong> &middot; <span style="color:#0EA5E9">'+esc(n.courriel)+'</span>'+(n.agence?'<br><span style="font-size:11px;color:#94A3B8">'+esc(n.agence)+'</span>':'');
+  var tpls=(db.templates||[]).filter(function(t){return t.section===secKey;});
+  var lst=document.getElementById('tpl-pick-list');
+  if(tpls.length===0){
+    lst.innerHTML='<div style="padding:18px;text-align:center;color:#94A3B8;font-style:italic;font-size:12px;background:#F8FAFC;border:1px dashed #E2E8F0;border-radius:8px">Aucun template « Notaires ».<br><a href="javascript:void(0)" onclick="closeTplPicker();document.querySelector(\'.tbtn[data-tab=&quot;templates&quot;]\').click()" style="color:#0EA5E9;font-weight:700">+ Créer un template</a></div>';
+  } else {
+    var html=['<div class="tpl-list">'];
+    tpls.forEach(function(t){
+      html.push('<div class="tpl-row" onclick="sendMailFromTemplate(\''+t.id+'\')">'
+        +'<div class="tpl-row-main"><div class="tpl-row-name">'+esc(t.name||'(sans nom)')+(_tplAttachCount(t.id)?' <span class="pjm-cat" style="background:#CCFBF1;color:#0F766E;margin-left:6px">📎 '+_tplAttachCount(t.id)+'</span>':'')+'</div><div class="tpl-row-subject">'+esc(t.subject||'(pas de sujet)')+'</div></div>'
+        +'<div class="tpl-row-actions"><button class="tpl-btn primary">✉ Utiliser</button></div>'
+        +'</div>');
+    });
+    html.push('</div>');
+    lst.innerHTML=html.join('');
+  }
+  _pjRenderMailAttachUI(_mailPickContext);
+  document.getElementById('tpl-pick-ov').classList.add('on');
+}
+// Menu Actions d'une ligne de répertoire (courtiers/notaires) — réutilise openActionsMenu
+function _bankActionsMenu(id,kind,btnEl,ev){
+  openActionsMenu(kind==='notaires'?'bank-notaires':'bank-courtiers',id,btnEl,ev);
 }
 function deleteCourtierDirect(id){
   var c=_courtierById(id);if(!c)return;
@@ -5154,6 +5776,7 @@ function openNotaireEdit(notaireId){
   document.getElementById('not-prenom').value=n?(n.prenom||''):'';
   document.getElementById('not-nom').value=n?(n.nom||''):'';
   document.getElementById('not-agence').value=n?(n.agence||''):'';
+  document.getElementById('not-adresse').value=n?(n.adresse||''):'';
   document.getElementById('not-tel').value=n?(n.telephone||''):'';
   document.getElementById('not-co').value=n?(n.courriel||''):'';
   document.getElementById('not-edit-delete').style.display=n?'inline-block':'none';
@@ -5166,6 +5789,7 @@ function saveNotaire(){
   var nom=(document.getElementById('not-nom').value||'').trim();
   if(!prenom||!nom){alert('Le prénom et le nom sont requis.');return;}
   var agence=(document.getElementById('not-agence').value||'').trim();
+  var adresse=(document.getElementById('not-adresse').value||'').trim();
   var tel=(document.getElementById('not-tel').value||'').trim();
   var co=(document.getElementById('not-co').value||'').trim();
   pushUndo(_notaireEditingId?'Modif notaire':'Ajout notaire');
@@ -5174,10 +5798,10 @@ function saveNotaire(){
   if(_notaireEditingId){
     var n=_notaireById(_notaireEditingId);
     if(!n){toast('⚠ Notaire introuvable');closeNotaireEdit();return;}
-    n.prenom=prenom;n.nom=nom;n.agence=agence;n.telephone=tel;n.courriel=co;n.lastModified=now;
+    n.prenom=prenom;n.nom=nom;n.agence=agence;n.adresse=adresse;n.telephone=tel;n.courriel=co;n.lastModified=now;
     toast('✓ Notaire mis à jour');
   } else {
-    var nn={id:newId(),prenom:prenom,nom:nom,agence:agence,telephone:tel,courriel:co,lastModified:now};
+    var nn={id:newId(),prenom:prenom,nom:nom,agence:agence,adresse:adresse,telephone:tel,courriel:co,lastModified:now};
     db.notaires.push(nn);assignId=nn.id;
     toast('✓ Notaire ajouté');
   }
@@ -5237,6 +5861,239 @@ function _notaireUnassignFromRecord(){
   var ps=document.getElementById('not-pick-search');if(ps)ps.addEventListener('input',function(){_renderNotairePickList(this.value);});
   ['not-pick-ov','not-edit-ov'].forEach(function(idv){var ov=document.getElementById(idv);if(ov)ov.addEventListener('click',function(e){if(e.target===this){if(idv==='not-pick-ov')closeNotairePicker();else closeNotaireEdit();}});});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){var p=document.getElementById('not-pick-ov'),ed=document.getElementById('not-edit-ov');if(p&&p.classList.contains('on'))closeNotairePicker();if(ed&&ed.classList.contains('on'))closeNotaireEdit();}});
+})();
+
+// ─── Intérêts acheteurs (Étape 27) ───────────────────────────
+// Un "intérêt" = une propriété externe (inscrite par un AUTRE courtier) que l'acheteur veut visiter.
+// Stocké dans db.a[i].interets = [{id, adresse, noCentris, courtierId, source, statut, dateAjout, notes}].
+// Statuts : 'a-traiter' → 'visite' → 'planifiee' → 'offre' → 'ecartee'.
+var INT_STATUTS=[
+  {v:'a-traiter',lbl:'À traiter',cls:'st-traiter'},
+  {v:'visite',lbl:'Visite à organiser',cls:'st-visite'},
+  {v:'planifiee',lbl:'Visite planifiée',cls:'st-plan'},
+  {v:'offre',lbl:'Offre déposée',cls:'st-offre'},
+  {v:'ecartee',lbl:'Écartée',cls:'st-ecartee'}
+];
+function _intStatutDef(v){for(var i=0;i<INT_STATUTS.length;i++){if(INT_STATUTS[i].v===v)return INT_STATUTS[i];}return INT_STATUTS[0];}
+// Intérêt "actif" = pas écarté. "À suivre" = à traiter ou visite à organiser (demande une action humaine).
+function _countInteretsActifs(rec){var n=0;(rec.interets||[]).forEach(function(it){if(it.statut!=='ecartee')n++;});return n;}
+// Pastille d'alerte = intérêts "à traiter" seulement (nouveaux, action requise)
+function _countInteretsATraiter(rec){var n=0;(rec.interets||[]).forEach(function(it){if(it.statut==='a-traiter')n++;});return n;}
+// Prochaine visite planifiée parmi les intérêts d'un acheteur (date ISO la plus proche), ou null
+function _nextVisiteFor(rec){
+  var best=null;
+  (rec.interets||[]).forEach(function(it){
+    if(it.visiteDate&&(!best||it.visiteDate<best))best=it.visiteDate;
+  });
+  return best;
+}
+
+var _intModalRecId=null;
+function openInteretsModal(recId){
+  _intModalRecId=recId;
+  var rec=null;for(var i=0;i<(db.a||[]).length;i++){if(db.a[i].id===recId){rec=db.a[i];break;}}
+  if(!rec){toast('⚠ Acheteur introuvable');return;}
+  document.getElementById('int-modal-name').textContent=((rec.prenom||'')+' '+(rec.nom||'')).trim()||'(sans nom)';
+  _renderInteretsModal();
+  document.getElementById('int-modal-ov').classList.add('on');
+}
+function closeInteretsModal(){var ov=document.getElementById('int-modal-ov');if(ov)ov.classList.remove('on');_intModalRecId=null;}
+function _intCurrentRec(){if(!_intModalRecId)return null;for(var i=0;i<(db.a||[]).length;i++){if(db.a[i].id===_intModalRecId)return db.a[i];}return null;}
+function _renderInteretsModal(){
+  var body=document.getElementById('int-modal-body');if(!body)return;
+  var rec=_intCurrentRec();if(!rec){body.innerHTML='';return;}
+  var ints=rec.interets||[];
+  var h='';
+  if(!ints.length){
+    h+='<div class="int-empty-msg">Aucune propriété d\'intérêt pour le moment.<br>Cliquez sur « + Ajouter une propriété » pour suivre un bien que cet acheteur veut visiter.</div>';
+  } else {
+    ints.forEach(function(it){
+      var sd=_intStatutDef(it.statut);
+      var cou=it.courtierId?_courtierById(it.courtierId):null;
+      var optsH='';INT_STATUTS.forEach(function(s){optsH+='<option value="'+s.v+'"'+(s.v===it.statut?' selected':'')+'>'+esc(s.lbl)+'</option>';});
+      var centrisLink='';
+      if(it.noCentris){var noClean=String(it.noCentris).replace(/[^0-9]/g,'');if(noClean)centrisLink='<a class="int-centris-link" href="https://www.centris.ca/fr/propriete~a-vendre/'+noClean+'" target="_blank" rel="noopener">🔗 Voir sur Centris (n° '+esc(it.noCentris)+')</a>';}
+      h+='<div class="int-card" data-iid="'+esc(it.id)+'">'
+        +'<div class="int-card-head"><span class="int-stat-badge '+sd.cls+'">'+esc(sd.lbl)+'</span>'
+        +'<button class="int-del" title="Supprimer cet intérêt" onclick="_intDelete(\''+it.id+'\')">🗑</button></div>'
+        +'<div class="int-fg"><label>Adresse de la propriété</label><input type="text" value="'+esc(it.adresse||'')+'" placeholder="ex: 123 rue Principale, Thetford Mines" onchange="_intField(\''+it.id+'\',\'adresse\',this.value)"></div>'
+        +'<div class="int-g2">'
+        +'<div class="int-fg"><label>N° Centris</label><input type="text" value="'+esc(it.noCentris||'')+'" placeholder="ex: 12345678" onchange="_intField(\''+it.id+'\',\'noCentris\',this.value)"></div>'
+        +'<div class="int-fg"><label>Statut de suivi</label><select onchange="_intField(\''+it.id+'\',\'statut\',this.value)">'+optsH+'</select></div>'
+        +'</div>'
+        +(centrisLink?'<div style="margin-bottom:8px">'+centrisLink+'</div>':'')
+        +'<div class="int-fg"><label>Courtier inscripteur</label>'
+        +'<div style="display:flex;gap:6px;align-items:center">'
+        +'<div style="flex:1;font-size:12px;color:'+(cou?'#0EA5E9':'#94A3B8')+';font-weight:600">'+(cou?esc(_courtierFullName(cou))+(cou.agence?' <span style="color:#94A3B8;font-weight:400">· '+esc(cou.agence)+'</span>':''):'<em style="font-weight:400">Aucun courtier assigné</em>')+'</div>'
+        +'<button class="tpl-btn muted" style="font-size:11px;padding:5px 9px" onclick="_intPickCourtier(\''+it.id+'\')">'+(cou?'Changer':'+ Assigner')+'</button>'
+        +(cou?'<button class="tpl-btn muted" style="font-size:11px;padding:5px 9px;color:#DC2626" onclick="_intField(\''+it.id+'\',\'courtierId\',\'\')">Retirer</button>':'')
+        +'</div></div>'
+        +'<div class="int-g2">'
+        +'<div class="int-fg"><label>Source</label><input type="text" value="'+esc(it.source||'')+'" placeholder="ex: Centris, texto client…" onchange="_intField(\''+it.id+'\',\'source\',this.value)"></div>'
+        +'<div class="int-fg"><label>Ajouté le</label><input type="date" value="'+esc((it.dateAjout||'').substring(0,10))+'" onchange="_intField(\''+it.id+'\',\'dateAjout\',this.value)"></div>'
+        +'</div>'
+        +'<div class="int-fg"><label>Notes</label><textarea rows="2" onchange="_intField(\''+it.id+'\',\'notes\',this.value)">'+esc(it.notes||'')+'</textarea></div>'
+        +(it.visiteDate?('<div class="int-visite-banner">📅 Visite prévue : <strong>'+esc(_intVisiteLabel(it.visiteDate))+'</strong>'+(it._evtVisite?' <span style="color:#16A34A;font-size:11px">· au calendrier</span>':'')+'<button class="int-visite-del" title="Annuler la visite" onclick="_intCancelVisite(\''+it.id+'\')">✕ Annuler</button></div>'):'')
+        +'<div class="int-g2">'
+        +'<div class="int-fg"><label>'+(it.visiteDate?'Modifier la date':'Date de visite')+'</label><input type="date" id="int-vdate-'+it.id+'" value="'+esc((it.visiteDate||'').substring(0,10))+'"></div>'
+        +'<div class="int-fg"><label>Heure</label><input type="time" id="int-vtime-'+it.id+'" value="'+esc((it.visiteDate&&it.visiteDate.length>=16)?it.visiteDate.substring(11,16):'')+'"></div>'
+        +'</div>'
+        +'<div class="int-actions">'
+        +'<button class="tpl-btn" onclick="_intPlanVisite(\''+it.id+'\')" title="Enregistre la visite (date/heure ci-dessus) + crée l\'événement au calendrier">📅 '+(it.visiteDate?'Mettre à jour la visite':'Organiser la visite')+'</button>'
+        +'<button class="tpl-btn" onclick="_intToPa(\''+it.id+'\')" title="Convertir en promesse d\'achat (côté acheteur)">📄 → Promesse d\'achat</button>'
+        +'<button class="tpl-btn" onclick="_intMail(\''+it.id+'\')" title="Envoyer un courriel à l\'acheteur">✉ Courriel</button>'
+        +'</div>'
+        +'</div>';
+    });
+  }
+  body.innerHTML=h;
+}
+function _intAdd(){
+  var rec=_intCurrentRec();if(!rec)return;
+  pushUndo('Ajout intérêt acheteur');
+  if(!rec.interets)rec.interets=[];
+  rec.interets.unshift({id:newId(),adresse:'',noCentris:'',courtierId:'',source:'',statut:'a-traiter',dateAjout:_todayStr(),notes:''});
+  rec.lastModified=_todayStr();
+  sdb();_renderInteretsModal();rall();
+}
+function _intField(iid,field,val){
+  var rec=_intCurrentRec();if(!rec||!rec.interets)return;
+  var it=null;for(var i=0;i<rec.interets.length;i++){if(rec.interets[i].id===iid){it=rec.interets[i];break;}}
+  if(!it)return;
+  pushUndo('Modif intérêt');
+  it[field]=val;rec.lastModified=_todayStr();
+  sdb();
+  // Re-render le modal seulement si le changement affecte badges/boutons (statut/courtier)
+  if(field==='statut'||field==='courtierId')_renderInteretsModal();
+  rall();
+}
+function _intDelete(iid){
+  var rec=_intCurrentRec();if(!rec||!rec.interets)return;
+  if(!confirm('Supprimer cet intérêt ?'))return;
+  pushUndo('Suppr intérêt');
+  rec.interets=rec.interets.filter(function(x){return x.id!==iid;});
+  rec.lastModified=_todayStr();
+  sdb();_renderInteretsModal();rall();
+}
+// Picker courtier dédié intérêt : contexte sentinelle '__int__' intercepté par l'override _courtierAssign.
+var _intPickIid=null;
+function _intPickCourtier(iid){
+  _intPickIid=iid;
+  _currentCourtierTab='__int__';_currentCourtierRecId='__int__';_currentCourtierIsColl=false;
+  var ov=document.getElementById('cou-pick-ov');if(!ov)return;
+  var s=document.getElementById('cou-pick-search');if(s)s.value='';
+  _renderCourtierPickList('');
+  ov.classList.add('on');
+  setTimeout(function(){if(s)s.focus();},50);
+}
+
+function _intFind(iid){var rec=_intCurrentRec();if(!rec||!rec.interets)return null;for(var i=0;i<rec.interets.length;i++){if(rec.interets[i].id===iid)return rec.interets[i];}return null;}
+// Libellé lisible d'une date de visite (ex: "lun. 15 juin à 13:30")
+function _intVisiteLabel(iso){
+  if(!iso)return'';
+  var dPart=String(iso).substring(0,10);
+  var d=new Date(dPart+'T12:00:00');
+  var lbl=isNaN(d.getTime())?dPart:d.toLocaleDateString('fr-CA',{weekday:'short',day:'numeric',month:'short'});
+  var t=_timeOnly(iso);
+  return lbl+(t?' à '+t:'');
+}
+// Annule la visite d'un intérêt : retire la date + supprime l'événement calendrier si présent
+function _intCancelVisite(iid){
+  var rec=_intCurrentRec();var it=_intFind(iid);if(!rec||!it)return;
+  if(!confirm('Annuler la visite prévue ?'+(it._evtVisite?'\n(l\'événement sera aussi retiré du calendrier)':'')))return;
+  pushUndo('Annulation visite');
+  if(it._evtVisite&&window.electronAPI){_calDeleteEvent({eventId:it._evtVisite}).catch(function(){});}
+  it.visiteDate='';it._evtVisite='';
+  // Retour au statut "visite à organiser" si l'intérêt était planifié (sinon on garde le statut courant)
+  if(it.statut==='planifiee')it.statut='visite';
+  rec.lastModified=_todayStr();
+  sdb();_renderInteretsModal();rall();
+  toast('✓ Visite annulée');
+}
+
+// Action 1 — Organiser une visite : saisie date+heure → événement calendrier (Google/Outlook) + statut 'planifiee'
+function _intPlanVisite(iid){
+  var rec=_intCurrentRec();var it=_intFind(iid);if(!rec||!it)return;
+  var dInp=document.getElementById('int-vdate-'+iid);
+  var tInp=document.getElementById('int-vtime-'+iid);
+  var dateStr=dInp?dInp.value:'';
+  var timeStr=tInp&&tInp.value?tInp.value:'13:00';
+  if(!dateStr){alert('Choisis d\'abord une date de visite ci-dessus.');if(dInp)dInp.focus();return;}
+  var iso=dateStr+'T'+(timeStr.length===4?'0'+timeStr:timeStr);
+  pushUndo('Visite intérêt');
+  it.visiteDate=iso;it.statut='planifiee';rec.lastModified=_todayStr();
+  sdb();_renderInteretsModal();rall();
+  // Crée l'événement calendrier (best-effort — silencieux si aucun calendrier connecté)
+  (function(){
+    var startD=new Date(iso);
+    if(isNaN(startD.getTime()))return;
+    var endD=new Date(startD.getTime()+30*60000); // 30 min par défaut
+    var who=((rec.prenom||'')+' '+(rec.nom||'')).trim()||'acheteur';
+    var cou=it.courtierId?_courtierById(it.courtierId):null;
+    var desc='Visite avec '+who+'.';
+    if(it.noCentris)desc+='\nN° Centris : '+it.noCentris;
+    if(cou)desc+='\nCourtier inscripteur : '+_courtierFullName(cou)+(cou.agence?' ('+cou.agence+')':'')+(cou.telephone?' — '+cou.telephone:'');
+    if(it.notes)desc+='\nNotes : '+it.notes;
+    _calCreateEvent({
+      title:'(Tri-Angle) Visite — '+(it.adresse||'propriété')+' ('+who+')',
+      description:desc,
+      startISO:startD.toISOString(),endISO:endD.toISOString(),
+      location:it.adresse||'',color:'lavender'
+    }).then(function(r){
+      if(r&&r.ok){var cur=_intFind(iid);if(cur){cur._evtVisite=r.eventId;sdb();}toast('📅 Visite ajoutée au calendrier');}
+      else if(r&&!r.ok){toast('⚠ Calendrier : '+(r.error||'erreur'));}
+      // r===null → aucun calendrier connecté : on reste silencieux (la date est quand même enregistrée)
+    }).catch(function(e){console.warn('[int visite cal]',e&&e.message);});
+  })();
+}
+
+// Action 2 — Convertir en promesse d'achat (côté acheteur, db.pa SANS propertyId) héritant adresse + courtier
+function _intToPa(iid){
+  var rec=_intCurrentRec();var it=_intFind(iid);if(!rec||!it)return;
+  var who=((rec.prenom||'')+' '+(rec.nom||'')).trim()||'cet acheteur';
+  var cou=it.courtierId?_courtierById(it.courtierId):null;
+  var repLine=cou?'\n→ Courtier inscripteur : '+_courtierFullName(cou)+(cou.agence?' ('+cou.agence+')':''):'';
+  if(!confirm('Créer une promesse d\'achat pour '+who+'\nsur '+(it.adresse||'cette propriété')+' ?'+repLine+'\n\nLa fiche apparaîtra dans "Promesses en cours" (côté acheteur).\nL\'intérêt sera marqué « Offre déposée ».'))return;
+  pushUndo('Intérêt → Promesse d\'achat');
+  var newPaId=newId();
+  db.pa.push({
+    id:newPaId, // pas de propertyId → onglet "Promesses en cours" (côté acheteur)
+    prenom:rec.prenom||'',nom:rec.nom||'',
+    telephone:rec.telephone||'',courriel:rec.courriel||'',
+    courtierId:it.courtierId||'',
+    noCentris:it.noCentris||'',
+    adresse:it.adresse||'',
+    notes:it.notes||'',
+    statutPa:'En cours',
+    mls:false,declVend:false,ged:false,
+    inspection:'',financement:'',r21:'',r22:'',assurImm:'',fosseSept:'',testEau:'',
+    notaire:'',paEcheance:'',montant:'',commission:'',
+    lastModified:_todayStr()
+  });
+  it.statut='offre';it.convertedPaId=newPaId;rec.lastModified=_todayStr();
+  sdb();closeInteretsModal();rall();
+  toast('✓ Promesse créée dans "Promesses en cours"');
+  setTimeout(function(){
+    var btn=document.querySelector('.tbtn[data-tab="pa"]');if(btn)btn.click();
+    setTimeout(function(){
+      var row=document.querySelector('#tb-pa tr[data-rid="'+newPaId+'"]');
+      if(row){row.scrollIntoView({behavior:'smooth',block:'center'});row.style.boxShadow='0 0 0 3px #EF4444';setTimeout(function(){row.style.boxShadow='';},1800);}
+    },150);
+  },100);
+}
+
+// Action 3 — Courriel à l'acheteur (réutilise le sélecteur de templates de la section Acheteurs)
+function _intMail(iid){
+  var rec=_intCurrentRec();if(!rec)return;
+  closeInteretsModal();
+  openMailPicker('a',rec.id);
+}
+
+// Ferme le modal intérêts au clic sur l'overlay + Escape (sans casser les autres handlers Escape)
+(function(){
+  var ov=document.getElementById('int-modal-ov');
+  if(ov)ov.addEventListener('click',function(e){if(e.target===this)closeInteretsModal();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('int-modal-ov');if(m&&m.classList.contains('on'))closeInteretsModal();}});
 })();
 
 function _getMailProvider(){try{return localStorage.getItem('crmpro-mail-provider')||'system';}catch(e){return 'system';}}
@@ -5703,13 +6560,18 @@ function _initSettingsTabs(){
 function _buildMailUrl(to,subject,body){
   var p=_getMailProvider();
   var t=encodeURIComponent(to||''),s=encodeURIComponent(subject||''),b=encodeURIComponent(body||'');
+  // N'inclure que les paramètres non vides (évite "subject=&body=" mal parsé → "&body=" dans l'objet)
+  function qs(pairs){var parts=[];for(var i=0;i<pairs.length;i++){if(pairs[i][1])parts.push(pairs[i][0]+'='+pairs[i][1]);}return parts.join('&');}
   if(p==='gmail'){
-    return 'https://mail.google.com/mail/?view=cm&fs=1&to='+t+'&su='+s+'&body='+b;
+    var qg=qs([['to',t],['su',s],['body',b]]);
+    return 'https://mail.google.com/mail/?view=cm&fs=1'+(qg?'&'+qg:'');
   }
   if(p==='outlook-web'){
-    return 'https://outlook.office.com/mail/0/deeplink/compose?to='+t+'&subject='+s+'&body='+b;
+    var qo=qs([['to',t],['subject',s],['body',b]]);
+    return 'https://outlook.office.com/mail/0/deeplink/compose'+(qo?'?'+qo:'');
   }
-  return 'mailto:'+t+'?subject='+s+'&body='+b;
+  var qm=qs([['subject',s],['body',b]]);
+  return 'mailto:'+t+(qm?'?'+qm:'');
 }
 
 function _openMailto(to,subject,body){
@@ -5857,6 +6719,7 @@ function _substituteTplVars(text,prenom,nom,courtier,extra){
   // Étape 26 — tags Notaire : {{notaire}} (nom) + {{date_notaire}} (date/heure du RDV, issue de la colonne Notaire)
   extra=extra||{};
   out=out
+    .replace(/\{\{\s*adresse_notaire\s*\}\}/gi,extra.adresseNotaire||'')
     .replace(/\{\{\s*notaire\s*\}\}/gi,extra.notaire||'')
     .replace(/\{\{\s*date_notaire\s*\}\}/gi,extra.dateNotaire||'');
   return out;
@@ -5865,7 +6728,7 @@ function _substituteTplVars(text,prenom,nom,courtier,extra){
 function _tplExtraFromRec(rec){
   if(!rec)return {};
   var ex={};
-  if(rec.notaireId){var n=_notaireById(rec.notaireId);if(n)ex.notaire=_notaireFullName(n);}
+  if(rec.notaireId){var n=_notaireById(rec.notaireId);if(n){ex.notaire=_notaireFullName(n);ex.adresseNotaire=n.adresse||'';}}
   // Date du RDV notaire : champ cond "notaire" (date ISO, ou 'done'/true = pas une date)
   var dv=rec.notaire;
   if(dv&&dv!==true&&dv!=='done'){
@@ -5911,6 +6774,24 @@ function sendMailFromTemplate(tplId){
       closeTplPicker();return;
     }
     _openMailto(ctx.courriel,subjC,bodyC);
+    closeTplPicker();
+    return;
+  }
+  // Mode notaire (Étape 29) : courriel à un notaire de la banque, placeholders {{notaire}}/{{adresse_notaire}}
+  if(ctx.notaireMode){
+    var n=ctx.notaire||{};
+    var extraN={notaire:_notaireFullName(n),adresseNotaire:n.adresse||'',dateNotaire:''};
+    var subjN=_substituteTplVars(tpl.subject,n.prenom||'',n.nom||'',null,extraN);
+    var bodyN=_substituteTplVars(tpl.body,n.prenom||'',n.nom||'',null,extraN);
+    var sigBodyN=(db.signature&&db.signature.body)?db.signature.body:'';
+    if(sigBodyN)bodyN=bodyN+'\n\n'+_substituteTplVars(sigBodyN,n.prenom||'',n.nom||'',null,extraN);
+    var attsN=_pjMailAttachmentsFor(tpl.id);
+    if(attsN.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
+      window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subjN,body:bodyN,attachments:attsN,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+      toast('✉ Brouillon créé avec '+attsN.length+' pièce(s) jointe(s)');
+      closeTplPicker();return;
+    }
+    _openMailto(ctx.courriel,subjN,bodyN);
     closeTplPicker();
     return;
   }
@@ -6708,6 +7589,143 @@ function renderDashboard(){
   wrap.innerHTML=html;
 }
 
+// ─── Tâches à faire (Étape 29) ───
+function _tacheAdd(){
+  var inp=document.getElementById('todo-input');if(!inp)return;
+  var txt=(inp.value||'').trim();if(!txt)return;
+  var dEl=document.getElementById('todo-date');
+  var ech=dEl?dEl.value:'';
+  if(!ech){alert('Choisis une échéance (date) pour cette tâche.');if(dEl)dEl.focus();return;}
+  pushUndo('Ajout tâche');
+  if(!db.taches)db.taches=[];
+  db.taches.unshift({id:newId(),texte:txt,echeance:ech,done:false,dateAjout:_todayStr()});
+  inp.value='';if(dEl)dEl.value='';
+  sdb();_renderTaches();
+  _syncTacheCalDay(ech); // si ce jour est déjà au calendrier, mettre l'événement à jour
+  inp.focus();
+}
+function _tacheToggle(id){
+  var t=null;for(var i=0;i<(db.taches||[]).length;i++){if(db.taches[i].id===id){t=db.taches[i];break;}}
+  if(!t)return;
+  pushUndo('Tâche');t.done=!t.done;sdb();_renderTaches();
+  _syncTacheCalDay(t.echeance); // refléter l'état (texte barré/✓) dans l'événement groupé
+}
+function _tacheDelete(id){
+  var t=null;for(var i=0;i<(db.taches||[]).length;i++){if(db.taches[i].id===id){t=db.taches[i];break;}}
+  var day=t?t.echeance:'';
+  pushUndo('Suppr tâche');
+  db.taches=(db.taches||[]).filter(function(x){return x.id!==id;});
+  sdb();_renderTaches();
+  if(day)_syncTacheCalDay(day);
+}
+function _tacheClearDone(){
+  var n=(db.taches||[]).filter(function(x){return x.done;}).length;
+  if(!n)return;
+  if(!confirm('Effacer les '+n+' tâche(s) complétée(s) ?'))return;
+  // Jours impactés (pour resync calendrier après suppression)
+  var days={};(db.taches||[]).forEach(function(x){if(x.done&&x.echeance)days[x.echeance]=true;});
+  pushUndo('Nettoyage tâches');
+  db.taches=(db.taches||[]).filter(function(x){return !x.done;});
+  sdb();_renderTaches();
+  for(var d in days){if(days.hasOwnProperty(d))_syncTacheCalDay(d);}
+}
+
+// ─── Tâches → Calendrier (Étape 29) : 1 événement groupé par jour (8h30–9h30),
+// mais l'inclusion est INDIVIDUELLE : seules les tâches avec t.inCal=true sont dans l'événement. ───
+function _tachesInCalForDay(day){return (db.taches||[]).filter(function(t){return t.echeance===day&&t.inCal;});}
+function _tacheCalPayload(day){
+  var items=_tachesInCalForDay(day);
+  var startISO=new Date(day+'T08:30:00').toISOString();
+  var endISO=new Date(day+'T09:30:00').toISOString();
+  var desc=items.map(function(t){return (t.done?'☑ ':'☐ ')+t.texte;}).join('\n');
+  return {title:'(Tri-Angle) Tâches — '+items.length+' à faire',description:desc,startISO:startISO,endISO:endISO,color:'tomato'};
+}
+// Réconcilie l'événement du jour avec les tâches marquées inCal : crée / met à jour / supprime.
+// Best-effort, silencieux si aucun calendrier. Retourne via _renderTaches.
+function _syncTacheCalDay(day,opts){
+  if(!day)return;
+  if(!db.tacheCal)db.tacheCal={};
+  opts=opts||{};
+  var evId=db.tacheCal[day];
+  var items=_tachesInCalForDay(day);
+  // Plus aucune tâche inCal ce jour → supprimer l'événement s'il existe
+  if(!items.length){
+    if(evId){if(window.electronAPI)_calDeleteEvent({eventId:evId}).catch(function(){});delete db.tacheCal[day];sdb();_renderTaches();if(opts.toastRemove)toast('📅 Retiré du calendrier');}
+    else {_renderTaches();}
+    return;
+  }
+  var p=_tacheCalPayload(day);
+  if(evId){
+    // L'événement existe → mise à jour (ajout/retrait d'une tâche dans la liste)
+    _calUpdateEvent({eventId:evId,title:p.title,description:p.description,startISO:p.startISO,endISO:p.endISO,color:p.color}).then(function(r){
+      if(r&&r.ok&&r.eventId){db.tacheCal[day]=r.eventId;sdb();}
+      if(opts.toastAdd)toast('✓ Tâche ajoutée à la journée au calendrier');
+    }).catch(function(e){console.warn('[tache cal maj]',e&&e.message);});
+  } else {
+    // Pas encore d'événement ce jour → le créer
+    if(opts.toastAdd)toast('📅 Ajout au calendrier…');
+    _calCreateEvent({title:p.title,description:p.description,startISO:p.startISO,endISO:p.endISO,color:p.color}).then(function(r){
+      if(r&&r.ok&&r.eventId){db.tacheCal[day]=r.eventId;sdb();_renderTaches();toast('✓ Tâche ajoutée au calendrier (journée à 8h30)');}
+      else if(r&&!r.ok){toast('⚠ Calendrier : '+(r.error||'erreur'));}
+      else {toast('⚠ Aucun calendrier connecté (Paramètres → Intégrations)');}
+    }).catch(function(e){console.warn('[tache cal add]',e&&e.message);});
+  }
+}
+// Bouton 📅 d'une tâche : bascule SON inclusion individuelle dans l'événement du jour.
+function _tacheCalToggle(id){
+  var t=null;for(var i=0;i<(db.taches||[]).length;i++){if(db.taches[i].id===id){t=db.taches[i];break;}}
+  if(!t||!t.echeance)return;
+  if(t.inCal){
+    // Retirer cette tâche de l'événement (l'event est mis à jour, ou supprimé s'il devient vide)
+    t.inCal=false;sdb();
+    _syncTacheCalDay(t.echeance,{toastRemove:true});
+  } else {
+    // Ajouter cette tâche à l'événement du jour (créé si besoin)
+    t.inCal=true;sdb();_renderTaches();
+    _syncTacheCalDay(t.echeance,{toastAdd:true});
+  }
+}
+function _renderTaches(){
+  var list=document.getElementById('dash-todo-list');if(!list)return;
+  var arr=(db.taches||[]).slice();
+  // Tri : non-complétées d'abord, puis par échéance (les sans échéance à la fin), puis ordre d'ajout
+  arr.sort(function(a,b){
+    if(!!a.done!==!!b.done)return a.done?1:-1;
+    var ea=a.echeance||'9999',eb=b.echeance||'9999';
+    if(ea!==eb)return ea<eb?-1:1;
+    return 0;
+  });
+  var nbActives=(db.taches||[]).filter(function(x){return !x.done;}).length;
+  var nbDone=(db.taches||[]).length-nbActives;
+  var cntEl=document.getElementById('dash-todo-count');
+  if(cntEl)cntEl.textContent=nbActives>0?(nbActives+' à faire'):'';
+  if(!arr.length){
+    list.innerHTML='<div class="dash-todo-empty">Aucune tâche. Ajoute ta première ci-dessus 👆</div>';
+  } else {
+    var today=_todayStr();
+    list.innerHTML=arr.map(function(t){
+      var ech='';
+      if(t.echeance){
+        var late=!t.done&&t.echeance<today;
+        var soon=!t.done&&t.echeance===today;
+        var cls=late?'todo-ech late':(soon?'todo-ech soon':'todo-ech');
+        ech='<span class="'+cls+'">📅 '+esc(_intVisiteLabel(t.echeance))+(late?' (en retard)':(soon?' (aujourd\'hui)':''))+'</span>';
+      }
+      var inCal=!!t.inCal;
+      var calBtn='<button class="todo-cal'+(inCal?' on':'')+'" title="'+(inCal?'Au calendrier (journée à 8h30) — cliquer pour retirer cette tâche':'Ajouter cette tâche au calendrier (journée à 8h30)')+'" onclick="_tacheCalToggle(\''+t.id+'\')">'+(inCal?'📅✓':'📅')+'</button>';
+      return '<div class="todo-row'+(t.done?' done':'')+'">'
+        +'<input type="checkbox" '+(t.done?'checked':'')+' onclick="_tacheToggle(\''+t.id+'\')">'
+        +'<span class="todo-txt">'+esc(t.texte)+'</span>'
+        +ech
+        +calBtn
+        +'<button class="todo-del" title="Supprimer" onclick="_tacheDelete(\''+t.id+'\')">✕</button>'
+        +'</div>';
+    }).join('');
+  }
+  var foot=document.getElementById('dash-todo-foot');
+  if(foot)foot.innerHTML=nbDone>0?('<button class="todo-clear" onclick="_tacheClearDone()">Effacer les '+nbDone+' complétée(s)</button>'):'';
+}
+
 function calPrev(){if(!_calCurrent)return;_calCurrent.month--;if(_calCurrent.month<0){_calCurrent.month=11;_calCurrent.year--;}renderCalendar();}
 function calNext(){if(!_calCurrent)return;_calCurrent.month++;if(_calCurrent.month>11){_calCurrent.month=0;_calCurrent.year++;}renderCalendar();}
 function calToday(){var n=new Date();_calCurrent={year:n.getFullYear(),month:n.getMonth()};renderCalendar();}
@@ -6895,13 +7913,11 @@ function ie(td){
     clearBtn.onclick=function(ev){ev.stopPropagation();pushUndo('Vider '+field);var ov=val;rec[field]='';if(field==='notaire')rec.notaireId='';_touchAch();sdb();rall();try{syncCalendarField(rec,tab,field,ov,'');}catch(e){}};
     menu.appendChild(clearBtn);
     var rect=td.getBoundingClientRect();
+    // Position initiale sous la cellule, puis recadrage général (évite les débords droite/bas/gauche)
     menu.style.left=rect.left+'px';
-    menu.style.top=rect.bottom+'px';
-    // If menu would go below viewport, show above
+    menu.style.top=rect.bottom+4+'px';
     document.body.appendChild(menu);
-    var menuRect=menu.getBoundingClientRect();
-    if(menuRect.bottom>window.innerHeight){menu.style.top=(rect.top-menuRect.height)+'px';}
-    if(menuRect.right>window.innerWidth){menu.style.left=(window.innerWidth-menuRect.width-8)+'px';}
+    _fitPopup(menu, rect);
     dateInp.focus();
     setTimeout(function(){
       function closeMenu(ev){if(!menu.contains(ev.target)){if(menu.parentNode)menu.parentNode.removeChild(menu);document.removeEventListener('mousedown',closeMenu);rall();}}
@@ -7137,6 +8153,8 @@ function exportData(){
   payload.courtiers=db.courtiers||[];
   payload.refs=db.refs||[];
   payload.notaires=db.notaires||[];
+  payload.taches=db.taches||[];
+  payload.tacheCal=db.tacheCal||{};
   var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
   var url=URL.createObjectURL(blob);var a=document.createElement("a");
   var ds=new Date().toISOString().slice(0,10);
@@ -7253,7 +8271,7 @@ function checkExportWarning(){try{var last=localStorage.getItem("sc-lastexport")
 function dismissExportWarn(){var warn=document.getElementById("exportWarn");if(warn)warn.style.display='none';try{localStorage.setItem("sc-lastexport",Date.now().toString());}catch(e){}}
 
 // ─── Tabs ────────────────────────────────────────────────────
-var CARD_TITLES={cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Promesses reçues",templates:"Templates de courriels",rea:"Références actives",rec:"Références conclues",courtiers:"Banque de courtiers",notaires:"Banque de notaires"};
+var CARD_TITLES={aide:"Aide",cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Promesses reçues",templates:"Templates de courriels",rea:"Références actives",rec:"Références conclues",courtiers:"Banque de courtiers",notaires:"Banque de notaires"};
 function setCardTitle(tab){var el=document.getElementById("cardTitle");if(el)el.textContent=CARD_TITLES[tab]||"";_updateBmailVisibility(tab);}
 document.getElementById("tbar").addEventListener("click",function(e){
   var btn=e.target.closest(".tbtn");if(!btn)return;
@@ -7263,7 +8281,8 @@ document.getElementById("tbar").addEventListener("click",function(e){
   btn.classList.add("on");document.getElementById("pane-"+tab).classList.add("on");
   setCardTitle(tab);
   var card=document.querySelector(".card");
-  card.classList.remove("settings-mode","accueil-mode","pancartes-mode","calendar-mode","dashboard-mode","demandes-mode","paev-mode","templates-mode");
+  card.classList.remove("settings-mode","accueil-mode","pancartes-mode","calendar-mode","dashboard-mode","demandes-mode","paev-mode","templates-mode","aide-mode");
+  if(tab==="aide"){card.classList.add("aide-mode");renderAide();return;}
   if(tab==="settings"){card.classList.add("settings-mode");var mps=document.getElementById('mailProviderSelect');if(mps)mps.value=_getMailProvider();var adt=document.getElementById('antidupToggle');if(adt)adt.checked=_isAntidupEnabled();_initSettingsTabs();smsRefreshStatus();outlookRefreshStatus();return;}
   if(tab==="templates"){card.classList.add("templates-mode");renderTemplates();return;}
   if(tab==="courtiers"){card.classList.add("templates-mode");renderBank('courtiers');return;}
