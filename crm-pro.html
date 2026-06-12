@@ -1239,11 +1239,33 @@ body.app-readonly th .rz{pointer-events:none}
   <div class="wiz-card">
     <img class="wiz-logo" src="triangle-logo-full.png" alt="TRI-ANGLE">
 
-    <!-- STEP 1A: Démarrage de l'essai gratuit (par défaut pour nouveau user) -->
-    <div id="wizStepTrial">
-      <div class="wiz-trial-badge">&#127873; 90 jours gratuits</div>
+    <!-- STEP 0: Choix de départ — 2 options équilibrées (essai vs clé reçue) -->
+    <div id="wizStepChoice">
       <div class="wiz-title">Bienvenue chez TRI-ANGLE</div>
-      <div class="wiz-sub">D&eacute;marrez votre essai gratuit. Aucune carte de cr&eacute;dit requise.</div>
+      <div class="wiz-sub">Comment souhaitez-vous commencer ?</div>
+      <button class="wiz-option" onclick="onboardingChooseTrial()">
+        <div class="wiz-option-icon">&#127873;</div>
+        <div class="wiz-option-content">
+          <div class="wiz-option-name">D&eacute;marrer mon essai gratuit</div>
+          <div class="wiz-option-path">90 jours gratuits &mdash; aucune carte de cr&eacute;dit requise</div>
+        </div>
+        <div class="wiz-option-arrow">&rarr;</div>
+      </button>
+      <button class="wiz-option" onclick="onboardingShowKeyEntry()">
+        <div class="wiz-option-icon">&#128273;</div>
+        <div class="wiz-option-content">
+          <div class="wiz-option-name">J'ai re&ccedil;u une cl&eacute;</div>
+          <div class="wiz-option-path">Adjoint(e), &eacute;quipe ou renouvellement &mdash; activez la cl&eacute; qu'on vous a transmise</div>
+        </div>
+        <div class="wiz-option-arrow">&rarr;</div>
+      </button>
+    </div>
+
+    <!-- STEP 1A: Démarrage de l'essai gratuit -->
+    <div id="wizStepTrial" style="display:none">
+      <div class="wiz-trial-badge">&#127873; 90 jours gratuits</div>
+      <div class="wiz-title">Votre essai gratuit</div>
+      <div class="wiz-sub">Aucune carte de cr&eacute;dit requise. Votre cl&eacute; d'essai est cr&eacute;&eacute;e automatiquement.</div>
       <div class="wiz-form">
         <div class="wiz-form-row">
           <div class="wiz-form-field">
@@ -1262,14 +1284,14 @@ body.app-readonly th .rz{pointer-events:none}
         <div id="wizTrialError" class="wiz-form-error"></div>
         <button class="wiz-cta secondary" id="wizTrialSubmit" onclick="onboardingStartTrial()">D&eacute;marrer mon essai gratuit &rarr;</button>
         <div class="wiz-form-hint">Votre cl&eacute; sera enregistr&eacute;e automatiquement dans l'app. Pas besoin de copier-coller — vous &ecirc;tes pr&ecirc;t &agrave; l'utiliser.</div>
-        <div style="text-align:center"><button type="button" class="wiz-link" onclick="onboardingShowKeyEntry()">J'ai d&eacute;j&agrave; une cl&eacute; de licence</button></div>
+        <div style="text-align:center"><button type="button" class="wiz-link" onclick="onboardingBackToChoice()">&larr; Retour</button></div>
       </div>
     </div>
 
     <!-- STEP 1B: Entrée manuelle d'une clé existante -->
     <div id="wizStepKey" style="display:none">
       <div class="wiz-title">Activer votre licence</div>
-      <div class="wiz-sub">Entrez la cl&eacute; re&ccedil;ue par courriel.</div>
+      <div class="wiz-sub">Entrez la cl&eacute; re&ccedil;ue par courriel ou transmise par votre courtier.</div>
       <div class="wiz-form">
         <div class="wiz-form-field">
           <label>Cl&eacute; de licence</label>
@@ -1277,14 +1299,15 @@ body.app-readonly th .rz{pointer-events:none}
         </div>
         <div id="wizKeyError" class="wiz-form-error"></div>
         <button class="wiz-cta" id="wizKeySubmit" onclick="onboardingActivateKey()">Activer ma licence &rarr;</button>
-        <div style="text-align:center"><button type="button" class="wiz-link" onclick="onboardingBackToTrial()">&larr; Retour &agrave; l'essai gratuit</button></div>
+        <div style="text-align:center"><button type="button" class="wiz-link" onclick="onboardingBackToChoice()">&larr; Retour</button></div>
       </div>
     </div>
 
     <!-- STEP 2: Sélection du dossier de sauvegarde -->
     <div id="wizStepFolder" style="display:none">
-      <div class="wiz-title">O&ugrave; sauvegarder vos donn&eacute;es ?</div>
-      <div class="wiz-sub">Vous pourrez changer plus tard dans <strong>Param&egrave;tres</strong>.</div>
+      <div class="wiz-title" id="wizFolderTitle">O&ugrave; sauvegarder vos donn&eacute;es ?</div>
+      <div class="wiz-sub" id="wizFolderSub">Vous pourrez changer plus tard dans <strong>Param&egrave;tres</strong>.</div>
+      <div id="wizFolderAdjNote" style="display:none"></div>
       <div id="wizCloudList"></div>
       <div id="wizLocalSection"></div>
     </div>
@@ -3118,7 +3141,7 @@ function _adjKeyShow(key,name){
     +'<button class="tpl-btn" onclick="_adjCopy(\''+INSTALL_URL_WIN+'\',\'Lien d\\\'installation copié — un clic et le fichier se télécharge\')">Copier le lien d\'installation (Windows)</button>'
     +'<button class="tpl-btn muted" onclick="_adjCopy(\''+INSTALL_URL_MAC+'\',\'Lien Mac copié\')">Lien Mac</button>'
     +'</div>'
-    +'<div style="font-size:11px;color:#64748B;margin-top:8px;line-height:1.6">Envoie-lui la clé et le lien : <strong>un clic sur le lien télécharge directement l\'installateur</strong>. Ensuite sur son poste : installer → entrer CETTE clé → connecter le <strong>dossier de sauvegarde partagé</strong> → activer le partage ci-haut. Sa clé suit ta licence (renouvellement, expiration) et règle son poste en profil Adjoint(e) automatiquement.</div>';
+    +'<div style="font-size:11px;color:#64748B;margin-top:8px;line-height:1.6">Envoie-lui la clé et le lien : <strong>un clic sur le lien télécharge directement l\'installateur</strong>. Ensuite sur son poste : installer → choisir <strong>« J\'ai reçu une clé »</strong> à l\'ouverture → entrer CETTE clé → connecter le <strong>dossier de sauvegarde partagé</strong> → activer le partage ci-haut. Sa clé suit ta licence (renouvellement, expiration) et règle son poste en profil Adjoint(e) automatiquement.</div>';
 }
 function _adjCopy(txt,msg){
   try{
@@ -4551,7 +4574,7 @@ var TUTORIELS=[
     +'<ol>'
     +'<li>Dans <strong>Param\u00e8tres \u2192 \u00c9quipe \u2192 Adjoint(e)</strong>, clique <strong>G\u00e9n\u00e9rer sa cl\u00e9</strong> : tu obtiens la cl\u00e9 de ton adjoint(e) et le lien d\u2019installation, pr\u00eats \u00e0 lui transmettre. Sa cl\u00e9 est <strong>li\u00e9e</strong> \u00e0 la tienne (elle suit tes renouvellements) et r\u00e8gle son poste en profil Adjoint(e) automatiquement.</li>'
     +'<li>Le courtier partage son <strong>dossier de sauvegarde</strong> (OneDrive/Dropbox) avec l\u2019adjointe.</li>'
-    +'<li>Sur son poste : installer TRI-ANGLE, entrer <strong>sa</strong> cl\u00e9, puis connecter <strong>ce m\u00eame dossier</strong> (Param\u00e8tres \u2192 Sauvegarde).</li>'
+    +'<li>Sur son poste : installer TRI-ANGLE, choisir <strong>\u00ab J\u2019ai re\u00e7u une cl\u00e9 \u00bb</strong> \u00e0 l\u2019ouverture et entrer <strong>sa</strong> cl\u00e9 : l\u2019app la reconna\u00eet, l\u2019accueille et lui rappelle de connecter <strong>ce m\u00eame dossier partag\u00e9</strong> \u00e0 l\u2019\u00e9tape suivante.</li>'
     +'<li>Sur chaque poste, active <strong>Param\u00e8tres \u2192 \u00c9quipe \u2192 Adjoint(e)</strong>.</li>'
     +'</ol>'
     +'<h2>Comment \u00e7a fonctionne</h2>'
@@ -4583,7 +4606,7 @@ var TUTORIELS=[
     +'<p><strong>\u2630 Actions \u2192 Retirer le partage</strong> : le dossier <strong>dispara\u00eet</strong> chez le/la coll\u00e8gue (ta fiche reste intacte chez toi).</p>'
     +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Le % attribu\u00e9 est fix\u00e9 par le propri\u00e9taire du dossier et ne peut pas \u00eatre modifi\u00e9 par le collaborateur. D\u00e9lai de propagation : quelques secondes \u00e0 quelques minutes (OneDrive/Dropbox).</div></div>'},
   {sec:'Syst\u00e8me', num:36, titre:'Licence et abonnement', html:
-    '<p>TRI-ANGLE fonctionne avec une cl\u00e9 de licence. Tu profites d\u2019abord d\u2019un <strong>essai gratuit</strong>, puis d\u2019un abonnement.</p>'
+    '<p>TRI-ANGLE fonctionne avec une cl\u00e9 de licence. \u00c0 l\u2019installation, tu choisis <strong>D\u00e9marrer mon essai gratuit</strong> (ta cl\u00e9 d\u2019essai est cr\u00e9\u00e9e automatiquement) ou <strong>J\u2019ai re\u00e7u une cl\u00e9</strong> (adjoint(e), \u00e9quipe ou renouvellement). Tu profites d\u2019abord d\u2019un <strong>essai gratuit</strong>, puis d\u2019un abonnement.</p>'
     +'<h2>Renouveler</h2>'
     +'<ol>'
     +'<li>Va dans <strong>Param\u00e8tres &rarr; Compte</strong> pour voir l\u2019\u00e9tat de ta licence et la date d\u2019expiration.</li>'
@@ -10050,7 +10073,7 @@ function _showForceUpdateOverlay(version,seconds){
 var TRIAL_SERVER_URL='https://license-server-ebon-xi.vercel.app/api/start-trial';
 
 function _wizShowStep(stepId){
-  ['wizStepTrial','wizStepKey','wizStepFolder','wizStepGcal'].forEach(function(id){
+  ['wizStepChoice','wizStepTrial','wizStepKey','wizStepFolder','wizStepGcal'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.style.display=(id===stepId)?'block':'none';
   });
 }
@@ -10087,21 +10110,38 @@ async function showOnboardingWizard(){
     // Si l'utilisateur a déjà une clé valide (cas rare: install fraîche sans données mais clé déjà saisie ailleurs), skip trial
     var hasValidLicense=_license&&_license.key&&_license.lastResult&&_license.lastResult.valid;
     if(hasValidLicense){
-      await _wizPrepareFolderStep();
+      var lr=_license.lastResult||{};
+      await _wizPrepareFolderStep(lr.role==='adjointe'?{adjointe:true,courtier:lr.linkedToName||''}:null);
     } else {
-      _wizShowStep('wizStepTrial');
-      setTimeout(function(){var el=document.getElementById('wizFirstName');if(el)el.focus();},150);
+      _wizShowStep('wizStepChoice');
     }
     document.getElementById('onboardingWizard').classList.add('show');
     return true;
   }catch(e){console.warn('Wizard error',e);return false;}
 }
 
-async function _wizPrepareFolderStep(){
+async function _wizPrepareFolderStep(opts){
   var res=await window.electronAPI.detectCloudFolders();
   var cloudList=document.getElementById('wizCloudList');
   var localSection=document.getElementById('wizLocalSection');
   if(!cloudList||!localSection)return false;
+  // Accueil adjointe : la sync à deux postes exige le MÊME dossier que le courtier
+  var ttl=document.getElementById('wizFolderTitle');
+  var sub=document.getElementById('wizFolderSub');
+  var note=document.getElementById('wizFolderAdjNote');
+  if(opts&&opts.adjointe){
+    if(ttl)ttl.innerHTML='Choisis le dossier PARTAG&Eacute;';
+    if(sub)sub.innerHTML='Le m&ecirc;me dossier de sauvegarde que ton courtier &mdash; c\'est lui qui permet la synchronisation entre vos deux postes.';
+    if(note){
+      note.style.cssText='display:block;background:#FAF5FF;border:1.5px solid #D8B4FE;border-radius:10px;padding:13px 16px;margin-bottom:14px;font-size:13px;color:#6B21A8;text-align:left;line-height:1.55';
+      note.innerHTML='&#128156; <strong>Bienvenue ! Tu es l\'adjoint(e) de '+(opts.courtier?esc(opts.courtier):'ton courtier')+'.</strong><br>'
+        +'Important : choisis ci-dessous le dossier de sauvegarde <strong>partag&eacute;</strong> de ton courtier (OneDrive ou Dropbox partag&eacute;) &mdash; pas un dossier &agrave; toi. Au besoin, utilise &laquo;&nbsp;Choisir un autre emplacement...&nbsp;&raquo; pour le retrouver.';
+    }
+  } else {
+    if(ttl)ttl.innerHTML='O&ugrave; sauvegarder vos donn&eacute;es ?';
+    if(sub)sub.innerHTML='Vous pourrez changer plus tard dans <strong>Param&egrave;tres</strong>.';
+    if(note){note.style.display='none';note.innerHTML='';}
+  }
   var html='';
   if(res.cloudFolders&&res.cloudFolders.length){
     html+='<div class="wiz-section-title">&#127775; Recommand&eacute; — Sauvegarde cloud</div>';
@@ -10145,9 +10185,15 @@ function onboardingShowKeyEntry(){
   setTimeout(function(){var el=document.getElementById('wizKeyInput');if(el)el.focus();},100);
 }
 
-function onboardingBackToTrial(){
+function onboardingChooseTrial(){
   _wizShowStep('wizStepTrial');
+  setTimeout(function(){var el=document.getElementById('wizFirstName');if(el)el.focus();},100);
+}
+
+function onboardingBackToChoice(){
+  _wizShowStep('wizStepChoice');
   var errKey=document.getElementById('wizKeyError');if(errKey)errKey.textContent='';
+  var errTrial=document.getElementById('wizTrialError');if(errTrial)errTrial.textContent='';
 }
 
 async function onboardingStartTrial(){
@@ -10216,8 +10262,13 @@ async function onboardingActivateKey(){
   _license={key:k,lastChecked:new Date().toISOString(),lastResult:result};
   _licSave(_license);
   _licApplyUI();
-  toast('✓ Licence activée — bienvenue '+result.name+' !');
-  await _wizPrepareFolderStep();
+  var isAdj=(result.role==='adjointe');
+  if(isAdj){
+    toast('💜 Bienvenue ! Tu es l\'adjoint(e) de '+(result.linkedToName||'ton courtier'));
+  } else {
+    toast('✓ Licence activée — bienvenue '+result.name+' !');
+  }
+  await _wizPrepareFolderStep(isAdj?{adjointe:true,courtier:result.linkedToName||''}:null);
 }
 
 // Auto-format de la clé (XXXX-XXXX-XXXX-XXXX) dans le wizard

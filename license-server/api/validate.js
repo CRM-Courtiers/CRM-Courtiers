@@ -1,6 +1,6 @@
 // Endpoint POST /api/validate
 // Body : { "key": "XXXX-XXXX-XXXX-XXXX", "machineId": "..." (optionnel, Étape 34) }
-// Réponse : { valid, expires, plan, name, daysRemaining, role, linkedTo?, expired?, revoked? }
+// Réponse : { valid, expires, plan, name, daysRemaining, role, linkedTo?, linkedToName?, expired?, revoked? }
 //
 // Étape 34 — Clés liées (adjointe) : une clé avec linkedTo hérite de l'état de sa clé
 // PARENT (expiration, plan, révocation). Renouveler/révoquer le courtier suffit : la clé
@@ -65,6 +65,7 @@ module.exports = async (req, res) => {
   const role = entry.role || 'courtier';
   let effExpires = entry.expires;
   let effPlan = entry.plan;
+  let parentName = null;
   if (entry.linkedTo) {
     let parent = null;
     try {
@@ -84,6 +85,7 @@ module.exports = async (req, res) => {
     }
     effExpires = parent.expires;
     effPlan = parent.plan;
+    parentName = parent.name || null;
   }
 
   // Vérifier expiration (sur l'état effectif)
@@ -111,6 +113,7 @@ module.exports = async (req, res) => {
     name: entry.name,
     role: role,
     linkedTo: entry.linkedTo || undefined,
+    linkedToName: parentName || undefined,
     daysRemaining: daysRemaining,
     serverTime: now.toISOString()
   });
