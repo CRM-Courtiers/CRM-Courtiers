@@ -138,6 +138,107 @@ ipcMain.handle('get-autosave-path', async () => {
   return AUTOSAVE_PATH;
 });
 
+// ─── IPC : Sync 2 postes (Étape 32) ─────────────────────────
+// Journaux append-only par appareil dans <dossier de sauvegarde>/TRI-ANGLE-sync/.
+// Chaque poste n'écrit QUE son propre fichier (journal-<deviceId>.jsonl) → aucun
+// conflit de fichier ; OneDrive/Dropbox propage les journaux entre les postes.
+function _syncDir() { return path.join(AUTOSAVE_DIR, 'TRI-ANGLE-sync'); }
+const SYNC_FILE_RE = /^journal-[A-Za-z0-9_-]{1,40}\.jsonl$/;
+ipcMain.handle('sync-append', async (event, payload) => {
+  try {
+    const fileName = (payload && payload.fileName) || '';
+    const text = (payload && payload.text) || '';
+    if (!SYNC_FILE_RE.test(fileName)) return { ok: false, error: 'nom de fichier invalide' };
+    const dir = _syncDir();
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(path.join(dir, fileName), text, 'utf8');
+    return { ok: true };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('sync-list', async () => {
+  try {
+    const dir = _syncDir();
+    if (!fs.existsSync(dir)) return { ok: true, files: [] };
+    const files = fs.readdirSync(dir).filter(f => SYNC_FILE_RE.test(f)).map(f => {
+      try { const st = fs.statSync(path.join(dir, f)); return { name: f, size: st.size }; }
+      catch (e) { return { name: f, size: 0 }; }
+    });
+    return { ok: true, files: files };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('sync-read', async (event, payload) => {
+  try {
+    const fileName = (payload && payload.fileName) || '';
+    const fromByte = Math.max(0, parseInt((payload && payload.fromByte) || 0, 10) || 0);
+    if (!SYNC_FILE_RE.test(fileName)) return { ok: false, error: 'nom de fichier invalide' };
+    const p = path.join(_syncDir(), fileName);
+    if (!fs.existsSync(p)) return { ok: true, data: '', size: 0 };
+    const st = fs.statSync(p);
+    if (fromByte >= st.size) return { ok: true, data: '', size: st.size };
+    const len = st.size - fromByte;
+    const buf = Buffer.alloc(len);
+    const fd = fs.openSync(p, 'r');
+    try { fs.readSync(fd, buf, 0, len, fromByte); } finally { fs.closeSync(fd); }
+    return { ok: true, data: buf.toString('utf8'), size: st.size };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+// ─── IPC : Collaboration entre courtiers (Étape 33) ─────────
+// Mêmes journaux, mais dans un dossier-CANAL choisi par l'utilisateur (partagé entre
+// les courtiers d'une équipe via OneDrive/Dropbox), distinct du dossier de sauvegarde.
+function _collabOk(dir, fileName) {
+  return dir && typeof dir === 'string' && path.isAbsolute(dir) && SYNC_FILE_RE.test(fileName || 'journal-x.jsonl');
+}
+ipcMain.handle('collab-pick-folder', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Choisir le dossier de collaboration (partagé avec le/la collègue)',
+    properties: ['openDirectory', 'createDirectory'],
+    buttonLabel: 'Choisir ce dossier'
+  });
+  if (result.canceled || !result.filePaths.length) return { ok: false };
+  return { ok: true, path: result.filePaths[0] };
+});
+ipcMain.handle('collab-append', async (event, payload) => {
+  try {
+    const dir = (payload && payload.dir) || '';
+    const fileName = (payload && payload.fileName) || '';
+    const text = (payload && payload.text) || '';
+    if (!_collabOk(dir, fileName) || !SYNC_FILE_RE.test(fileName)) return { ok: false, error: 'paramètres invalides' };
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(path.join(dir, fileName), text, 'utf8');
+    return { ok: true };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('collab-list', async (event, payload) => {
+  try {
+    const dir = (payload && payload.dir) || '';
+    if (!dir || !path.isAbsolute(dir)) return { ok: false, error: 'dossier invalide' };
+    if (!fs.existsSync(dir)) return { ok: true, files: [] };
+    const files = fs.readdirSync(dir).filter(f => SYNC_FILE_RE.test(f)).map(f => {
+      try { const st = fs.statSync(path.join(dir, f)); return { name: f, size: st.size }; }
+      catch (e) { return { name: f, size: 0 }; }
+    });
+    return { ok: true, files: files };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('collab-read', async (event, payload) => {
+  try {
+    const dir = (payload && payload.dir) || '';
+    const fileName = (payload && payload.fileName) || '';
+    const fromByte = Math.max(0, parseInt((payload && payload.fromByte) || 0, 10) || 0);
+    if (!_collabOk(dir, fileName) || !SYNC_FILE_RE.test(fileName)) return { ok: false, error: 'paramètres invalides' };
+    const p = path.join(dir, fileName);
+    if (!fs.existsSync(p)) return { ok: true, data: '', size: 0 };
+    const st = fs.statSync(p);
+    if (fromByte >= st.size) return { ok: true, data: '', size: st.size };
+    const len = st.size - fromByte;
+    const buf = Buffer.alloc(len);
+    const fd = fs.openSync(p, 'r');
+    try { fs.readSync(fd, buf, 0, len, fromByte); } finally { fs.closeSync(fd); }
+    return { ok: true, data: buf.toString('utf8'), size: st.size };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
 // ─── IPC : Pièces jointes (Étape 25) ────────────────────────
 // Les fichiers vivent dans <dossier de sauvegarde>/PiecesJointes/<propertyId>/
 // → synchronisés par Dropbox/OneDrive en même temps que la sauvegarde JSON.
@@ -601,7 +702,20 @@ autoUpdater.on('download-progress', (progress) => sendUpdateStatus('progress', {
   total: progress.total,
   bytesPerSecond: progress.bytesPerSecond
 }));
-autoUpdater.on('update-downloaded', (info) => sendUpdateStatus('downloaded', { version: info.version }));
+autoUpdater.on('update-downloaded', (info) => {
+  sendUpdateStatus('downloaded', { version: info.version });
+  // Mise à jour OBLIGATOIRE (Windows) : installation silencieuse + redémarrage auto après un
+  // court compte à rebours (le renderer affiche un écran bloquant pendant ce délai).
+  // Mac exclu : l'installation auto est impossible tant que la notarisation Apple est bloquée.
+  if (process.platform !== 'darwin') {
+    const delaySec = 15;
+    sendUpdateStatus('force-install', { version: info.version, seconds: delaySec });
+    setTimeout(() => {
+      try { autoUpdater.quitAndInstall(true, true); }
+      catch (e) { console.warn('[update] quitAndInstall failed:', e && e.message); }
+    }, delaySec * 1000);
+  }
+});
 autoUpdater.on('error', (err) => sendUpdateStatus('error', { message: err && err.message }));
 
 // ─── App lifecycle ──────────────────────────────────────────

@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "crm-pro-courtage",
-  "version": "0.3.31",
-  "description": "TRI-ANGLE — CRM pour courtiers immobiliers québécois",
+  "version": "0.3.32",
+  "description": "TRI-ANGLE â€” CRM pour courtiers immobiliers quÃ©bÃ©cois",
   "main": "main.js",
   "author": "CRM-Courtiers",
   "private": true,
@@ -15,7 +15,7 @@
   "build": {
     "appId": "com.crmpro.courtage",
     "productName": "TRI-ANGLE",
-    "copyright": "Copyright © 2026 CRM-Courtiers",
+    "copyright": "Copyright Â© 2026 CRM-Courtiers",
     "directories": {
       "output": "dist"
     },

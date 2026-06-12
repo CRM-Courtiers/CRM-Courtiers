@@ -396,18 +396,49 @@ function renderTable(keys, filter) {
     return;
   }
 
-  let html = '<table><thead><tr><th>Clé</th><th>Nom</th><th>Plan</th><th>Expire</th><th>Jours</th><th>Statut</th><th style="text-align:right">Actions</th></tr></thead><tbody>';
+  // Étape 34 — regroupement par FAMILLE : chaque clé adjointe s'affiche directement
+  // SOUS la clé de son courtier (indentée, connecteur └), jamais éparpillée dans le tri.
+  const byKey = {};
+  rows.forEach(r => { byKey[r.key] = r; });
+  const childrenOf = {};
+  rows.forEach(r => { if (r.linkedTo) { (childrenOf[r.linkedTo] = childrenOf[r.linkedTo] || []).push(r); } });
+  const visibleSet = new Set(visible.map(r => r.key));
+  const ordered = [];
+  const added = new Set();
   for (const r of visible) {
+    if (r.linkedTo && visibleSet.has(r.linkedTo)) continue; // sera insérée sous son parent
+    if (!added.has(r.key)) { ordered.push(r); added.add(r.key); }
+    for (const c of (childrenOf[r.key] || [])) {
+      if (!added.has(c.key)) { ordered.push(c); added.add(c.key); }
+    }
+  }
+
+  let html = '<table><thead><tr><th>Clé</th><th>Nom</th><th>Plan</th><th>Expire</th><th>Jours</th><th>Postes</th><th>Statut</th><th style="text-align:right">Actions</th></tr></thead><tbody>';
+  for (const r of ordered) {
     const days = r.status === 'expired' ? 'expirée' : (r.daysRemaining + ' j');
-    html += '<tr>'
-      + '<td class="key-cell">' + r.key + '<button class="copy-btn" data-copy="' + r.key + '" title="Copier">⧉</button></td>'
-      + '<td>' + escapeHtml(r.name || '—') + '</td>'
-      + '<td>' + r.plan + '</td>'
-      + '<td>' + r.expires + '</td>'
+    const isChild = !!r.linkedTo;
+    const parentName = isChild ? ((byKey[r.linkedTo] || {}).name || r.linkedTo) : '';
+    const kids = childrenOf[r.key] || [];
+    const planCell = isChild
+      ? '<span style="color:#0E7490;font-weight:700" title="Clé liée à ' + r.linkedTo + '">adjointe</span>'
+      : r.plan;
+    const nameCell = isChild
+      ? escapeHtml(r.name || '—') + '<div style="font-size:11px;color:#0E7490;font-weight:600">🔗 adjointe de ' + escapeHtml(parentName) + '</div>'
+      : escapeHtml(r.name || '—') + (kids.length ? '<div style="font-size:11px;color:#0E7490;font-weight:600">👥 adjointe : ' + kids.map(c => escapeHtml(c.name || '?')).join(', ') + '</div>' : '');
+    const machinesCell = (r.machines || 0) === 0 ? '—' : ((r.machines > (isChild ? 1 : 2) ? '⚠ ' : '') + r.machines);
+    const keyCell = isChild
+      ? '<span style="color:#94A3B8;font-weight:700;margin-right:4px">└</span><span style="font-size:11px">' + r.key + '</span><button class="copy-btn" data-copy="' + r.key + '" title="Copier">⧉</button>'
+      : r.key + '<button class="copy-btn" data-copy="' + r.key + '" title="Copier">⧉</button>';
+    html += '<tr' + (isChild ? ' style="background:#F0FBFD"' : '') + '>'
+      + '<td class="key-cell"' + (isChild ? ' style="padding-left:28px"' : '') + '>' + keyCell + '</td>'
+      + '<td>' + nameCell + '</td>'
+      + '<td>' + planCell + '</td>'
+      + '<td>' + r.expires + (isChild ? '<div style="font-size:10px;color:#94A3B8">suit le courtier</div>' : '') + '</td>'
       + '<td>' + days + '</td>'
+      + '<td title="Nombre de postes différents vus pour cette clé">' + machinesCell + '</td>'
       + '<td><span class="status status-' + r.status + '">' + STATUS_LABELS[r.status] + '</span></td>'
       + '<td><div class="row-actions">'
-      + '<button class="btn btn-cyan btn-sm" data-renew="' + r.key + '">' + (r.status === 'revoked' ? 'Réactiver' : 'Renouveler') + '</button>'
+      + (isChild ? '' : '<button class="btn btn-cyan btn-sm" data-renew="' + r.key + '">' + (r.status === 'revoked' ? 'Réactiver' : 'Renouveler') + '</button>')
       + (r.status !== 'revoked' ? '<button class="btn btn-red btn-sm" data-revoke="' + r.key + '">Révoquer</button>' : '')
       + '</div></td>'
       + '</tr>';

@@ -40,6 +40,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   attachmentDeleteProperty: (propertyId) => ipcRenderer.invoke('attachment-delete-property', { propertyId }),
   attachmentOpenFolder: (propertyId) => ipcRenderer.invoke('attachment-open-folder', { propertyId }),
   emailCreateEml: (payload) => ipcRenderer.invoke('email-create-eml', payload),
+  // Étape 32 — Sync 2 postes : journaux par appareil dans <dossier sauvegarde>/TRI-ANGLE-sync
+  syncAppend: (fileName, text) => ipcRenderer.invoke('sync-append', { fileName, text }),
+  syncList: () => ipcRenderer.invoke('sync-list'),
+  syncRead: (fileName, fromByte) => ipcRenderer.invoke('sync-read', { fileName, fromByte }),
+  // Étape 33 — Collaboration entre courtiers : journaux dans un dossier-canal partagé
+  collabPickFolder: () => ipcRenderer.invoke('collab-pick-folder'),
+  collabAppend: (dir, fileName, text) => ipcRenderer.invoke('collab-append', { dir, fileName, text }),
+  collabList: (dir) => ipcRenderer.invoke('collab-list', { dir }),
+  collabRead: (dir, fileName, fromByte) => ipcRenderer.invoke('collab-read', { dir, fileName, fromByte }),
   // Platform/arch infos (pour adapter le comportement Mac vs Windows)
   platform: process.platform, // 'darwin' (Mac), 'win32' (Windows), 'linux'
   arch: process.arch,         // 'x64' (Intel) ou 'arm64' (Apple Silicon)
