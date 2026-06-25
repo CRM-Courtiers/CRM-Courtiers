@@ -677,13 +677,18 @@ ipcMain.handle('check-for-updates', async () => {
 });
 
 ipcMain.handle('install-update', async () => {
+  // Garde-fou Mac : jamais d'install auto tant que la notarisation Apple est bloquée
+  if (process.platform === 'darwin') return { ok: false, error: 'Installation automatique indisponible sur Mac — installer le .dmg manuellement' };
   autoUpdater.quitAndInstall();
   return { ok: true };
 });
 
 // ─── Auto-update : configuration ────────────────────────────
-autoUpdater.autoDownload = true;
-autoUpdater.autoInstallOnAppQuit = true;
+// Mac : PAS de téléchargement auto ni d'install auto — sur un build signé mais non
+// notarisé, quitAndInstall produit une app bloquée par Gatekeeper (confirmé 2026-06-03).
+// Le renderer affiche plutôt un bouton qui ouvre le .dmg dans le navigateur.
+autoUpdater.autoDownload = process.platform !== 'darwin';
+autoUpdater.autoInstallOnAppQuit = process.platform !== 'darwin';
 
 // Logs : capturer les événements et les relayer à la fenêtre
 function sendUpdateStatus(status, data) {

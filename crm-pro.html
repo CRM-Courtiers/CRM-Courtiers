@@ -173,6 +173,8 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-tbl tbody tr:nth-child(even) td{background:#F8FAFC!important}
 .dem-tbl tbody tr:nth-child(odd) td{background:#fff!important}
 .dem-tbl tbody tr:hover td{background:#E2E8F0!important}
+.centris-tooltip{display:none}
+td:hover .centris-tooltip{display:inline;color:#0EA5E9;font-style:italic;font-size:12px}
 .dem-tbl td.ei:hover{outline:1px solid #CBD5E1!important;outline-offset:-1px}
 .dem-tbl td.ei.editing{padding:2px 4px!important;overflow:visible!important;outline:2px solid #10B981!important;background:#F8FAFC!important}
 .dem-tbl td.ei input,.dem-tbl td.ei textarea,.dem-tbl td.ei select{width:100%;padding:4px 6px;border:1.5px solid #0EA5E9;border-radius:4px;font-family:inherit;font-size:12px;outline:none;background:#fff;color:#0F172A;box-sizing:border-box}
@@ -2085,6 +2087,25 @@ body.app-readonly th .rz{pointer-events:none}
   </div>
 </div>
 
+<!-- ── Modal : Créer une promesse en cours depuis un acheteur ── -->
+<div class="tpl-modal-ov" id="aToPA-modal-ov">
+  <div class="tpl-modal" style="width:min(500px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">➜ Créer une promesse en cours</div>
+      <button class="tpl-btn muted" onclick="closeAToPA_Modal()">✕</button>
+    </div>
+    <div class="tpl-modal-body">
+      <div id="aToPA-info" style="font-size:13px;color:#475569;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:10px 12px;margin-bottom:14px"></div>
+      <div class="tpl-fg"><label>Adresse de la propriété</label><input type="text" id="aToPA-adresse" placeholder="ex: 123 rue Principale, Thetford Mines"></div>
+      <div class="tpl-fg"><label>Lien Centris <span style="font-size:10px;color:#94A3B8">(URL ou numéro)</span></label><input type="text" id="aToPA-centris" placeholder="ex: https://www.centris.ca/... ou 12345678"></div>
+    </div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn muted" onclick="closeAToPA_Modal()">Annuler</button>
+      <button class="tpl-btn primary" onclick="submitAToPA_Modal()">Créer la promesse</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Modal : Stats références d'un contact Financement (Étape 31) ── -->
 <div class="tpl-modal-ov" id="finh-stats-ov">
   <div class="tpl-modal" style="width:min(560px,95vw)">
@@ -2300,6 +2321,7 @@ var COLS = {
     {lbl:"Nom",f:"nom",t:"text",w:100},
     {lbl:"Statut",f:"statutPa",t:"select",o:"STATUT_PA",w:100},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"Centris",f:"centrisUrl",t:"text",w:180,cls:"mu",title:"Entrez l'url de la propri\u00e9t\u00e9"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
     {lbl:"No. Centris",f:"noCentris",t:"centris",w:100,cls:"mu"},
@@ -2369,6 +2391,7 @@ var COLS = {
     {lbl:"Nom",f:"nom",t:"text",w:100},
     {lbl:"Statut",f:"statutPa",t:"select",o:"STATUT_PA",w:100},
     {lbl:"Adresse (mandat)",f:"_vAdresse",t:"vlookup",w:200,cls:"mu"},
+    {lbl:"Lien Centris",f:"centrisUrl",t:"text",w:180,cls:"mu",title:"Entrez l'url de la propri\u00e9t\u00e9"},
     {lbl:"Repr\u00e9sentation",f:"courtierId",t:"courtier-coll",w:160,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
@@ -2404,8 +2427,8 @@ var COLS = {
     {lbl:"",f:null,t:"pills",w:100},
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:100},
     {lbl:"Nom",f:"nom",t:"text",w:100},
-    {lbl:"Centris",f:"centris",t:"text",w:90},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"Lien Centris",f:"centrisUrl",t:"text",w:180,cls:"mu",title:"Entrez l'url de la propri\u00e9t\u00e9"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
     {lbl:"Notes",f:"notes",t:"text",w:130,cls:"nc"},
@@ -3443,6 +3466,74 @@ function ldb(){
 }
 
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+var _aToPA_acheteurId=null;
+function transferAToPa(id){
+  console.log('transferAToPa called with id:', id);
+  var rec=null;
+  for(var i=0;i<db.a.length;i++){if(db.a[i].id===id){rec=db.a[i];break;}}
+  if(!rec){console.log('rec not found');return;}
+  console.log('rec found:', rec.prenom, rec.nom);
+  _aToPA_acheteurId=id;
+  var nom=esc((rec.prenom||'')+" "+(rec.nom||'')).trim();
+  var info=document.getElementById('aToPA-info');
+  if(info)info.textContent="Créer une promesse en cours pour "+nom;
+  var addrInput=document.getElementById('aToPA-adresse');
+  if(addrInput)addrInput.value=rec.adresse||'';
+  var centrisInput=document.getElementById('aToPA-centris');
+  if(centrisInput)centrisInput.value='';
+  var ov=document.getElementById('aToPA-modal-ov');
+  if(ov)ov.classList.add('on');
+  if(addrInput)setTimeout(function(){addrInput.focus();},100);
+}
+function closeAToPA_Modal(){
+  var ov=document.getElementById('aToPA-modal-ov');
+  if(ov)ov.classList.remove('on');
+  _aToPA_acheteurId=null;
+}
+function submitAToPA_Modal(){
+  if(!_aToPA_acheteurId)return;
+  var rec=null;
+  for(var i=0;i<db.a.length;i++){if(db.a[i].id===_aToPA_acheteurId){rec=db.a[i];break;}}
+  if(!rec){closeAToPA_Modal();return;}
+  var addrInput=document.getElementById('aToPA-adresse');
+  var centrisInput=document.getElementById('aToPA-centris');
+  var adresse=(addrInput?addrInput.value.trim():'');
+  var centrisUrl=(centrisInput?centrisInput.value.trim():'');
+  if(!adresse){alert('Entrez l\'adresse');addrInput.focus();return;}
+  pushUndo('Créer PA depuis acheteur');
+  // Gestion acheteurs liés
+  var toTransfer=[rec];
+  if(rec.linkId){toTransfer=db.a.filter(function(x){return x.linkId===rec.linkId;});}
+  var noms=[];
+  toTransfer.forEach(function(r){
+    var paEntry={id:newId()};
+    for(var k in r){if(r.hasOwnProperty(k))paEntry[k]=r[k];}
+    paEntry.id=newId();
+    paEntry.statutPa='En cours';
+    paEntry.adresse=adresse;
+    paEntry.centrisUrl=centrisUrl;
+    if(!paEntry.mls)paEntry.mls=false;
+    if(!paEntry.declVend)paEntry.declVend=false;
+    if(!paEntry.ged)paEntry.ged=false;
+    if(!paEntry.inspection)paEntry.inspection='';
+    if(!paEntry.financement)paEntry.financement='';
+    if(!paEntry.r21)paEntry.r21='';
+    if(!paEntry.r22)paEntry.r22='';
+    if(!paEntry.assurImm)paEntry.assurImm='';
+    if(!paEntry.fosseSept)paEntry.fosseSept='';
+    if(!paEntry.testEau)paEntry.testEau='';
+    if(!paEntry.notaire)paEntry.notaire='';
+    if(!paEntry.montant)paEntry.montant='';
+    if(!paEntry.commission)paEntry.commission='';
+    db.pa.push(paEntry);
+    noms.push(r.prenom+' '+r.nom);
+  });
+  var idsToRemove=toTransfer.map(function(r){return r.id;});
+  db.a=db.a.filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
+  sdb();rall();
+  closeAToPA_Modal();
+  toast('✓ '+noms.join(' + ')+' → Promesse en cours');
+}
 
 // ─── Seed examples (premier lancement seulement) ───────────────
 // Injecte 2 fiches exemples par onglet sur Clients pot, Vendeurs pot, Acheteurs, PA Active, En Vente.
@@ -3549,7 +3640,7 @@ function fd(d){if(!d)return"\u2014";var dateP=_dateOnly(d);return new Date(dateP
 function fdTitle(d){if(!d)return'';var t=_timeOnly(d);if(!t)return _dateOnly(d);return _dateOnly(d)+' \u00e0 '+t;}
 function _fmtN(v){var s=Math.round(v).toString(),neg=s[0]==="-",r="";if(neg)s=s.slice(1);for(var i=s.length-1,c=0;i>=0;i--,c++){if(c>0&&c%3===0)r=" "+r;r=s[i]+r;}return(neg?"-":"")+r;}
 function fm(n){var v=parseFloat(n);if(!v)return"\u2014";return _fmtN(v)+" $";}
-function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 
 function chk(v){return v?'<span class="chky">&#10003;</span>':'<span class="chkn">&#10003;</span>';}
 function condCell(v){
@@ -3571,11 +3662,12 @@ function fmCourtier(id){var c=_courtierById(id);if(!c)return'<span style="color:
 // Étape 24 — Représentation (côté pa-en-vente) : vide → badge mauve "Double rep.", set → badge bleu "[Nom courtier]"
 function fmCourtierColl(id){var c=_courtierById(id);if(!c)return'<span class="badge bbg" style="background:#F3E8FF;color:#7E22CE;border-radius:10px;padding:2px 10px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Double rep.</span>';return'<span style="color:#0EA5E9;font-weight:600">'+esc(_courtierFullName(c))+'</span>'+(c.agence?'<br><span style="font-size:10px;color:#94A3B8">'+esc(c.agence)+'</span>':'');}
 
-function etd(col,tab,id,display,extra){
+function etd(col,tab,id,display,extra,titleAttr){
   var ci=COLS[tab].indexOf(col);
   var a='data-tab="'+tab+'" data-id="'+id+'" data-f="'+col.f+'" data-t="'+col.t+'"'+(col.o?' data-o="'+col.o+'"':'');
   var cls='c-'+ci+(col.cls?' '+col.cls:'')+(extra||'');
-  return'<td '+a+' class="'+cls+'" onclick="ie(this)">'+display+'</td>';
+  var titleStr=titleAttr?' title="'+esc(titleAttr)+'"':'';
+  return'<td '+a+' class="'+cls+'"'+titleStr+' onclick="ie(this)">'+display+'</td>';
 }
 function ctd(d,cls,ci){var c=(cls||'')+(ci!==undefined?' c-'+ci:'');return'<td'+(c.trim()?' class="'+c.trim()+'"':'')+'>'+d+'</td>';}
 // ─── Actions dropdown menu (unifié) ──────────────────────────
@@ -3832,7 +3924,7 @@ function _buildActionsForRecord(tab,recId){
   items.push({divider:true});
   if(tab==='cp')items.push({icon:'&#8599;',label:'Promouvoir en Acheteur',fn:function(){transferCpToA(recId);}});
   if(tab==='vp')items.push({icon:'&#8599;',label:'Promouvoir en Vendeur',fn:function(){transferVpToV(recId);}});
-  if(tab==='a')items.push({icon:'&#8617;',label:'Renvoyer aux Prospects acheteurs',fn:function(){transferAToCp(recId);}});
+  if(tab==='a'){items.push({icon:'&#8599;',label:'→ Promesse en cours',fn:function(){transferAToPa(recId);}});items.push({icon:'&#8617;',label:'Renvoyer aux Prospects acheteurs',fn:function(){transferAToCp(recId);}});}
   if(tab==='pa'){
     items.push({icon:'&#9989;',label:'Marquer conclu',fn:function(){transferToConclus('pa',recId);}});
     items.push({icon:'&#8617;',label:'Retour Acheteurs (PA refusée)',fn:function(){transferPaToA(recId);}});
@@ -4144,6 +4236,9 @@ function renderTab(tab){
       } else {
         var display=esc(rec[col.f]);
         if(j<2)display='<span class="bo">'+display+'</span>';
+        if(!rec[col.f]&&col.f==='centrisUrl'){
+          display='<span class="centris-tooltip">Entrez l\'url de la propriété</span>';
+        }
         h+=etd(col,tab,rec.id,display);
       }
     }
@@ -4620,7 +4715,7 @@ var TUTORIELS=[
     +'<h2>Sur Windows</h2>'
     +'<p>Les mises \u00e0 jour sont <strong>automatiques et obligatoires</strong> : au lancement, si une nouvelle version existe, elle se t\u00e9l\u00e9charge en arri\u00e8re-plan, puis TRI-ANGLE affiche un avis et <strong>red\u00e9marre de lui-m\u00eame</strong> pour l\u2019installer (quelques secondes). Tes donn\u00e9es sont sauvegard\u00e9es avant le red\u00e9marrage \u2014 tu n\u2019as rien \u00e0 faire.</p>'
     +'<h2>Sur Mac</h2>'
-    +'<p>Selon la configuration, tu peux avoir un bouton <strong>T\u00e9l\u00e9charger la mise \u00e0 jour</strong> dans Param\u00e8tres &rarr; Compte. Sinon, ton conseiller TRI-ANGLE te fournira la marche \u00e0 suivre.</p>'
+    +'<p>Quand une mise \u00e0 jour est disponible, un bouton <strong>\ud83d\udce5 T\u00e9l\u00e9charger la mise \u00e0 jour (.dmg)</strong> appara\u00eet dans Param\u00e8tres &rarr; Compte : il ouvre le t\u00e9l\u00e9chargement dans ton navigateur. Installe ensuite le .dmg comme \u00e0 l\u2019habitude (au premier lancement : <strong>clic droit &rarr; Ouvrir</strong>). Tes donn\u00e9es sont conserv\u00e9es.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Garde toujours la derni\u00e8re version : c\u2019est gratuit et tu profites des nouveaut\u00e9s (comme ce centre d\u2019aide !).</div></div>'},
   {sec:'Syst\u00e8me', num:38, titre:'Astuces : clic-droit, menu Actions, raccourcis', html:
     '<p>Quelques gestes qui te font gagner du temps au quotidien.</p>'
@@ -5147,42 +5242,6 @@ function transferCpToA(id){
   toast("\u2713 "+noms.join(" + ")+" \u2192 Acheteurs");
 }
 
-// Transfert automatique Acheteur → PA en cours quand État passe à "PA Actif"
-function transferAToPa(id){
-  var rec=null;for(var i=0;i<db.a.length;i++){if(db.a[i].id===id){rec=db.a[i];break;}}if(!rec)return;
-  pushUndo("PA en cours");
-  // Si lié, le partenaire suit
-  var toTransfer=[rec];
-  if(rec.linkId){toTransfer=db.a.filter(function(x){return x.linkId===rec.linkId;});}
-  var noms=[];
-  toTransfer.forEach(function(r){
-    // On garde TOUTES les données de l'acheteur (cca, loi25, etc.) même si invisibles dans pa
-    var paEntry={id:newId()};
-    for(var k in r){if(r.hasOwnProperty(k))paEntry[k]=r[k];}
-    paEntry.id=newId();
-    paEntry.statutPa='En cours';
-    // Initialiser les champs spécifiques pa s'ils n'existent pas déjà
-    if(!paEntry.mls)paEntry.mls=false;
-    if(!paEntry.declVend)paEntry.declVend=false;
-    if(!paEntry.ged)paEntry.ged=false;
-    if(!paEntry.inspection)paEntry.inspection='';
-    if(!paEntry.financement)paEntry.financement='';
-    if(!paEntry.r21)paEntry.r21='';
-    if(!paEntry.r22)paEntry.r22='';
-    if(!paEntry.assurImm)paEntry.assurImm='';
-    if(!paEntry.fosseSept)paEntry.fosseSept='';
-    if(!paEntry.testEau)paEntry.testEau='';
-    if(!paEntry.notaire)paEntry.notaire='';
-    if(!paEntry.montant)paEntry.montant='';
-    if(!paEntry.commission)paEntry.commission='';
-    db.pa.push(paEntry);
-    noms.push(r.prenom+' '+r.nom);
-  });
-  var idsToRemove=toTransfer.map(function(r){return r.id;});
-  db.a=db.a.filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
-  sdb();rall();
-  toast('✓ '+noms.join(' + ')+' → Promesse en cours');
-}
 
 // Retour PA en cours → Acheteurs (PA refusée ou autre raison)
 function transferPaToA(id){
@@ -10007,22 +10066,38 @@ function _shortUpdateError(raw){
   if(short.length>60)short=short.substring(0,57)+'...';
   return '⚠ '+short;
 }
+// Mac : pas d'install auto (notarisation Apple bloquée) — on dirige vers le .dmg
+var _appPlatform='';
+var MAC_DMG_URL='https://license-server-ebon-xi.vercel.app/api/download?os=mac';
+function _showMacDownloadBtn(){
+  var btn=document.getElementById('btnInstallUpdate');
+  if(btn){btn.innerHTML='&#128229; T&eacute;l&eacute;charger la mise &agrave; jour (.dmg)';btn.style.display='inline-flex';}
+}
 function checkForUpdatesManual(){
   if(!window.electronAPI||!window.electronAPI.checkForUpdates){toast('⚠ Vérification possible uniquement dans l\'app installée');return;}
   _setUpdateStatus('Vérification en cours...');
   window.electronAPI.checkForUpdates().then(function(res){
     if(!res.ok){_setUpdateStatus(_shortUpdateError(res.error),true);return;}
-    if(res.updateAvailable){_setUpdateStatus('Mise à jour disponible : v'+res.latestVersion+' (téléchargement en cours...)');}
+    if(res.updateAvailable){
+      if(_appPlatform==='darwin'){_setUpdateStatus('Mise à jour disponible : v'+res.latestVersion);_showMacDownloadBtn();}
+      else{_setUpdateStatus('Mise à jour disponible : v'+res.latestVersion+' (téléchargement en cours...)');}
+    }
     else{_setUpdateStatus('À jour ✓');}
   });
 }
 function installUpdate(){
+  if(_appPlatform==='darwin'){
+    if(window.electronAPI&&window.electronAPI.openExternal)window.electronAPI.openExternal(MAC_DMG_URL);
+    toast('📥 Le .dmg se télécharge dans ton navigateur — installe-le, puis clic droit → Ouvrir au premier lancement');
+    return;
+  }
   if(!window.electronAPI||!window.electronAPI.installUpdate)return;
   if(!confirm('Installer la mise à jour maintenant ?\n\nL\'application va redémarrer.'))return;
   window.electronAPI.installUpdate();
 }
 if(window.electronAPI&&window.electronAPI.getAppVersion){
   window.electronAPI.getAppVersion().then(function(info){
+    _appPlatform=info.platform||'';
     var el=document.getElementById('appVersionDisplay');if(el)el.textContent='v'+info.version;
     // Mettre à jour aussi le label de version dans le sidebar foot et le header
     var foot=document.querySelector('.sb-foot');if(foot)foot.textContent='v'+info.version+' · local';
@@ -10034,8 +10109,14 @@ if(window.electronAPI&&window.electronAPI.onUpdateStatus){
     var s=payload.status,d=payload.data||{};
     if(s==='checking'){_setUpdateStatus('Vérification...');_hideUpdateProgress();}
     else if(s==='available'){
-      _setUpdateStatus('Mise à jour v'+d.version+' disponible — téléchargement...');
-      _setUpdateProgress(0,0,0,0);
+      if(_appPlatform==='darwin'){
+        _setUpdateStatus('Mise à jour v'+d.version+' disponible');
+        _showMacDownloadBtn();
+        toast('Mise à jour v'+d.version+' disponible — voir Paramètres → Compte');
+      } else {
+        _setUpdateStatus('Mise à jour v'+d.version+' disponible — téléchargement...');
+        _setUpdateProgress(0,0,0,0);
+      }
     }
     else if(s==='not-available'){_setUpdateStatus('À jour ✓');_hideUpdateProgress();}
     else if(s==='progress'){
@@ -10044,9 +10125,15 @@ if(window.electronAPI&&window.electronAPI.onUpdateStatus){
     }
     else if(s==='downloaded'){
       _hideUpdateProgress();
-      _setUpdateStatus('✅ Mise à jour v'+d.version+' téléchargée — prête à installer');
-      var btn=document.getElementById('btnInstallUpdate');if(btn){btn.innerHTML='&#9989; Installer la mise à jour';btn.style.display='inline-flex';}
-      toast('✅ Mise à jour v'+d.version+' disponible — voir Paramètres');
+      if(_appPlatform==='darwin'){
+        // Ne devrait plus arriver (autoDownload off sur Mac) — garde-fou : jamais d'install auto
+        _setUpdateStatus('Mise à jour v'+d.version+' disponible');
+        _showMacDownloadBtn();
+      } else {
+        _setUpdateStatus('✅ Mise à jour v'+d.version+' téléchargée — prête à installer');
+        var btn=document.getElementById('btnInstallUpdate');if(btn){btn.innerHTML='&#9989; Installer la mise à jour';btn.style.display='inline-flex';}
+        toast('✅ Mise à jour v'+d.version+' disponible — voir Paramètres');
+      }
     }
     else if(s==='force-install'){_showForceUpdateOverlay(d.version,d.seconds||15);}
     else if(s==='error'){_setUpdateStatus(_shortUpdateError(d.message),true);_hideUpdateProgress();}
@@ -10462,12 +10549,17 @@ function removeLicense(){
   toast('Cl&eacute; retir&eacute;e');
 }
 
-// Re-valider la clé en arrière-plan si vieille (> 24h)
+// Re-valider la clé en arrière-plan si vieille (> 24h).
+// Exception : état « expire bientôt » / expirée / invalide → re-valider à CHAQUE passage,
+// sans attendre le cache : un renouvellement côté serveur doit faire disparaître le
+// bandeau dès le démarrage suivant.
 async function _licRefreshIfStale(){
   if(!_license||!_license.key)return;
   var lastChecked=new Date(_license.lastChecked||0);
   var hours=(new Date()-lastChecked)/3600000;
-  if(hours<LICENSE_REFRESH_HOURS)return;
+  var st=_licComputeState().state;
+  var urgent=(st==='expiring'||st==='expired'||st==='invalid'||st==='grace-expired');
+  if(!urgent&&hours<LICENSE_REFRESH_HOURS)return;
   var result=await _licValidateOnline(_license.key);
   if(result.offline)return; // garder cache
   _license.lastChecked=new Date().toISOString();
