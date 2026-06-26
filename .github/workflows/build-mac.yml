@@ -35,13 +35,8 @@ jobs:
         working-directory: electron-app
         run: npm install
 
-      - name: Build Mac (.dmg x64 + arm64) signed + notarized + upload to GitHub release
+      - name: Build Mac (.dmg x64 + arm64) and upload to GitHub release
         working-directory: electron-app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: npx electron-builder --mac --x64 --arm64 --publish always
+        run: npx electron-builder --mac --publish always
