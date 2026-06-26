@@ -1380,6 +1380,8 @@ body.app-readonly th .rz{pointer-events:none}
     </div>
     <div class="sb-section" data-color="gray">
       <div class="sb-section-title">Archives</div>
+      <button class="tbtn" data-tab="archac" id="tbn-archac"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><span class="sb-label">Achats archivés</span><span class="sb-badge zero" id="sb-archac-badge">0</span></button>
+      <button class="tbtn" data-tab="archvc" id="tbn-archvc"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><span class="sb-label">Ventes archivées</span><span class="sb-badge zero" id="sb-archvc-badge">0</span></button>
       <button class="tbtn" data-tab="ca" id="tbn-ca"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="sb-label">Autres contacts</span></button>
     </div>
     <div class="sb-section" data-color="gray">
@@ -2269,7 +2271,7 @@ body.app-readonly th .rz{pointer-events:none}
 <script>
 // ─── TABS & COLUMN DEFINITIONS ──────────────────────────────
 
-var TABS = ['cp','vp','a','pa','v','ac','vc','ca'];
+var TABS = ['cp','vp','a','pa','v','ac','vc','archac','archvc','ca'];
 
 // Statuts pour prequalification
 var PREQ_STS = ["Oui","Non","En attente"];
@@ -2471,6 +2473,7 @@ var COLS = {
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
     {lbl:"Date conclusion",f:"dateConclusion",t:"date",w:110,cls:"mu"},
+    {lbl:"Notaire",f:"dateNotaire",t:"date",w:110,cls:"mu"},
     {lbl:"Montant ($)",f:"montant",t:"number",w:110},
     {lbl:"Comm. (%)",f:"commission",t:"number",w:90,u:"%"},
     {lbl:"Notes",f:"notes",t:"text",w:180,cls:"nc"},
@@ -2484,6 +2487,36 @@ var COLS = {
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
     {lbl:"Date conclusion",f:"dateConclusion",t:"date",w:110,cls:"mu"},
+    {lbl:"Notaire",f:"dateNotaire",t:"date",w:110,cls:"mu"},
+    {lbl:"Montant ($)",f:"montant",t:"number",w:110},
+    {lbl:"Comm. tot. (%)",f:"commTot",t:"number",w:100,u:"%"},
+    {lbl:"Comm. autre (%)",f:"commAutre",t:"number",w:110,u:"%"},
+    {lbl:"Notes",f:"notes",t:"text",w:180,cls:"nc"},
+    {lbl:"Actions",f:null,t:"action",w:102}
+  ],
+  archac: [
+    {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:120},
+    {lbl:"Nom",f:"nom",t:"text",w:120},
+    {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"No. Centris",f:"centris",t:"centris",w:100,cls:"mu"},
+    {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
+    {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
+    {lbl:"Date conclusion",f:"dateConclusion",t:"date",w:110,cls:"mu"},
+    {lbl:"Notaire (sign\u00e9)",f:"dateNotaire",t:"date",w:120,cls:"mu"},
+    {lbl:"Montant ($)",f:"montant",t:"number",w:110},
+    {lbl:"Comm. (%)",f:"commission",t:"number",w:90,u:"%"},
+    {lbl:"Notes",f:"notes",t:"text",w:180,cls:"nc"},
+    {lbl:"Actions",f:null,t:"action",w:102}
+  ],
+  archvc: [
+    {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:120},
+    {lbl:"Nom",f:"nom",t:"text",w:120},
+    {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"No. Centris",f:"centris",t:"centris",w:100,cls:"mu"},
+    {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
+    {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
+    {lbl:"Date conclusion",f:"dateConclusion",t:"date",w:110,cls:"mu"},
+    {lbl:"Notaire (sign\u00e9)",f:"dateNotaire",t:"date",w:120,cls:"mu"},
     {lbl:"Montant ($)",f:"montant",t:"number",w:110},
     {lbl:"Comm. tot. (%)",f:"commTot",t:"number",w:100,u:"%"},
     {lbl:"Comm. autre (%)",f:"commAutre",t:"number",w:110,u:"%"},
@@ -3953,7 +3986,11 @@ function _buildActionsForRecord(tab,recId){
   if(tab==='rec'){
     items.push({icon:'&#8617;',label:'Renvoyer dans Actives',fn:function(){transferRecToRea(recId);}});
   }
-  // Liaison (sauf cp/vp/ac/vc/ca)
+  // Étape workflow notaire : ac/vc → archac/archvc quand notarié
+  if(tab==='ac'||tab==='vc'){
+    items.push({icon:'&#9989;',label:'✅ Notarié — Archiver',title:'Marque le notaire complété et archive dans les dossiers finalisés',fn:function(){markNotaried(tab,recId);}});
+  }
+  // Liaison (sauf cp/vp/ac/vc/ca/archac/archvc)
   if(tab==='a'||tab==='pa'||tab==='pa-en-vente'||tab==='v'){
     if(rec.linkId)items.push({icon:'&#128274;',label:'Délier',fn:function(){unlinkRecord(tab,recId);}});
     else items.push({icon:'&#128279;',label:'Lier à un autre...',fn:function(){openLinkModal(tab,recId);}});
@@ -5600,10 +5637,12 @@ function transferToConclus(fromTab,id){
     if(fromTab==="a"||fromTab==="pa"){
       baseEntry.montant=r.montant||"";
       baseEntry.commission=r.commission||"";
+      baseEntry.dateNotaire=""; // À finaliser par notaire
     } else {
       baseEntry.montant=r.montant||"";
       baseEntry.commTot=r.commTot||"";
       baseEntry.commAutre=r.commAutre||"";
+      baseEntry.dateNotaire=""; // À finaliser par notaire
       // Préserver l'historique pancarte pour pouvoir tracker "à retirer" dans Vendeurs conclus
       baseEntry.pancarte=!!r.pancarte;
       baseEntry.pancarteRet=!!r.pancarteRet;
@@ -5697,6 +5736,21 @@ function _closeVConcluModal() {
   _vConcluContext = null;
 }
 
+// Archiver une fiche Conclus quand le notaire a finalisé (transfert ac→archac ou vc→archvc)
+function markNotaried(tab,id){
+  var rec=null,idx=-1;
+  var sourceTab=(tab==='archac'||tab==='ac')?'ac':'vc';
+  for(var i=0;i<db[sourceTab].length;i++){if(db[sourceTab][i].id===id){rec=db[sourceTab][i];idx=i;break;}}
+  if(!rec)return;
+  var targetTab=(tab==='ac'||tab==='archac')?'archac':'archvc';
+  pushUndo('Notarié');
+  var dateNotaire=new Date().toISOString().split("T")[0];
+  rec.dateNotaire=dateNotaire;
+  db[targetTab].push(rec);
+  db[sourceTab].splice(idx,1);
+  sdb();rall();
+  toast('✓ '+(rec.prenom+' '+(rec.nom||'')).trim()+' → Archivé (notarié le '+dateNotaire+')');
+}
 
 // ─── Google Calendar sync ───────────────────────────────────
 // ─── PANCARTES ────────────────────────────────────────────────
@@ -8964,8 +9018,9 @@ function _dashRefshPaid(year,month){
   });
 }
 function _dashCommYearMonth(year,month){
-  var ac=_dashDedup(_dashFilterByPeriod(db.ac,year,month));
-  var vc=_dashDedup(_dashFilterByPeriod(db.vc,year,month));
+  // Workflow notaire : Encaissé = archac/archvc (après notaire signé), pas ac/vc (en attente notaire)
+  var ac=_dashDedup(_dashFilterByPeriod(db.archac,year,month));
+  var vc=_dashDedup(_dashFilterByPeriod(db.archvc,year,month));
   // Étape 24 — Références conclues : filtre par dateConclusion + statut=concluded
   var rec=(db.refs||[]).filter(function(r){return r.statut==='concluded';});
   rec=_dashFilterByPeriod(rec,year,month);
@@ -9079,15 +9134,15 @@ function renderDashboard(){
   html+='<div class="dash-section">'
     +'<div class="dash-section-head"><div class="dash-section-title">&#128176; Encaiss&eacute; '+curYear+' &mdash; par source</div><div class="dash-section-period">D\'o&ugrave; viennent tes commissions</div></div>'
     +'<div class="dash-decomp">'
-    +'<div class="dash-decomp-row'+(yearData.ac.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;ac&quot;]\').click()':'')+'">'
+    +'<div class="dash-decomp-row'+(yearData.ac.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;archac&quot;]\').click()':'')+'">'
       +'<div class="dash-decomp-icon">&#128273;</div>'
-      +'<div class="dash-decomp-label">Achats conclus<div class="dash-decomp-meta">'+yearData.ac.length+' transaction'+(yearData.ac.length!==1?'s':'')+'</div></div>'
+      +'<div class="dash-decomp-label">Achats finalis&eacute;s (notari&eacute;)<div class="dash-decomp-meta">'+yearData.ac.length+' transaction'+(yearData.ac.length!==1?'s':'')+'</div></div>'
       +'<div class="dash-decomp-amount">'+_dashFmtMny(commAc)+'</div>'
       +'<div class="dash-decomp-arrow">'+(yearData.ac.length>0?'&rarr;':'')+'</div>'
     +'</div>'
-    +'<div class="dash-decomp-row'+(yearData.vc.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;vc&quot;]\').click()':'')+'">'
+    +'<div class="dash-decomp-row'+(yearData.vc.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;archvc&quot;]\').click()':'')+'">'
       +'<div class="dash-decomp-icon">&#127969;</div>'
-      +'<div class="dash-decomp-label">Ventes conclues<div class="dash-decomp-meta">'+yearData.vc.length+' transaction'+(yearData.vc.length!==1?'s':'')+'</div></div>'
+      +'<div class="dash-decomp-label">Ventes finalis&eacute;es (notari&eacute;)<div class="dash-decomp-meta">'+yearData.vc.length+' transaction'+(yearData.vc.length!==1?'s':'')+'</div></div>'
       +'<div class="dash-decomp-amount">'+_dashFmtMny(commVc)+'</div>'
       +'<div class="dash-decomp-arrow">'+(yearData.vc.length>0?'&rarr;':'')+'</div>'
     +'</div>'
