@@ -581,6 +581,10 @@ ipcMain.handle('set-autosave-folder', async (event, folderPath) => {
   }
 });
 
+ipcMain.handle('get-autosave-folder', async () => {
+  return { ok: true, dir: AUTOSAVE_DIR, name: path.basename(AUTOSAVE_DIR) };
+});
+
 // ─── IPC : Machine fingerprint (anti-abus trial) ────────────
 ipcMain.handle('get-machine-id', async () => {
   return getMachineFingerprint();

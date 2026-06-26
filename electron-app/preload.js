@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   pickFolder: () => ipcRenderer.invoke('pick-folder'),
   detectCloudFolders: () => ipcRenderer.invoke('detect-cloud-folders'),
   setAutoSaveFolder: (folderPath) => ipcRenderer.invoke('set-autosave-folder', folderPath),
+  getAutoSaveFolder: () => ipcRenderer.invoke('get-autosave-folder'),
   // Machine fingerprint (anti-abus essai gratuit)
   getMachineId: () => ipcRenderer.invoke('get-machine-id'),
   // Google Calendar

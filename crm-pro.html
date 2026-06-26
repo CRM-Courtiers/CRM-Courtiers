@@ -1433,11 +1433,6 @@ body.app-readonly th .rz{pointer-events:none}
   </div>
 </div><!-- /.hero-dark -->
 <div class="main">
-  <div class="exp-warn" id="exportWarn">
-    <span>&#9888;&#65039; Dernier export il y a <strong id="exportWarnDays">?</strong> jours &mdash; pensez &agrave; sauvegarder vos donn&eacute;es !</span>
-    <button onclick="exportData()">&#8595; Exporter maintenant</button>
-    <button class="exp-dismiss" onclick="dismissExportWarn()">Ignorer</button>
-  </div>
   <div class="card accueil-mode">
     <div class="card-header">
       <div class="card-title" id="cardTitle">Accueil</div>
@@ -1677,6 +1672,9 @@ body.app-readonly th .rz{pointer-events:none}
         <div class="settings-group">
           <div class="settings-group-title">&#128194; Sauvegarde automatique</div>
           <div class="settings-group-desc">Connecter un dossier local o&ugrave; le CRM sauvegarde automatiquement tes donn&eacute;es en JSON.</div>
+          <div id="saveDirDisplay" style="font-size:12px;color:#475569;margin:10px 0;padding:10px;background:#F1F5F9;border-radius:6px;word-break:break-all;display:none">
+            <strong>📁 Dossier actif:</strong><br><span id="saveDirPath"></span>
+          </div>
           <div class="settings-actions">
             <button class="btn-import" id="btnAutoSave" onclick="connectAutoSave()">&#128194; Connecter dossier auto</button>
           </div>
@@ -3263,10 +3261,11 @@ async function tryRestoreAutoSave(){
 }
 
 var _electronDirName="";
+var _electronDirPath="";
 async function pickElectronFolder(){
   if(!window.electronAPI||!window.electronAPI.pickFolder)return;
   var res=await window.electronAPI.pickFolder();
-  if(res.ok){_electronDirName=res.name;updateAutoSaveBtn();await writeAutoSave();toast("\u2705 Dossier chang\u00e9 \u2192 \u00ab "+res.name+" \u00bb");}
+  if(res.ok){_electronDirName=res.name;_electronDirPath=res.dir;updateAutoSaveBtn();await writeAutoSave();toast("\u2705 Dossier chang\u00e9 \u2192 \u00ab "+res.name+" \u00bb");}
 }
 async function connectAutoSave(){
   try{
@@ -3329,12 +3328,15 @@ function scheduleAutoSave(){clearTimeout(_autoSaveTimer);_autoSaveTimer=setTimeo
 function updateAutoSaveBtn(){
   var btn=document.getElementById("btnAutoSave"),btnTop=document.getElementById("btnAutoSaveTop"),lock=document.getElementById("lockOverlay");
   if(window.electronAPI){
+    if(!_electronDirPath){loadAutoSaveFolderPath();}
     var dirName=_electronDirName||"Dossier local";
     var label="\uD83D\uDCC2 "+dirName+" \u2713";
     if(btn){btn.textContent=label;btn.classList.add("connected");btn.onclick=pickElectronFolder;}
     if(btnTop){btnTop.textContent=label;btnTop.classList.remove("warn");btnTop.classList.add("connected");btnTop.onclick=pickElectronFolder;}
     var syncBtn=document.getElementById("btnSyncTop");if(syncBtn)syncBtn.style.display="inline-flex";
-    if(lock)lock.style.display="none";return;
+    if(lock)lock.style.display="none";
+    updateSaveDirDisplay();
+    return;
   }
   if(_autoDir){
     var label="\uD83D\uDCC2 "+_autoDir.name+" \u2713";
@@ -3352,6 +3354,11 @@ function updateAutoSaveBtn(){
 }
 
 // ─── Auto-import : fusion intelligente — préserve les modifs locales ──
+async function loadAutoSaveFolderPath(){
+  if(!window.electronAPI||!window.electronAPI.getAutoSaveFolder)return;
+  try{var res=await window.electronAPI.getAutoSaveFolder();if(res.ok){_electronDirPath=res.dir;_electronDirName=res.name;updateSaveDirDisplay();}}catch(e){}
+}
+
 async function autoImportFromFile(){
   // Étape 32 — quand le travail à deux est actif, les JOURNAUX sont le canal de partage :
   // l'ancien import du fichier autosave entrerait en conflit (résurrections) → désactivé.
@@ -9919,8 +9926,7 @@ function resetAllData(){
   THR={cp:14,vp:14,a:20};fullRender();
   toast("\uD83D\uDDD1 Donn\u00e9es effac\u00e9es");
 }
-function checkExportWarning(){try{var last=localStorage.getItem("sc-lastexport");if(!last)return;var days=Math.floor((Date.now()-parseInt(last))/86400000);if(days>=10){var warn=document.getElementById("exportWarn"),dEl=document.getElementById("exportWarnDays");if(warn)warn.style.display='flex';if(dEl)dEl.textContent=days;}}catch(e){}}
-function dismissExportWarn(){var warn=document.getElementById("exportWarn");if(warn)warn.style.display='none';try{localStorage.setItem("sc-lastexport",Date.now().toString());}catch(e){}}
+function updateSaveDirDisplay(){if(_electronDirPath){var display=document.getElementById("saveDirDisplay"),pathEl=document.getElementById("saveDirPath");if(display&&pathEl){display.style.display='block';pathEl.textContent=_electronDirPath;}}}
 
 // ─── Tabs ────────────────────────────────────────────────────
 var CARD_TITLES={aide:"Aide",cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Promesses reçues",templates:"Templates de courriels",rea:"Références Courtiers",rec:"Références conclues",reh:"Références hypothécaires",courtiers:"Banque de courtiers",notaires:"Banque de notaires",financement:"Banque Financement"};
@@ -10377,6 +10383,7 @@ async function onboardingPick(folderPath){
   if(!res.ok){alert('Erreur : '+(res.error||'inconnue'));return;}
   try{localStorage.setItem('crmpro-onboarded','1');}catch(e){}
   _electronDirName=res.name;
+  _electronDirPath=res.dir;
   updateAutoSaveBtn();
   await writeAutoSave();
   toast('&#9989; Sauvegarde configur&eacute;e dans &laquo; '+res.name+' &raquo;');
