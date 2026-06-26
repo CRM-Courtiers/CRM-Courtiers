@@ -34,16 +34,39 @@ function getHtmlPath() {
   return path.join(__dirname, '..', 'crm-pro.html');
 }
 
-// Charger le dossier personnalise si existant
-try {
-  if (fs.existsSync(SETTINGS_PATH)) {
-    const s = JSON.parse(fs.readFileSync(SETTINGS_PATH, 'utf8'));
-    if (s.saveDir && fs.existsSync(s.saveDir)) {
-      AUTOSAVE_DIR = s.saveDir;
-      AUTOSAVE_PATH = path.join(AUTOSAVE_DIR, 'CRM-Pro-autosauve.json');
+// Charger le dossier personnalisé si existant (+ migration des anciens settings)
+function loadSettings() {
+  try {
+    // Chercher dans l'ordre: nouveau path → anciens paths (migration)
+    const settingsPaths = [
+      SETTINGS_PATH,
+      path.join(os.homedir(), 'AppData', 'Roaming', 'CRM Pro', 'crm-pro-settings.json'),
+      path.join(os.homedir(), 'AppData', 'Roaming', 'TRI-ANGLE', 'crm-pro-settings.json')
+    ];
+
+    for (const settingsPath of settingsPaths) {
+      if (fs.existsSync(settingsPath)) {
+        const s = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+        if (s.saveDir && fs.existsSync(s.saveDir)) {
+          AUTOSAVE_DIR = s.saveDir;
+          AUTOSAVE_PATH = path.join(AUTOSAVE_DIR, 'CRM-Pro-autosauve.json');
+
+          // Migrer vers le nouveau path si on vient d'un ancien
+          if (settingsPath !== SETTINGS_PATH) {
+            try {
+              if (!fs.existsSync(path.dirname(SETTINGS_PATH))) {
+                fs.mkdirSync(path.dirname(SETTINGS_PATH), { recursive: true });
+              }
+              fs.writeFileSync(SETTINGS_PATH, JSON.stringify(s, null, 2), 'utf8');
+            } catch (e) {}
+          }
+          return; // Succès, quitter
+        }
+      }
     }
-  }
-} catch (e) {}
+  } catch (e) {}
+}
+loadSettings();
 
 app.setAppUserModelId('com.crmpro.courtage');
 
