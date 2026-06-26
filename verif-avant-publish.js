@@ -72,6 +72,27 @@ const html = fs.readFileSync(HTML, 'utf8');
   if (!problems) ok('Cohérence onglets ↔ tables DOM : ' + allTabs.length + ' onglet(s), tous ont leur table');
 })();
 
+// ── 2b. Appels de fonctions NON DÉFINIES dans la zone d'init (bug checkExportWarning) ──
+(() => {
+  const m = html.match(/<script\b[^>]*>([\s\S]*?)<\/script>/i);
+  if (!m) return;
+  const code = m[1];
+  const defined = new Set();
+  let r;
+  let re = /function\s+([A-Za-z_$][\w$]*)\s*\(/g;            while ((r = re.exec(code))) defined.add(r[1]);
+  re = /(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=\s*function/g; while ((r = re.exec(code))) defined.add(r[1]);
+  re = /(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>/g; while ((r = re.exec(code))) defined.add(r[1]);
+  const initIdx = code.indexOf('─── Init');
+  if (initIdx < 0) { warn('Zone Init introuvable — vérif appels init sautée'); return; }
+  const initZone = code.slice(initIdx);
+  const builtins = new Set(['if','for','while','switch','function','return','catch','setTimeout','setInterval','require','parseInt','parseFloat','alert','confirm','typeof']);
+  const reCall = /^([A-Za-z_$][\w$]*)\s*\(/gm;
+  const missing = new Set();
+  while ((r = reCall.exec(initZone))) { const fn = r[1]; if (!builtins.has(fn) && !defined.has(fn)) missing.add(fn); }
+  if (missing.size) fail('Fonction(s) appelée(s) au démarrage mais NON définie(s) → ReferenceError au lancement : ' + [...missing].join(', '));
+  else ok('Appels de démarrage : toutes les fonctions appelées sont définies');
+})();
+
 // ── 3. Patterns dangereux ───────────────────────────────────────────
 (() => {
   let bad = 0;

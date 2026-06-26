@@ -1573,6 +1573,16 @@ body.app-readonly th .rz{pointer-events:none}
       <div class="sortbar2" id="sortbar-vc"></div>
       <div class="tw"><table id="tbl-vc"><colgroup id="cg-vc"></colgroup><thead id="th-vc"></thead><tbody id="tb-vc"></tbody></table></div>
     </div>
+    <!-- ── PANE : Achats archivés (notarié, Étape 35) ── -->
+    <div class="pane" id="pane-archac">
+      <div class="sortbar2" id="sortbar-archac"></div>
+      <div class="tw"><table id="tbl-archac"><colgroup id="cg-archac"></colgroup><thead id="th-archac"></thead><tbody id="tb-archac"></tbody></table></div>
+    </div>
+    <!-- ── PANE : Ventes archivées (notarié, Étape 35) ── -->
+    <div class="pane" id="pane-archvc">
+      <div class="sortbar2" id="sortbar-archvc"></div>
+      <div class="tw"><table id="tbl-archvc"><colgroup id="cg-archvc"></colgroup><thead id="th-archvc"></thead><tbody id="tb-archvc"></tbody></table></div>
+    </div>
     <!-- ── PANE : Contacts Autre ── -->
     <div class="pane" id="pane-ca">
       <div class="sortbar2" id="sortbar-ca"></div>
@@ -9988,7 +9998,7 @@ function resetAllData(){
 function updateSaveDirDisplay(){if(_electronDirPath){var display=document.getElementById("saveDirDisplay"),pathEl=document.getElementById("saveDirPath");if(display&&pathEl){display.style.display='block';pathEl.textContent=_electronDirPath;}}}
 
 // ─── Tabs ────────────────────────────────────────────────────
-var CARD_TITLES={aide:"Aide",cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Promesses reçues",templates:"Templates de courriels",rea:"Références Courtiers",rec:"Références conclues",reh:"Références hypothécaires",courtiers:"Banque de courtiers",notaires:"Banque de notaires",financement:"Banque Financement"};
+var CARD_TITLES={aide:"Aide",cp:"Prospects acheteurs",vp:"Prospects vendeurs",a:"Mes acheteurs",pa:"Promesses en cours",v:"Mes inscriptions",ac:"Achats conclus",vc:"Ventes conclues",archac:"Achats archivés (notariés)",archvc:"Ventes archivées (notariées)",ca:"Autres contacts",settings:"Paramètres",accueil:"Accueil",pancartes:"Pancartes",calendar:"Calendrier",dashboard:"Tableau de bord",demandes:"Demandes reçues","pa-en-vente":"Promesses reçues",templates:"Templates de courriels",rea:"Références Courtiers",rec:"Références conclues",reh:"Références hypothécaires",courtiers:"Banque de courtiers",notaires:"Banque de notaires",financement:"Banque Financement"};
 function setCardTitle(tab){var el=document.getElementById("cardTitle");if(el)el.textContent=CARD_TITLES[tab]||"";_updateBmailVisibility(tab);}
 document.getElementById("tbar").addEventListener("click",function(e){
   var btn=e.target.closest(".tbtn");if(!btn)return;
@@ -10070,7 +10080,8 @@ if(window.electronAPI){
   _applyPosteProfil(); // Étape 32 — masque le Dashboard si profil Adjointe
 }
 else{tryRestoreAutoSave();try{var dn=localStorage.getItem("sc-autodir-name");if(dn)showSaveStatus("\uD83D\uDCC2 Dossier pr\u00e9c\u00e9dent : \u00ab "+dn+" \u00bb \u2014 cliquez 'Connecter dossier auto'");}catch(e){}}
-checkExportWarning();
+// checkExportWarning() retir\u00e9 \u2014 la banni\u00e8re d'export n'existe plus (fonction supprim\u00e9e).
+if(typeof checkExportWarning==='function')checkExportWarning();
 
 // ─── Version + Mises à jour (Electron only) ──────────────────
 // Stocker la date d'installation au tout premier lancement (utile plus tard pour trial 3 mois)
