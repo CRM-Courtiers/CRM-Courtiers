@@ -4046,12 +4046,16 @@ function updateStickyOffsets(tab,liveWs){
 
 // ─── Build headers ───────────────────────────────────────────
 function buildHeaders(tab){
+  // Garde robuste : certains onglets déclarés dans TABS (ex. archac/archvc) n'ont pas de table
+  // ni de définition de colonnes dans le DOM. On sort proprement au lieu de crasher au démarrage.
+  var _tblEl=document.getElementById("tbl-"+tab);
+  if(!_tblEl||!COLS[tab])return;
   var cols=COLS[tab],ws=getCW(tab),hid=COL_VIS[tab]||[];
   // Si le tableau total est plus étroit que son conteneur, étirer la dernière colonne (Actions) pour combler l'espace
   // (évite le bandeau thead qui s'arrête au milieu sur les écrans larges)
   var twRaw=0;
   for(var i=0;i<ws.length;i++){if(hid.indexOf(i)===-1)twRaw+=ws[i];}
-  var twEl=document.getElementById("tbl-"+tab).parentElement;
+  var twEl=_tblEl.parentElement;
   var containerW=twEl?twEl.clientWidth:0;
   var lastVisible=-1;
   for(var i=ws.length-1;i>=0;i--){if(hid.indexOf(i)===-1){lastVisible=i;break;}}
