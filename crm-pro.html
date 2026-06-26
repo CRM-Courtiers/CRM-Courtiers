@@ -226,6 +226,10 @@ td:hover .centris-tooltip{display:inline;color:#0EA5E9;font-style:italic;font-si
 .dem-add-form-actions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px}
 .dem-archive-toggle{font-size:11px;padding:8px 18px;color:#64748B;cursor:pointer;text-align:center;background:#FAFAFC;border-top:1px solid #F1F5F9;font-weight:600}
 .dem-archive-toggle:hover{background:#F1F5F9;color:#0F172A}
+/* Étape 35 — section repliable "Notariés" dans les pages Conclus */
+.arch-toggle{margin-top:18px;font-size:13px;padding:11px 16px;color:#475569;cursor:pointer;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:8px;font-weight:700;user-select:none;display:flex;align-items:center;gap:8px}
+.arch-toggle:hover{background:#E2E8F0;color:#0F172A}
+.arch-body{margin-top:10px}
 .dem-archived-row{opacity:.6}
 .dem-status-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 /* ── Actions dropdown menu (unifié pour toutes les tables) ── */
@@ -1380,8 +1384,6 @@ body.app-readonly th .rz{pointer-events:none}
     </div>
     <div class="sb-section" data-color="gray">
       <div class="sb-section-title">Archives</div>
-      <button class="tbtn" data-tab="archac" id="tbn-archac"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><span class="sb-label">Achats archivés</span><span class="sb-badge zero" id="sb-archac-badge">0</span></button>
-      <button class="tbtn" data-tab="archvc" id="tbn-archvc"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><span class="sb-label">Ventes archivées</span><span class="sb-badge zero" id="sb-archvc-badge">0</span></button>
       <button class="tbtn" data-tab="ca" id="tbn-ca"><span class="sb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="sb-label">Autres contacts</span></button>
     </div>
     <div class="sb-section" data-color="gray">
@@ -1567,21 +1569,21 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="pane" id="pane-ac">
       <div class="sortbar2" id="sortbar-ac"></div>
       <div class="tw"><table id="tbl-ac"><colgroup id="cg-ac"></colgroup><thead id="th-ac"></thead><tbody id="tb-ac"></tbody></table></div>
+      <!-- Section repliable : Achats notariés (archivés) — Étape 35 -->
+      <div class="arch-toggle" id="arch-toggle-ac" onclick="toggleArchSection('ac')">▾ Notariés (<span id="arch-count-ac">0</span>)</div>
+      <div class="arch-body" id="arch-body-ac" style="display:none">
+        <div class="tw"><table id="tbl-archac"><colgroup id="cg-archac"></colgroup><thead id="th-archac"></thead><tbody id="tb-archac"></tbody></table></div>
+      </div>
     </div>
     <!-- ── PANE : Vendeurs conclus ── -->
     <div class="pane" id="pane-vc">
       <div class="sortbar2" id="sortbar-vc"></div>
       <div class="tw"><table id="tbl-vc"><colgroup id="cg-vc"></colgroup><thead id="th-vc"></thead><tbody id="tb-vc"></tbody></table></div>
-    </div>
-    <!-- ── PANE : Achats archivés (notarié, Étape 35) ── -->
-    <div class="pane" id="pane-archac">
-      <div class="sortbar2" id="sortbar-archac"></div>
-      <div class="tw"><table id="tbl-archac"><colgroup id="cg-archac"></colgroup><thead id="th-archac"></thead><tbody id="tb-archac"></tbody></table></div>
-    </div>
-    <!-- ── PANE : Ventes archivées (notarié, Étape 35) ── -->
-    <div class="pane" id="pane-archvc">
-      <div class="sortbar2" id="sortbar-archvc"></div>
-      <div class="tw"><table id="tbl-archvc"><colgroup id="cg-archvc"></colgroup><thead id="th-archvc"></thead><tbody id="tb-archvc"></tbody></table></div>
+      <!-- Section repliable : Ventes notariées (archivées) — Étape 35 -->
+      <div class="arch-toggle" id="arch-toggle-vc" onclick="toggleArchSection('vc')">▾ Notariées (<span id="arch-count-vc">0</span>)</div>
+      <div class="arch-body" id="arch-body-vc" style="display:none">
+        <div class="tw"><table id="tbl-archvc"><colgroup id="cg-archvc"></colgroup><thead id="th-archvc"></thead><tbody id="tb-archvc"></tbody></table></div>
+      </div>
     </div>
     <!-- ── PANE : Contacts Autre ── -->
     <div class="pane" id="pane-ca">
@@ -4870,7 +4872,7 @@ function _syncDoubleRepPaToV(){
     }
   });
 }
-function rall(){_syncDoubleRepPaToV();TABS_UI.forEach(function(t){renderTab(t);});ust();TABS_UI.forEach(function(t){updateStickyOffsets(t);});renderAccueil();renderPancartes();updatePancartesBadge();updateRelanceBadges();updateDemandesBadges();_rerenderActivePane();}
+function rall(){_syncDoubleRepPaToV();TABS_UI.forEach(function(t){renderTab(t);});ust();TABS_UI.forEach(function(t){updateStickyOffsets(t);});renderAccueil();renderPancartes();updatePancartesBadge();updateRelanceBadges();updateDemandesBadges();_updateArchCounts();_rerenderActivePane();}
 
 // ─── PAGE ACCUEIL ─────────────────────────────────────────────
 // Labels lisibles pour les champs de condition
@@ -5751,6 +5753,35 @@ function _closeVConcluModal() {
 }
 
 // Archiver une fiche Conclus quand le notaire a finalisé (transfert ac→archac ou vc→archvc)
+// Étape 35 — section repliable "Notariés" dans les pages Conclus (ac/vc)
+var _archOpen={ac:false,vc:false};
+function toggleArchSection(which){
+  _archOpen[which]=!_archOpen[which];
+  var body=document.getElementById('arch-body-'+which);
+  var tog=document.getElementById('arch-toggle-'+which);
+  if(body)body.style.display=_archOpen[which]?'block':'none';
+  var archTab=(which==='ac')?'archac':'archvc';
+  var cnt=(db[archTab]||[]).length;
+  var lblWord=(which==='ac')?'Notariés':'Notariées';
+  if(tog)tog.innerHTML=(_archOpen[which]?'▴ ':'▾ ')+lblWord+' (<span id="arch-count-'+which+'">'+cnt+'</span>)';
+}
+// Depuis le Dashboard : ouvre la page Conclus (ac/vc) et déplie la section Notariés
+function _gotoNotaries(which){
+  var btn=document.querySelector('.tbtn[data-tab="'+which+'"]');
+  if(btn)btn.click();
+  setTimeout(function(){
+    if(!_archOpen[which])toggleArchSection(which);
+    var b=document.getElementById('arch-toggle-'+which);
+    if(b)b.scrollIntoView({behavior:'smooth',block:'center'});
+  },120);
+}
+// Met à jour les compteurs des sections Notariés (appelé dans rall)
+function _updateArchCounts(){
+  [['ac','archac','Notariés'],['vc','archvc','Notariées']].forEach(function(x){
+    var cntEl=document.getElementById('arch-count-'+x[0]);
+    if(cntEl)cntEl.textContent=(db[x[1]]||[]).length;
+  });
+}
 function markNotaried(tab,id){
   var rec=null,idx=-1;
   var sourceTab=(tab==='archac'||tab==='ac')?'ac':'vc';
@@ -9148,13 +9179,13 @@ function renderDashboard(){
   html+='<div class="dash-section">'
     +'<div class="dash-section-head"><div class="dash-section-title">&#128176; Encaiss&eacute; '+curYear+' &mdash; par source</div><div class="dash-section-period">D\'o&ugrave; viennent tes commissions</div></div>'
     +'<div class="dash-decomp">'
-    +'<div class="dash-decomp-row'+(yearData.ac.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;archac&quot;]\').click()':'')+'">'
+    +'<div class="dash-decomp-row'+(yearData.ac.length>0?' clickable" onclick="_gotoNotaries(\'ac\')':'')+'">'
       +'<div class="dash-decomp-icon">&#128273;</div>'
       +'<div class="dash-decomp-label">Achats finalis&eacute;s (notari&eacute;)<div class="dash-decomp-meta">'+yearData.ac.length+' transaction'+(yearData.ac.length!==1?'s':'')+'</div></div>'
       +'<div class="dash-decomp-amount">'+_dashFmtMny(commAc)+'</div>'
       +'<div class="dash-decomp-arrow">'+(yearData.ac.length>0?'&rarr;':'')+'</div>'
     +'</div>'
-    +'<div class="dash-decomp-row'+(yearData.vc.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;archvc&quot;]\').click()':'')+'">'
+    +'<div class="dash-decomp-row'+(yearData.vc.length>0?' clickable" onclick="_gotoNotaries(\'vc\')':'')+'">'
       +'<div class="dash-decomp-icon">&#127969;</div>'
       +'<div class="dash-decomp-label">Ventes finalis&eacute;es (notari&eacute;)<div class="dash-decomp-meta">'+yearData.vc.length+' transaction'+(yearData.vc.length!==1?'s':'')+'</div></div>'
       +'<div class="dash-decomp-amount">'+_dashFmtMny(commVc)+'</div>'
