@@ -4051,7 +4051,8 @@ function buildHeaders(tab){
   // (évite le bandeau thead qui s'arrête au milieu sur les écrans larges)
   var twRaw=0;
   for(var i=0;i<ws.length;i++){if(hid.indexOf(i)===-1)twRaw+=ws[i];}
-  var twEl=document.getElementById("tbl-"+tab).parentElement;
+  var tblRaw=document.getElementById("tbl-"+tab);
+  var twEl=tblRaw?tblRaw.parentElement:null;
   var containerW=twEl?twEl.clientWidth:0;
   var lastVisible=-1;
   for(var i=ws.length-1;i>=0;i--){if(hid.indexOf(i)===-1){lastVisible=i;break;}}
