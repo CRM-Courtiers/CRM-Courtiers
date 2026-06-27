@@ -213,7 +213,7 @@ function _colorId(name) {
   return undefined;
 }
 
-async function createEvent({ title, description, startISO, endISO, color }) {
+async function createEvent({ title, description, startISO, endISO, color, location }) {
   const auth = await _authedClient();
   if (!auth) throw new Error('Non connecté à Google Calendar');
   const cal = google.calendar({ version: 'v3', auth });
@@ -222,6 +222,7 @@ async function createEvent({ title, description, startISO, endISO, color }) {
     requestBody: {
       summary: title || '',
       description: description || '',
+      location: location || '',
       start: { dateTime: startISO },
       end: { dateTime: endISO },
       colorId: _colorId(color),
@@ -231,7 +232,7 @@ async function createEvent({ title, description, startISO, endISO, color }) {
   return { ok: true, eventId: data.id, htmlLink: data.htmlLink };
 }
 
-async function updateEvent({ eventId, title, description, startISO, endISO, color }) {
+async function updateEvent({ eventId, title, description, startISO, endISO, color, location }) {
   const auth = await _authedClient();
   if (!auth) throw new Error('Non connecté à Google Calendar');
   const cal = google.calendar({ version: 'v3', auth });
@@ -242,6 +243,7 @@ async function updateEvent({ eventId, title, description, startISO, endISO, colo
       requestBody: {
         summary: title || '',
         description: description || '',
+        location: location || '',
         start: { dateTime: startISO },
         end: { dateTime: endISO },
         colorId: _colorId(color)
@@ -251,7 +253,7 @@ async function updateEvent({ eventId, title, description, startISO, endISO, colo
   } catch (e) {
     // 404/410 = supprimé manuellement ; 400 = ID legacy invalide (ancien webhook customId)
     if (e.code === 404 || e.code === 410 || e.code === 400) {
-      return await createEvent({ title, description, startISO, endISO, color });
+      return await createEvent({ title, description, startISO, endISO, color, location });
     }
     throw e;
   }

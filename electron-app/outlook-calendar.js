@@ -267,7 +267,7 @@ async function _graphCall(method, pathOrUrl, body) {
   return data;
 }
 
-async function createEvent({ title, description, startISO, endISO, color }) {
+async function createEvent({ title, description, startISO, endISO, color, location }) {
   const body = {
     subject: title || '',
     body: { contentType: 'Text', content: description || '' },
@@ -275,11 +275,12 @@ async function createEvent({ title, description, startISO, endISO, color }) {
     end: { dateTime: _stripZ(endISO), timeZone: TZ },
     categories: _categoriesFor(color)
   };
+  if (location) body.location = { displayName: location };
   const data = await _graphCall('POST', '/me/events', body);
   return { ok: true, eventId: data.id, htmlLink: data.webLink };
 }
 
-async function updateEvent({ eventId, title, description, startISO, endISO, color }) {
+async function updateEvent({ eventId, title, description, startISO, endISO, color, location }) {
   const body = {
     subject: title || '',
     body: { contentType: 'Text', content: description || '' },
@@ -287,13 +288,14 @@ async function updateEvent({ eventId, title, description, startISO, endISO, colo
     end: { dateTime: _stripZ(endISO), timeZone: TZ },
     categories: _categoriesFor(color)
   };
+  if (location) body.location = { displayName: location };
   try {
     const data = await _graphCall('PATCH', `/me/events/${encodeURIComponent(eventId)}`, body);
     return { ok: true, eventId: data.id };
   } catch (e) {
     // 404 = supprimé manuellement → fallback create
     if (e.code === 404 || e.code === 410) {
-      return await createEvent({ title, description, startISO, endISO, color });
+      return await createEvent({ title, description, startISO, endISO, color, location });
     }
     throw e;
   }
