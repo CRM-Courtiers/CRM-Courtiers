@@ -88,9 +88,88 @@ function createWindow() {
 
 // ─── IPC : Auto-save ────────────────────────────────────────
 const CRM_TABS = ['cp','vp','a','pa','v','ac','vc','ra','rv','ca'];
+
+// ─── Backup de sécurité SILENCIEUX (filet anti-perte de données) ────────────
+// Stocké en LOCAL (userData), HORS iCloud → ne pollue pas le quota cloud + protège
+// contre les bugs d'écrasement. 3 protections (leçon du crash 2026-06-26) :
+//   1. Backup CONDITIONNEL : on ne copie QUE si le fichier source est SAIN et non-vide
+//      (JSON parseable + au moins un tableau d'onglet) → un état pourri ne peut jamais
+//      écraser un bon backup.
+//   2. Backup QUOTIDIEN protégé : 1 backup par jour gardé ~14 jours. Réouvrir l'app 10×
+//      dans la journée ne crée pas 10 backups qui poussent les bons hors rotation, et
+//      le "bon état du début de journée" survit aux réouvertures.
+//   3. (côté save-json) refus de sauvegarde si CHUTE BRUTALE de taille (perte massive).
+const BACKUP_DIR = path.join(app.getPath('userData'), 'Backups');
+const BACKUP_KEEP_DAYS = 14;
+
+// Vérifie qu'un contenu JSON est une sauvegarde SAINE (parseable + structure attendue)
+function _isHealthyBackupContent(txt) {
+  try {
+    if (!txt || txt.length < 20) return false;
+    const parsed = JSON.parse(txt);
+    return CRM_TABS.some(function(k){ return Array.isArray(parsed[k]); });
+  } catch (e) { return false; }
+}
+
+let _backupDoneThisSession = false;
+function _backupBeforeOverwrite() {
+  try {
+    if (_backupDoneThisSession) return;
+    _backupDoneThisSession = true;
+    if (!fs.existsSync(AUTOSAVE_PATH)) return;            // 1er lancement, rien à sauver
+    const txt = fs.readFileSync(AUTOSAVE_PATH, 'utf8');
+    // Protection 1 : ne JAMAIS backupper un état non-sain (vide/corrompu/partiel)
+    if (!_isHealthyBackupContent(txt)) return;
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const d = new Date();
+    const p2 = (n) => (n < 10 ? '0' : '') + n;
+    const dayStamp = d.getFullYear() + '-' + p2(d.getMonth()+1) + '-' + p2(d.getDate());
+    // Protection 2 : 1 backup par JOUR (le premier du jour). Si déjà fait aujourd'hui, on garde celui-là.
+    const dest = path.join(BACKUP_DIR, 'CRM-Pro-autosauve-' + dayStamp + '.json');
+    if (!fs.existsSync(dest)) fs.copyFileSync(AUTOSAVE_PATH, dest);
+    // Rotation : supprimer les backups de plus de BACKUP_KEEP_DAYS jours
+    const cutoff = Date.now() - BACKUP_KEEP_DAYS * 86400000;
+    fs.readdirSync(BACKUP_DIR)
+      .filter(f => /^CRM-Pro-autosauve-.*\.json$/.test(f))
+      .forEach(f => {
+        try { if (fs.statSync(path.join(BACKUP_DIR, f)).mtimeMs < cutoff) fs.unlinkSync(path.join(BACKUP_DIR, f)); } catch (x) {}
+      });
+  } catch (e) { /* best effort : un échec de backup ne doit jamais bloquer la sauvegarde */ }
+}
+
+// IPC : restauration (pour récupération assistée). Liste les backups dispo.
+ipcMain.handle('backup-list', async () => {
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) return { ok: true, dir: BACKUP_DIR, files: [] };
+    const files = fs.readdirSync(BACKUP_DIR)
+      .filter(f => /^CRM-Pro-autosauve-.*\.json$/.test(f))
+      .map(f => { const st = fs.statSync(path.join(BACKUP_DIR, f)); return { name: f, size: st.size, mtime: st.mtimeMs }; })
+      .sort((a, b) => b.mtime - a.mtime);
+    return { ok: true, dir: BACKUP_DIR, files: files };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
 ipcMain.handle('save-json', async (event, jsonString) => {
   try {
     if (!fs.existsSync(AUTOSAVE_DIR)) fs.mkdirSync(AUTOSAVE_DIR, { recursive: true });
+
+    _backupBeforeOverwrite(); // filet : copie l'état sain du jour (1×/jour) avant écrasement
+
+    // ── Protection 3 : refus si CHUTE BRUTALE de taille (perte massive de données) ──
+    // Si le fichier actuel est sain et que le nouveau contenu est < 50% de sa taille,
+    // on REFUSE d'écraser (probable corruption/réinitialisation accidentelle).
+    try {
+      if (fs.existsSync(AUTOSAVE_PATH)) {
+        const oldTxt = fs.readFileSync(AUTOSAVE_PATH, 'utf8');
+        if (_isHealthyBackupContent(oldTxt)) {
+          const oldLen = Buffer.byteLength(oldTxt, 'utf8');
+          const newLen = Buffer.byteLength(jsonString, 'utf8');
+          if (oldLen > 2000 && newLen < oldLen * 0.5) {
+            return { ok: false, error: 'Sauvegarde refusée : chute anormale de taille (' + oldLen + '→' + newLen + ' octets). Données préservées. Redémarrez l\'app ; si le problème persiste, contactez le support.' };
+          }
+        }
+      }
+    } catch (gErr) { /* si le garde-fou échoue, on continue (ne pas bloquer une vraie sauvegarde) */ }
 
     const tmpPath = AUTOSAVE_PATH + '.tmp';
 
