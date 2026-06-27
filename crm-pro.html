@@ -1029,8 +1029,12 @@ body.app-readonly th .rz{pointer-events:none}
 .todo-cal{border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;flex-shrink:0;line-height:1;opacity:.45;filter:grayscale(1)}
 .todo-cal:hover{opacity:1;filter:none}
 .todo-cal.on{opacity:1;filter:none}
+.todo-edit{border:none;background:none;color:#CBD5E1;cursor:pointer;font-size:13px;padding:2px 6px;flex-shrink:0;line-height:1}
+.todo-edit:hover{color:#0EA5E9}
 .todo-del{border:none;background:none;color:#CBD5E1;cursor:pointer;font-size:14px;padding:2px 6px;flex-shrink:0;line-height:1}
 .todo-del:hover{color:#DC2626}
+/* Flash de surlignage quand on saute vers une PA archivée depuis le badge Acheteur */
+.row-flash,.row-flash td{background:#FEF08A !important;transition:background 0.4s}
 .dash-todo-foot{margin-top:10px}
 .todo-clear{border:none;background:none;color:#64748B;font-size:12px;cursor:pointer;text-decoration:underline;font-family:inherit}
 .todo-clear:hover{color:#DC2626}
@@ -1564,6 +1568,11 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="pane" id="pane-pa-en-vente">
       <div class="sortbar2" id="sortbar-pa-en-vente"></div>
       <div class="tw"><table id="tbl-pa-en-vente"><colgroup id="cg-pa-en-vente"></colgroup><thead id="th-pa-en-vente"></thead><tbody id="tb-pa-en-vente"></tbody></table></div>
+      <!-- Section archivées : PA conclues (transférées vers archpa) -->
+      <div class="arch-toggle" id="arch-toggle-pa" onclick="toggleArchSection('pa')">▾ Archivées (<span id="arch-count-pa">0</span>)</div>
+      <div class="arch-body" id="arch-body-pa" style="display:none">
+        <div class="tw"><table id="tbl-archpa"><colgroup id="cg-archpa"></colgroup><thead id="th-archpa"></thead><tbody id="tb-archpa"></tbody></table></div>
+      </div>
     </div>
     <!-- ── PANE : Acheteurs conclus ── -->
     <div class="pane" id="pane-ac">
@@ -2283,7 +2292,7 @@ body.app-readonly th .rz{pointer-events:none}
 <script>
 // ─── TABS & COLUMN DEFINITIONS ──────────────────────────────
 
-var TABS = ['cp','vp','a','pa','v','ac','vc','archac','archvc','ca'];
+var TABS = ['cp','vp','a','pa','v','ac','vc','archac','archvc','archpa','ca'];
 
 // Statuts pour prequalification
 var PREQ_STS = ["Oui","Non","En attente"];
@@ -2480,6 +2489,7 @@ var COLS = {
   ac: [
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:120},
     {lbl:"Nom",f:"nom",t:"text",w:120},
+    {lbl:"Acheteur",f:"acheteurNom",t:"acheteur",w:100},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
     {lbl:"No. Centris",f:"centris",t:"centris",w:100,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
@@ -2494,6 +2504,7 @@ var COLS = {
   vc: [
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:120},
     {lbl:"Nom",f:"nom",t:"text",w:120},
+    {lbl:"Acheteur",f:"acheteurNom",t:"acheteur",w:100},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
     {lbl:"No. Centris",f:"centris",t:"centris",w:100,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
@@ -2535,6 +2546,19 @@ var COLS = {
     {lbl:"Notes",f:"notes",t:"text",w:180,cls:"nc"},
     {lbl:"Actions",f:null,t:"action",w:102}
   ],
+  archpa: [
+    {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:100},
+    {lbl:"Nom",f:"nom",t:"text",w:100},
+    {lbl:"Statut",f:"statutPa",t:"select",o:"STATUT_PA",w:100},
+    {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
+    {lbl:"No. Centris",f:"noCentris",t:"centris",w:100,cls:"mu"},
+    {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
+    {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
+    {lbl:"Acte conclus",f:"linkedToActeNom",t:"text",w:150},
+    {lbl:"Date conclusion",f:"dateConclusion",t:"date",w:120,cls:"mu"},
+    {lbl:"Notes",f:"notes",t:"text",w:150,cls:"nc"},
+    {lbl:"Actions",f:null,t:"action",w:102}
+  ],
   ca: [
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:120},
     {lbl:"Nom",f:"nom",t:"text",w:120},
@@ -2549,6 +2573,7 @@ var COLS = {
 // ─── DATABASE ────────────────────────────────────────────────
 var db = {};
 TABS.forEach(function(t){ db[t] = []; });
+db.archpa = [];  // PA archivées (conclues)
 db.demandes = []; // Étape 19 : demandes entrantes rattachées à une propriété en vente (propertyId → v.id)
 db.templates = []; // Étape 22 : templates de courriels par section ({id, section, name, subject, body, lastModified})
 db.signature = {body:""}; // Étape 22 : signature courriel (texte + image data URL), appliquée à tous les envois
@@ -2583,7 +2608,7 @@ ST.a = {c1:4, d1:1, c2:3, d2:-1};
 ST.pa = {c1:3, d1:1, c2:2, d2:-1};
 ST['pa-en-vente'] = {c1:3, d1:1, c2:2, d2:-1};
 // Nombre de colonnes sticky par onglet (Pr\u00e9nom, Nom et autres en t\u00eate)
-var STICKY_COUNT = {cp:3, vp:3, a:4, pa:4, v:4, ac:3, vc:3, ca:3, "pa-en-vente":4, rea:3, rec:3, reh:3};
+var STICKY_COUNT = {cp:3, vp:3, a:4, pa:4, v:4, ac:3, vc:3, ca:3, "pa-en-vente":4, rea:3, rec:3, reh:3, archpa:2};
 
 // Load saved state (recherche vid\u00e9e au d\u00e9marrage pour \u00e9viter les filtres fant\u00f4mes)
 (function(){
@@ -4268,6 +4293,16 @@ function renderTab(tab){
         h+=etd(col,tab,rec.id,fmEmail(rec[col.f]),' emc');
       } else if(col.t==="centris"){
         h+=etd(col,tab,rec.id,fmCentris(rec[col.f]));
+      } else if(col.t==="acheteur"){
+        var acheteurNom=rec[col.f];
+        if(!acheteurNom){
+          h+=etd(col,tab,rec.id,'<span style="color:#CBD5E1">—</span>');
+        } else {
+          var initiales=(acheteurNom.split(' ').map(function(w){return w[0];}).join('').toUpperCase()).substring(0,2);
+          var acheteurId=rec.acheteurId||'';
+          var clickHandler=acheteurId?'onclick="event.stopPropagation();_openAcheteurPA(\''+acheteurId+'\')" style="cursor:pointer"':'';
+          h+=etd(col,tab,rec.id,'<span '+clickHandler+' style="display:inline-flex;align-items:center;gap:6px;padding:4px 8px;background:#E0F2FE;border-radius:6px;font-size:12px;font-weight:600;color:#0369A1;'+( acheteurId?'transition:all 0.2s':'')+ '" title="Acheteur : '+esc(acheteurNom)+( acheteurId?' — cliquer pour ouvrir':'')+'">👤 '+initiales+'</span>');
+        }
       } else if(col.t==="courtier"){
         h+=etd(col,tab,rec.id,fmCourtier(rec[col.f]));
       } else if(col.t==="courtier-coll"){
@@ -4384,7 +4419,7 @@ var TUTORIELS=[
     +'<li>Une quatri\u00e8me carte, r\u00e9serv\u00e9e pour un usage \u00e0 venir.</li>'
     +'</ul>'
     +'<h2>Tes t\u00e2ches \u00e0 faire</h2>'
-    +'<p>Tout en haut de l\u2019Accueil, la carte <strong>\u2705 T\u00e2ches \u00e0 faire</strong> est ta liste personnelle. Tape une t\u00e2che, choisis son <strong>\u00e9ch\u00e9ance</strong> (obligatoire), puis <strong>+ Ajouter</strong> (ou Entr\u00e9e). Coche-la quand c\u2019est fait (elle se barre), supprime-la avec \u2715, ou efface tout d\u2019un coup les compl\u00e9t\u00e9es. Les \u00e9ch\u00e9ances d\u00e9pass\u00e9es s\u2019affichent en rouge.</p>'
+    +'<p>Tout en haut de l\u2019Accueil, la carte <strong>\u2705 T\u00e2ches \u00e0 faire</strong> est ta liste personnelle. Tape une t\u00e2che, choisis son <strong>\u00e9ch\u00e9ance</strong> (obligatoire), puis <strong>+ Ajouter</strong> (ou Entr\u00e9e). Coche-la quand c\u2019est fait (elle se barre), <strong>modifie son texte avec \u270e</strong>, supprime-la avec \u2715, ou efface tout d\u2019un coup les compl\u00e9t\u00e9es. Les \u00e9ch\u00e9ances d\u00e9pass\u00e9es s\u2019affichent en rouge.</p>'
     +'<p><strong>Ajouter une t\u00e2che \u00e0 ton agenda :</strong> clique le bouton <strong>\ud83d\udcc5</strong> d\u2019une t\u00e2che pour l\u2019envoyer \u00e0 ton calendrier (Google ou Outlook). Toutes les t\u00e2ches d\u2019une m\u00eame journée que tu ajoutes sont regroup\u00e9es dans <strong>un seul \u00e9v\u00e9nement</strong> ce jour-l\u00e0 (\u00e0 8h30), pour \u00e9viter la confusion. Reclique \ud83d\udcc5\u2713 pour retirer la t\u00e2che de l\u2019\u00e9v\u00e9nement.</p>'
     +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019ajout au calendrier n\u2019est possible que si un calendrier est connect\u00e9 (Param\u00e8tres \u2192 Int\u00e9grations).</div></div>'
     +'<h2>Les listes de l\u2019Accueil</h2>'
@@ -4526,7 +4561,10 @@ var TUTORIELS=[
     +'<li><strong>Courtier collaborateur</strong> (badge bleu) : un autre courtier repr\u00e9sente l\u2019acheteur \u2014 choisis-le dans ta banque de courtiers.</li>'
     +'</ul>'
     +'<h2>Le suivi</h2>'
-    +'<p>Comme pour les promesses en cours : conditions, \u00e9ch\u00e9ances, notaire. Quand tout est lev\u00e9, <strong>Marquer conclu</strong> envoie la transaction dans Ventes conclues.</p>'
+    +'<p>Comme pour les promesses en cours : conditions, \u00e9ch\u00e9ances, notaire. Quand tout est lev\u00e9, <strong>Marquer conclu</strong> sur l\u2019inscription envoie la transaction dans Ventes conclues.</p>'
+    +'<h2>Que devient la promesse re\u00e7ue \u00e0 la conclusion ?</h2>'
+    +'<p>Quand tu conclus la vente, la promesse re\u00e7ue de l\u2019acheteur ne dispara\u00eet pas dans le vide : elle descend automatiquement dans la section repliable <strong>Archiv\u00e9es</strong>, au bas de la page Promesses re\u00e7ues. Tu y retrouves le contact de l\u2019acheteur, le statut, et surtout l\u2019<strong>Acte conclus</strong> (le vendeur \u00e0 qui la transaction est rattach\u00e9e) \u2014 tout reste tra\u00e7able.</p>'
+    +'<p>Et dans <strong>Ventes conclues</strong>, une colonne <strong>Acheteur</strong> affiche un badge \ud83d\udc64 : clique-le pour sauter directement \u00e0 la promesse archiv\u00e9e correspondante (elle se surligne en jaune).</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Les gabarits de courriels \u00ab Courtiers collaborateurs \u00bb te font gagner du temps pour communiquer avec l\u2019autre courtier.</div></div>'},
   {sec:'En vente', num:15, titre:'Suivre les conditions et les \u00e9ch\u00e9ances', html:
     '<p>Les <strong>conditions</strong> (inspection, financement, R2.1/R2.2, assurance, fosse septique, test d\u2019eau, notaire\u2026) sont le c\u0153ur du suivi d\u2019une promesse. TRI-ANGLE t\u2019aide \u00e0 ne jamais manquer une date.</p>'
@@ -4699,9 +4737,9 @@ var TUTORIELS=[
     '<p>Le <strong>Tableau de bord</strong> (Dashboard) te donne une lecture honn\u00eate de ton activit\u00e9 et de tes revenus.</p>'
     +'<h2>Les indicateurs cl\u00e9s</h2>'
     +'<ul>'
-    +'<li><strong>Encaiss\u00e9</strong> \u2014 tes commissions d\u00e9j\u00e0 touch\u00e9es cette ann\u00e9e (achats, ventes, r\u00e9f\u00e9rences).</li>'
+    +'<li><strong>Encaiss\u00e9</strong> \u2014 tes commissions d\u00e9j\u00e0 touch\u00e9es cette ann\u00e9e (achats/ventes notari\u00e9s, r\u00e9f\u00e9rences).</li>'
     +'<li><strong>En cours</strong> \u2014 les commissions \u00e0 venir des transactions actives (promesses + r\u00e9f\u00e9rences actives).</li>'
-    +'<li><strong>Rythme</strong> \u2014 ta commission moyenne par transaction.</li>'
+    +'<li><strong>\u23f3 En attente notaire</strong> \u2014 la somme des commissions des dossiers <strong>conclus mais pas encore notari\u00e9s</strong> (Achats conclus + Ventes conclues). Ces montants ont quitt\u00e9 \u00ab En cours \u00bb sans entrer dans \u00ab Encaiss\u00e9 \u00bb \u2014 ce bloc \u00e9vite qu\u2019ils disparaissent de ta vue. Le sous-texte indique combien de dossiers sont en attente.</li>'
     +'<li><strong>Projection</strong> \u2014 Encaiss\u00e9 + En cours, compar\u00e9 \u00e0 l\u2019an dernier.</li>'
     +'</ul>'
     +'<h2>D\u00e9compositions cliquables</h2>'
@@ -4714,6 +4752,10 @@ var TUTORIELS=[
     +'<h2>C\u00f4t\u00e9 vente</h2>'
     +'<p>Sur une <strong>inscription</strong> ou une <strong>promesse re\u00e7ue</strong>, <strong>Marquer conclu</strong> \u2192 <strong>Ventes conclues</strong>. Une fen\u00eatre te propose de d\u00e9cider quoi faire des demandes encore actives sur la propri\u00e9t\u00e9 (garder en prospects, archiver\u2026).</p>'
     +'<p>Le <strong>n\u00b0 Centris</strong> de la propri\u00e9t\u00e9 est conserv\u00e9 : tu le retrouves (cliquable) dans les onglets <strong>Achats conclus</strong> et <strong>Ventes conclues</strong>.</p>'
+    +'<h2>Double repr\u00e9sentation : qui \u00e9tait l\u2019acheteur ?</h2>'
+    +'<p>Si une promesse re\u00e7ue \u00e9tait sur la propri\u00e9t\u00e9 (double repr\u00e9sentation), elle est <strong>archiv\u00e9e automatiquement</strong> \u00e0 la conclusion : elle descend dans la section <strong>Archiv\u00e9es</strong> au bas de Promesses re\u00e7ues. Dans <strong>Ventes conclues</strong>, la colonne <strong>Acheteur</strong> montre un badge \ud83d\udc64 \u2014 clique-le pour retrouver instantan\u00e9ment la promesse de l\u2019acheteur (elle se surligne en jaune).</p>'
+    +'<h2>Et le notaire ?</h2>'
+    +'<p>Tant que le notaire n\u2019a pas sign\u00e9, le dossier reste dans <strong>Conclus</strong> et sa commission appara\u00eet dans le bloc \u00ab \u23f3 En attente notaire \u00bb du Dashboard. Quand c\u2019est notari\u00e9, <strong>\u2630 Actions \u2192 \u2705 Notari\u00e9</strong> le descend dans la section <strong>Notari\u00e9s</strong> et l\u2019ajoute \u00e0 ton \u00ab Encaiss\u00e9 \u00bb.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Renseigne toujours le montant final et les pourcentages de commission : c\u2019est ce qui rend ton Dashboard exact.</div></div>'},
   {sec:'Syst\u00e8me', num:33, titre:'Sauvegarde et restauration', html:
     '<p>Tes donn\u00e9es t\u2019appartiennent et restent sur ton ordinateur / ton nuage. Deux m\u00e9canismes les prot\u00e8gent.</p>'
@@ -5656,6 +5698,14 @@ function transferToConclus(fromTab,id){
     baseEntry.notaire=r.notaire||"";        // date/heure du RDV notaire (peut déjà être remplie)
     baseEntry.notaireId=r.notaireId||"";    // notaire choisi dans la banque
     baseEntry.dateNotaire="";               // date d'archivage (posée seulement à l'action "Notarié")
+    // Double représentation : capturer le nom de l'acheteur si présent
+    if(fromTab==="v"||fromTab==="pa-en-vente"){
+      var acheteurPA=(db.pa||[]).find(function(p){return p.propertyId===r.id;});
+      if(acheteurPA){
+        baseEntry.acheteurNom=(acheteurPA.prenom||"")+" "+(acheteurPA.nom||"");
+        baseEntry.acheteurId=acheteurPA.id;
+      }
+    }
     if(fromTab==="a"||fromTab==="pa"){
       baseEntry.montant=r.montant||"";
       baseEntry.commission=r.commission||"";
@@ -5675,6 +5725,17 @@ function transferToConclus(fromTab,id){
   // Tracker les vIds transferes avant filter (pour le prompt apres)
   var vIdsTransferred = (fromTab === 'v') ? toTransfer.map(function(r){return r.id;}) : [];
   if (fromTab === 'v' && vIdsTransferred.length) { _pjDeletePropertyFiles(vIdsTransferred); }
+  // Double représentation : archiver automatiquement les PA correspondantes
+  if(fromTab==='v'||fromTab==='pa-en-vente'){
+    toTransfer.forEach(function(vendeur){
+      var paCorrespondantes=(db.pa||[]).filter(function(p){return p.propertyId===vendeur.id;});
+      paCorrespondantes.forEach(function(pa){
+        var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:pa.statutPa||"",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:dateConc,linkedToActeId:vendeur.id,linkedToActeNom:((vendeur.prenom||"")+" "+(vendeur.nom||"")).trim()||"(sans nom)"};
+        db.archpa.push(archEntry);
+        db.pa=(db.pa||[]).filter(function(x){return x.id!==pa.id;});
+      });
+    });
+  }
   sdb();rall();
   toast("\u2713 "+noms.join(" + ")+" \u2192 "+(targetTab==="ac"?"Acheteurs conclus":"Vendeurs conclus"));
   if (fromTab === 'v' && vIdsTransferred.length) {
@@ -5758,15 +5819,15 @@ function _closeVConcluModal() {
 
 // Archiver une fiche Conclus quand le notaire a finalisé (transfert ac→archac ou vc→archvc)
 // Étape 35 — section repliable "Notariés" dans les pages Conclus (ac/vc)
-var _archOpen={ac:false,vc:false};
+var _archOpen={ac:false,vc:false,pa:false};
 function toggleArchSection(which){
   _archOpen[which]=!_archOpen[which];
   var body=document.getElementById('arch-body-'+which);
   var tog=document.getElementById('arch-toggle-'+which);
   if(body)body.style.display=_archOpen[which]?'block':'none';
-  var archTab=(which==='ac')?'archac':'archvc';
+  var archTab=(which==='ac')?'archac':(which==='vc'?'archvc':'archpa');
   var cnt=(db[archTab]||[]).length;
-  var lblWord=(which==='ac')?'Notariés':'Notariées';
+  var lblWord=(which==='ac')?'Notariés':(which==='vc'?'Notariées':'Archivées');
   if(tog)tog.innerHTML=(_archOpen[which]?'▴ ':'▾ ')+lblWord+' (<span id="arch-count-'+which+'">'+cnt+'</span>)';
 }
 // Depuis le Dashboard : ouvre la page Conclus (ac/vc) et déplie la section Notariés
@@ -5779,9 +5840,46 @@ function _gotoNotaries(which){
     if(b)b.scrollIntoView({behavior:'smooth',block:'center'});
   },120);
 }
+// Double représentation : ouvrir la fiche PA de l'acheteur depuis le badge de la vente conclus
+function _highlightArchpaRow(acheteurId,tries){
+  tries=tries||0;
+  var row=document.querySelector('#tb-archpa tr[data-rid="'+acheteurId+'"]');
+  if(!row){
+    if(tries<10){setTimeout(function(){_highlightArchpaRow(acheteurId,tries+1);},80);return;}
+    var b=document.getElementById('arch-toggle-pa');if(b)b.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  row.scrollIntoView({behavior:'smooth',block:'center'});
+  row.classList.add('row-flash');
+  // Le surlignage reste jusqu'au prochain clic de l'utilisateur (ou 30s max) — pratique si la liste est longue
+  var clear=function(){
+    row.classList.remove('row-flash');
+    document.removeEventListener('click',clear,true);
+    clearTimeout(safety);
+  };
+  var safety=setTimeout(clear,30000);
+  // Délai avant d'armer le listener pour ne pas que le clic déclencheur l'efface aussitôt
+  setTimeout(function(){document.addEventListener('click',clear,true);},400);
+}
+function _openAcheteurPA(acheteurId){
+  // Chercher dans archpa (PA archivées/conclues) → naviguer vers Promesses reçues + déplier Archivées
+  var inArch=(db.archpa||[]).some(function(p){return p.id===acheteurId;});
+  if(inArch){
+    var btn=document.querySelector('.tbtn[data-tab="pa-en-vente"]');
+    if(btn)btn.click();
+    setTimeout(function(){
+      if(!_archOpen.pa)toggleArchSection('pa');
+      _highlightArchpaRow(acheteurId);
+    },150);
+    return;
+  }
+  // Sinon chercher dans pa (PA actives encore en cours)
+  if((db.pa||[]).some(function(p){return p.id===acheteurId;})){doEdit('pa',acheteurId);return;}
+  toast('⚠ Promesse d\'achat non trouvée');
+}
 // Met à jour les compteurs des sections Notariés (appelé dans rall)
 function _updateArchCounts(){
-  [['ac','archac','Notariés'],['vc','archvc','Notariées']].forEach(function(x){
+  [['ac','archac','Notariés'],['vc','archvc','Notariées'],['pa','archpa','Archivées']].forEach(function(x){
     var cntEl=document.getElementById('arch-count-'+x[0]);
     if(cntEl)cntEl.textContent=(db[x[1]]||[]).length;
   });
@@ -9081,6 +9179,14 @@ function _dashRefshPaid(year,month){
     var rm=parseInt(s.substring(5,7),10)-1;return rm===month;
   });
 }
+function _dashEnAttenteNotaire(year){
+  var ac=_dashDedup(_dashFilterByPeriod(db.ac,year,null));
+  var vc=_dashDedup(_dashFilterByPeriod(db.vc,year,null));
+  return {
+    count:ac.length+vc.length,
+    comm:ac.reduce(function(s,r){return s+_dashCommAch(r);},0)+vc.reduce(function(s,r){return s+_dashCommVend(r);},0)
+  };
+}
 function _dashCommYearMonth(year,month){
   // Workflow notaire : Encaissé = archac/archvc (après notaire signé), pas ac/vc (en attente notaire)
   var ac=_dashDedup(_dashFilterByPeriod(db.archac,year,month));
@@ -9183,15 +9289,18 @@ function renderDashboard(){
   for(var fm=0;fm<12;fm++){var fd=_dashCommYearMonth(curYear-1,fm);full2025+=fd.comm;full2025Count+=fd.count;}
   var deltaProj=_dashFmtPct(projected2026,full2025);
 
+  // En attente notaire : dossiers conclus mais pas encore notariés
+  var attentNotaireData=_dashEnAttenteNotaire(curYear);
+
   var html='';
 
-  // ═══ BLOC 1 — HERO : 3 KPIs (Encaissé / En cours / Rythme) ═══
+  // ═══ BLOC 1 — HERO : 3 KPIs (Encaissé / En cours / En attente notaire) ═══
   html+='<div class="dash-section">'
     +'<div class="dash-section-head"><div class="dash-section-title">Vue d\'ensemble &mdash; '+curYear+'</div><div class="dash-section-period">'+ytdLabel+'</div></div>'
     +'<div class="dash-kpis-3">'
     +'<div class="dash-kpi accent-lime"><div class="dash-kpi-label">&#128176; Encaiss&eacute; '+curYear+'</div><div class="dash-kpi-value">'+_dashFmtMny(yearData.comm)+'</div><div class="dash-kpi-sub">'+yearData.count+' transaction'+(yearData.count!==1?'s':'')+(prevYearData.comm?' &middot; Vs '+(curYear-1)+' m&ecirc;me p&eacute;riode : '+_dashFmtMny(prevYearData.comm):' &middot; Aucune r&eacute;f&eacute;rence '+(curYear-1))+'</div><div class="dash-kpi-delta '+deltaAnnComm.cls+'">'+deltaAnnComm.label+'</div></div>'
     +'<div class="dash-kpi accent-amber"><div class="dash-kpi-label">&#128202; En cours</div><div class="dash-kpi-value">'+_dashFmtMny(pipelineCommEst)+'</div><div class="dash-kpi-sub">'+paAch.length+' PA achats &middot; '+vWithPa.length+' PA re&ccedil;ues &middot; '+(refsActives.length+refshActives.length)+' r&eacute;f.</div></div>'
-    +'<div class="dash-kpi accent-cyan"><div class="dash-kpi-label">&#128200; Rythme</div><div class="dash-kpi-value">'+_dashFmtMny(avgCommYTD)+'</div><div class="dash-kpi-sub">Moyenne par transaction'+(avgCommPrev?' &middot; '+(curYear-1)+' : '+_dashFmtMny(avgCommPrev):'')+'</div>'+(avgCommPrev?'<div class="dash-kpi-delta '+deltaAvg.cls+'">'+deltaAvg.label+'</div>':'')+'</div>'
+    +'<div class="dash-kpi accent-cyan"><div class="dash-kpi-label">⏳ En attente notaire</div><div class="dash-kpi-value">'+_dashFmtMny(attentNotaireData.comm)+'</div><div class="dash-kpi-sub">'+attentNotaireData.count+' dossier'+(attentNotaireData.count!==1?'s':'')+'</div></div>'
     +'</div></div>';
 
   // ═══ BLOC 2 — ENCAISSÉ décomposé par source + YoY ═══
@@ -9345,6 +9454,18 @@ function _tacheDelete(id){
   sdb();_renderTaches();
   if(day)_syncTacheCalDay(day);
 }
+function _tacheEdit(id){
+  var t=null;for(var i=0;i<(db.taches||[]).length;i++){if(db.taches[i].id===id){t=db.taches[i];break;}}
+  if(!t)return;
+  var newTxt=prompt('Modifier la tâche :',t.texte||'');
+  if(newTxt===null)return; // annulé
+  newTxt=(newTxt||'').trim();
+  if(!newTxt){alert('La tâche ne peut pas être vide.');return;}
+  pushUndo('Modif tâche');
+  t.texte=newTxt;
+  sdb();_renderTaches();
+  _syncTacheCalDay(t.echeance);
+}
 function _tacheClearDone(){
   var n=(db.taches||[]).filter(function(x){return x.done;}).length;
   if(!n)return;
@@ -9445,6 +9566,7 @@ function _renderTaches(){
         +'<span class="todo-txt">'+esc(t.texte)+'</span>'
         +ech
         +calBtn
+        +'<button class="todo-edit" title="Modifier" onclick="_tacheEdit(\''+t.id+'\')">✎</button>'
         +'<button class="todo-del" title="Supprimer" onclick="_tacheDelete(\''+t.id+'\')">✕</button>'
         +'</div>';
     }).join('');
