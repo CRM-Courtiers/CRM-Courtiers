@@ -2300,7 +2300,7 @@ var TYPE_BAT = ["Unifamiliale","Condo","Duplex","Triplex","Quadruplex","Multilog
 var TYPE_PROP = ["Unifamiliale","Condo","Duplex","Triplex","Quadruplex","Multilogement","Terrain","Commercial","Chalet","Autre"];
 var DOC_STS = ["Fait","\u00c0 faire"];
 var ETAT_ACH = ["PA Actif","En attente"];
-var STATUT_PA = ["En cours","Acceptée"];
+var STATUT_PA = ["En cours","Déposée","Contre-offre","Acceptée"];
 var RAISONS = ["Pas pr\u00eat","Trop cher","A choisi un autre courtier","Ne r\u00e9pond plus","Autre"];
 
 var COLS = {
@@ -2496,6 +2496,7 @@ var COLS = {
     {lbl:"Notaire",f:"notaire",t:"cond",w:110,grp:"cond"},
     {lbl:"Montant ($)",f:"montant",t:"number",w:110},
     {lbl:"Comm. (%)",f:"commission",t:"number",w:90,u:"%"},
+    {lbl:"Payé",f:"paye",t:"bool",w:50},
     {lbl:"Notes",f:"notes",t:"text",w:180,cls:"nc"},
     {lbl:"Actions",f:null,t:"action",w:102}
   ],
@@ -2512,6 +2513,7 @@ var COLS = {
     {lbl:"Montant ($)",f:"montant",t:"number",w:110},
     {lbl:"Comm. tot. (%)",f:"commTot",t:"number",w:100,u:"%"},
     {lbl:"Comm. autre (%)",f:"commAutre",t:"number",w:110,u:"%"},
+    {lbl:"Payé",f:"paye",t:"bool",w:50},
     {lbl:"Notes",f:"notes",t:"text",w:180,cls:"nc"},
     {lbl:"Actions",f:null,t:"action",w:102}
   ],
@@ -2526,6 +2528,7 @@ var COLS = {
     {lbl:"Notaire (sign\u00e9)",f:"dateNotaire",t:"date",w:120,cls:"mu"},
     {lbl:"Montant ($)",f:"montant",t:"number",w:110},
     {lbl:"Comm. (%)",f:"commission",t:"number",w:90,u:"%"},
+    {lbl:"Pay\u00e9",f:"paye",t:"bool",w:50},
     {lbl:"Notes",f:"notes",t:"text",w:180,cls:"nc"},
     {lbl:"Actions",f:null,t:"action",w:102}
   ],
@@ -2541,6 +2544,7 @@ var COLS = {
     {lbl:"Montant ($)",f:"montant",t:"number",w:110},
     {lbl:"Comm. tot. (%)",f:"commTot",t:"number",w:100,u:"%"},
     {lbl:"Comm. autre (%)",f:"commAutre",t:"number",w:110,u:"%"},
+    {lbl:"Pay\u00e9",f:"paye",t:"bool",w:50},
     {lbl:"Notes",f:"notes",t:"text",w:180,cls:"nc"},
     {lbl:"Actions",f:null,t:"action",w:102}
   ],
@@ -4526,6 +4530,8 @@ var TUTORIELS=[
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Connecte ton calendrier une fois (voir le tuto Calendrier) et toutes tes visites s\u2019y retrouvent sans effort.</div></div>'},
   {sec:'Achats', num:11, titre:'Les promesses en cours (c\u00f4t\u00e9 acheteur)', html:
     '<p>La section <strong>Promesses en cours</strong> suit les promesses d\u2019achat de tes clients acheteurs, du d\u00e9p\u00f4t de l\u2019offre jusqu\u2019\u00e0 la lev\u00e9e des conditions.</p>'
+    +'<h2>Le statut de la promesse</h2>'
+    +'<p>La colonne <strong>Statut</strong> suit le cheminement de l\u2019offre : <strong>En cours &rarr; D\u00e9pos\u00e9e &rarr; Contre-offre &rarr; Accept\u00e9e</strong>. Mets-la \u00e0 jour au fil des n\u00e9gociations pour voir d\u2019un coup d\u2019\u0153il o\u00f9 en est chaque dossier.</p>'
     +'<h2>Le suivi des conditions</h2>'
     +'<p>Chaque promesse a des colonnes de <strong>conditions</strong> (inspection, financement, etc.) o\u00f9 tu inscris une date/heure. Ces dates alimentent ton calendrier et tes rappels d\u2019\u00e9ch\u00e9ance sur l\u2019Accueil.</p>'
     +'<h2>Le notaire</h2>'
@@ -4759,6 +4765,8 @@ var TUTORIELS=[
     +'<h2>C\u00f4t\u00e9 vente</h2>'
     +'<p>Sur une <strong>inscription</strong> ou une <strong>promesse re\u00e7ue</strong>, <strong>Marquer conclu</strong> \u2192 <strong>Ventes conclues</strong>. Une fen\u00eatre te propose de d\u00e9cider quoi faire des demandes encore actives sur la propri\u00e9t\u00e9 (garder en prospects, archiver\u2026).</p>'
     +'<p>Le <strong>n\u00b0 Centris</strong> de la propri\u00e9t\u00e9 est conserv\u00e9 : tu le retrouves (cliquable) dans les onglets <strong>Achats conclus</strong> et <strong>Ventes conclues</strong>.</p>'
+    +'<h2>Suivre l\u2019argent re\u00e7u</h2>'
+    +'<p>La case <strong>Pay\u00e9</strong> (dans Conclus et Notari\u00e9s) te permet de cocher quand la commission est <strong>r\u00e9ellement encaiss\u00e9e</strong>. Le Dashboard, lui, continue de compter selon la date notari\u00e9e.</p>'
     +'<h2>Double repr\u00e9sentation : qui \u00e9tait l\u2019acheteur ?</h2>'
     +'<p>Si une promesse re\u00e7ue \u00e9tait sur la propri\u00e9t\u00e9 (double repr\u00e9sentation), elle est <strong>archiv\u00e9e automatiquement</strong> \u00e0 la conclusion : elle descend dans la section <strong>Archiv\u00e9es</strong> au bas de Promesses re\u00e7ues. Dans <strong>Ventes conclues</strong>, la colonne <strong>Acheteur</strong> montre un badge \ud83d\udc64 \u2014 clique-le pour retrouver instantan\u00e9ment la promesse de l\u2019acheteur (elle se surligne en jaune).</p>'
     +'<h2>Et le notaire ?</h2>'
