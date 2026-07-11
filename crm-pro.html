@@ -2342,10 +2342,9 @@ var COLS = {
     {lbl:"Nom",f:"nom",t:"text",w:100},
     {lbl:"Statut",f:"statutPa",t:"select",o:"STATUT_PA",w:100},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
-    {lbl:"Centris",f:"centrisUrl",t:"text",w:180,cls:"mu",title:"Entrez l'url de la propri\u00e9t\u00e9"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
-    {lbl:"No. Centris",f:"noCentris",t:"centris",w:100,cls:"mu"},
+    {lbl:"No. Centris",f:"noCentris",t:"centris",w:100,cls:"mu",title:"No Centris ou lien complet (num\u00e9ro extrait automatiquement)"},
     {lbl:"Courtier",f:"courtierId",t:"courtier",w:140,cls:"mu"},
     {lbl:"Notes",f:"notes",t:"text",w:130,cls:"nc"},
     {lbl:"MLS",f:"mls",t:"bool",w:44},
@@ -2489,7 +2488,6 @@ var COLS = {
   ac: [
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:120},
     {lbl:"Nom",f:"nom",t:"text",w:120},
-    {lbl:"Acheteur",f:"acheteurNom",t:"acheteur",w:100},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
     {lbl:"No. Centris",f:"centris",t:"centris",w:100,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
@@ -3540,6 +3538,12 @@ function ldb(){
     (db.a||[]).forEach(function(r){if(!r.lastModified){r.lastModified=today;migrated=true;}});
     if(migrated){try{localStorage.setItem("crmpro-a",JSON.stringify(db.a));}catch(e){}}
   }catch(e){}
+  // Migration : PA avec un lien Centris mais sans No Centris (colonne lien retirée) — extraire le numéro
+  try{
+    var migC=false;
+    (db.pa||[]).forEach(function(p){if(!p.noCentris&&p.centrisUrl){var n=_extractCentris(p.centrisUrl);if(/^\d{6,9}$/.test(n)){p.noCentris=n;migC=true;}}});
+    if(migC){try{localStorage.setItem("crmpro-pa",JSON.stringify(db.pa));}catch(e){}}
+  }catch(e){}
 }
 
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
@@ -3589,6 +3593,7 @@ function submitAToPA_Modal(){
     paEntry.statutPa='En cours';
     paEntry.adresse=adresse;
     paEntry.centrisUrl=centrisUrl;
+    paEntry.noCentris=_extractCentris(centrisUrl); // la colonne visible est No. Centris
     if(!paEntry.mls)paEntry.mls=false;
     if(!paEntry.declVend)paEntry.declVend=false;
     if(!paEntry.ged)paEntry.ged=false;
@@ -9724,9 +9729,11 @@ function ie(td){
     for(var _h=6;_h<=21;_h++){for(var _m=0;_m<60;_m+=15){var _hh=(_h<10?'0':'')+_h;var _mm=(_m<10?'0':'')+_m;var _v=_hh+':'+_mm;_topts+='<option value="'+_v+'"'+(_v===_existingTime?' selected':'')+'>'+_v+'</option>';}}
     timeSel.innerHTML=_topts;
     dateRow.style.cssText='padding:6px 8px;display:flex;gap:6px;align-items:center';
-    dateRow.appendChild(dateInp);dateRow.appendChild(timeSel);menu.appendChild(dateRow);
+    // Échéance PA : une date limite, pas un rendez-vous — pas de sélecteur d'heure
+    var _noTime=(field==='paEcheance'||field==='paExterneEcheance');
+    dateRow.appendChild(dateInp);if(!_noTime)dateRow.appendChild(timeSel);menu.appendChild(dateRow);
 
-    function _composedVal(){if(!dateInp.value)return'';var t=timeSel.value||'12:00';return dateInp.value+'T'+t;}
+    function _composedVal(){if(!dateInp.value)return'';if(_noTime)return dateInp.value;var t=timeSel.value||'12:00';return dateInp.value+'T'+t;}
     function _saveDateAndClose(){
       var v=_composedVal();if(!v)return;
       pushUndo('Date '+field);var ov=val;rec[field]=v;_touchAch();sdb();rall();
@@ -9735,7 +9742,7 @@ function ie(td){
     }
     // Auto-save debounce 300ms quand date ET heure sont tous deux sélectionnés
     var _saveTimer;
-    function _scheduleAutoSave(){if(!dateInp.value||!timeSel.value)return;clearTimeout(_saveTimer);_saveTimer=setTimeout(_saveDateAndClose,300);}
+    function _scheduleAutoSave(){if(!dateInp.value)return;if(!_noTime&&!timeSel.value)return;clearTimeout(_saveTimer);_saveTimer=setTimeout(_saveDateAndClose,300);}
     dateInp.addEventListener('change',_scheduleAutoSave);
     timeSel.addEventListener('change',_scheduleAutoSave);
     dateInp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();_saveDateAndClose();}});
@@ -9793,7 +9800,7 @@ function ie(td){
   td.innerHTML="";td.appendChild(el);td.classList.add("ei");
   el.focus();if(el.type!=="datetime-local"&&el.select)el.select();
   var done=false;
-  function save(){if(done)return;done=true;var nv=el.value,ov=rec[field];if(nv!==String(ov||"")){pushUndo("\u00c9dition "+field);}rec[field]=nv;_touchAch();sdb();setTimeout(rall,15);if(type==="date"){try{syncCalendarField(rec,tab,field,ov,nv);}catch(e){}} if(tab==='a'&&field==='etat'&&nv==='PA Actif'&&ov!=='PA Actif'){setTimeout(function(){transferAToPa(rec.id);},150);}}
+  function save(){if(done)return;done=true;var nv=el.value,ov=rec[field];if(field==='noCentris'||field==='centris')nv=_extractCentris(nv);if(nv!==String(ov||"")){pushUndo("\u00c9dition "+field);}rec[field]=nv;_touchAch();sdb();setTimeout(rall,15);if(type==="date"){try{syncCalendarField(rec,tab,field,ov,nv);}catch(e){}} if(tab==='a'&&field==='etat'&&nv==='PA Actif'&&ov!=='PA Actif'){setTimeout(function(){transferAToPa(rec.id);},150);}}
   el.addEventListener("blur",save);
   el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();el.blur();}if(e.key==="Escape"){done=true;el.removeEventListener("blur",save);setTimeout(rall,15);}});
 }
@@ -9940,7 +9947,7 @@ function saveEntry(){
   }
   else if(ctab==="pa"){
     function gcondPa(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
-    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),noCentris:gv("fnocentris"),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),inspection:gcondPa("finsp"),financement:gcondPa("ffin"),r21:gcondPa("fr21"),r22:gcondPa("fr22"),assurImm:gcondPa("fassur"),fosseSept:gcondPa("ffosse"),testEau:gcondPa("feau"),notaire:gcondPa("fnot"),ged:gc("fged"),montant:gv("fmontant"),commission:gv("fcomm")};
+    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),noCentris:_extractCentris(gv("fnocentris")),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),inspection:gcondPa("finsp"),financement:gcondPa("ffin"),r21:gcondPa("fr21"),r22:gcondPa("fr22"),assurImm:gcondPa("fassur"),fosseSept:gcondPa("ffosse"),testEau:gcondPa("feau"),notaire:gcondPa("fnot"),ged:gc("fged"),montant:gv("fmontant"),commission:gv("fcomm")};
   }
   else if(ctab==="pa-en-vente"){
     // Étape 19 — même structure que pa, sans Montant/Commission ni Inspection (déjà sur fiche En Vente)
@@ -9951,7 +9958,7 @@ function saveEntry(){
   else if(ctab==="vp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),typeProp:gv("ftypeprop"),prix:gv("fprix"),dateContact:gv("fdate"),notes:gv("fnotes")};
   else if(ctab==="v"){
     function gcondV(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
-    entry={prenom:prenom,nom:gv("fnom"),centris:gv("fcentris"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),evalVM:gcondV("fevalvm"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),contratVente:gc("fcontrat"),declVend:gc("fdeclvend"),mls:gc("fmls"),taxesScol:gc("ftaxscol"),taxesMun:gc("ftaxmun"),zonage:gc("fzonage"),roleEval:gc("frole"),certifLoc:gc("fcertif"),hydro:gc("fhydro"),mesures:gcondV("fmesures"),pancarte:gc("fpanc"),photos:gcondV("fphotos"),prequal2:gc("fprequal2"),inspection:gcondV("finsp"),financement:gcondV("ffin"),r21:gcondV("fr21"),r22:gcondV("fr22"),assurImm:gcondV("fassur"),fosseSept:gcondV("ffosse"),testEau:gcondV("feau"),notaire:gcondV("fnot"),ged:gc("fged"),pancarteRet:gc("fpancret"),montant:gv("fmontant"),commTot:gv("fcommtot"),commAutre:gv("fcommautre")};
+    entry={prenom:prenom,nom:gv("fnom"),centris:_extractCentris(gv("fcentris")),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),evalVM:gcondV("fevalvm"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),contratVente:gc("fcontrat"),declVend:gc("fdeclvend"),mls:gc("fmls"),taxesScol:gc("ftaxscol"),taxesMun:gc("ftaxmun"),zonage:gc("fzonage"),roleEval:gc("frole"),certifLoc:gc("fcertif"),hydro:gc("fhydro"),mesures:gcondV("fmesures"),pancarte:gc("fpanc"),photos:gcondV("fphotos"),prequal2:gc("fprequal2"),inspection:gcondV("finsp"),financement:gcondV("ffin"),r21:gcondV("fr21"),r22:gcondV("fr22"),assurImm:gcondV("fassur"),fosseSept:gcondV("ffosse"),testEau:gcondV("feau"),notaire:gcondV("fnot"),ged:gc("fged"),pancarteRet:gc("fpancret"),montant:gv("fmontant"),commTot:gv("fcommtot"),commAutre:gv("fcommautre")};
   }
   else if(ctab==="ac")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),dateConclusion:gv("fdateconc"),adresse:gv("faddr"),montant:gv("fmontant"),commission:gv("fcomm"),notes:gv("fnotes")};
   else if(ctab==="vc")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),dateConclusion:gv("fdateconc"),adresse:gv("faddr"),montant:gv("fmontant"),commTot:gv("fcommtot"),commAutre:gv("fcommautre"),notes:gv("fnotes")};
