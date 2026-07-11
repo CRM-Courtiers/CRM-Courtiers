@@ -52,3 +52,6 @@ electron-app/build/Icone*.png
 electron-app/build/Logo*.png
 # Pastilles redimensionnées non utilisées (revert au design rond pleins)
 pastille-*.png
+
+# Notarisation Apple (cles privees, certificats - JAMAIS pousser)
+notarisation/
