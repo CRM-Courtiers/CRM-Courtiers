@@ -4816,10 +4816,8 @@ var TUTORIELS=[
     +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Si ta licence expire, l\u2019app passe en lecture seule (tu peux toujours consulter et exporter tes donn\u00e9es) \u2014 rien n\u2019est perdu.</div></div>'},
   {sec:'Syst\u00e8me', num:37, titre:'Mises \u00e0 jour de l\u2019application', html:
     '<p>TRI-ANGLE s\u2019am\u00e9liore r\u00e9guli\u00e8rement. Les mises \u00e0 jour apportent nouvelles fonctions et corrections.</p>'
-    +'<h2>Sur Windows</h2>'
-    +'<p>Les mises \u00e0 jour sont <strong>automatiques et obligatoires</strong> : au lancement, si une nouvelle version existe, elle se t\u00e9l\u00e9charge en arri\u00e8re-plan, puis TRI-ANGLE affiche un avis et <strong>red\u00e9marre de lui-m\u00eame</strong> pour l\u2019installer (quelques secondes). Tes donn\u00e9es sont sauvegard\u00e9es avant le red\u00e9marrage \u2014 tu n\u2019as rien \u00e0 faire.</p>'
-    +'<h2>Sur Mac</h2>'
-    +'<p>Quand une mise \u00e0 jour est disponible, un bouton <strong>\ud83d\udce5 T\u00e9l\u00e9charger la mise \u00e0 jour (.dmg)</strong> appara\u00eet dans Param\u00e8tres &rarr; Compte : il ouvre le t\u00e9l\u00e9chargement dans ton navigateur. Installe ensuite le .dmg comme \u00e0 l\u2019habitude (au premier lancement : <strong>clic droit &rarr; Ouvrir</strong>). Tes donn\u00e9es sont conserv\u00e9es.</p>'
+    +'<p>Sur <strong>Windows comme sur Mac</strong>, les mises \u00e0 jour sont <strong>automatiques et obligatoires</strong> : au lancement, si une nouvelle version existe, elle se t\u00e9l\u00e9charge en arri\u00e8re-plan, puis TRI-ANGLE affiche un avis et <strong>red\u00e9marre de lui-m\u00eame</strong> pour l\u2019installer (quelques secondes). Tes donn\u00e9es sont sauvegard\u00e9es avant le red\u00e9marrage \u2014 tu n\u2019as rien \u00e0 faire.</p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\ud83c\udf4e</span><div>Sur Mac, l\u2019application est <strong>sign\u00e9e et notaris\u00e9e par Apple</strong> : l\u2019installation et les mises \u00e0 jour se font sans avertissement de s\u00e9curit\u00e9.</div></div>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Garde toujours la derni\u00e8re version : c\u2019est gratuit et tu profites des nouveaut\u00e9s (comme ce centre d\u2019aide !).</div></div>'},
   {sec:'Syst\u00e8me', num:38, titre:'Astuces : clic-droit, menu Actions, raccourcis', html:
     '<p>Quelques gestes qui te font gagner du temps au quotidien.</p>'
@@ -10314,31 +10312,18 @@ function _shortUpdateError(raw){
   if(short.length>60)short=short.substring(0,57)+'...';
   return '⚠ '+short;
 }
-// Mac : pas d'install auto (notarisation Apple bloquée) — on dirige vers le .dmg
+// Mac réactivé depuis v0.3.45 (builds signés + notarisés) : même flux que Windows.
 var _appPlatform='';
-var MAC_DMG_URL='https://license-server-ebon-xi.vercel.app/api/download?os=mac';
-function _showMacDownloadBtn(){
-  var btn=document.getElementById('btnInstallUpdate');
-  if(btn){btn.innerHTML='&#128229; T&eacute;l&eacute;charger la mise &agrave; jour (.dmg)';btn.style.display='inline-flex';}
-}
 function checkForUpdatesManual(){
   if(!window.electronAPI||!window.electronAPI.checkForUpdates){toast('⚠ Vérification possible uniquement dans l\'app installée');return;}
   _setUpdateStatus('Vérification en cours...');
   window.electronAPI.checkForUpdates().then(function(res){
     if(!res.ok){_setUpdateStatus(_shortUpdateError(res.error),true);return;}
-    if(res.updateAvailable){
-      if(_appPlatform==='darwin'){_setUpdateStatus('Mise à jour disponible : v'+res.latestVersion);_showMacDownloadBtn();}
-      else{_setUpdateStatus('Mise à jour disponible : v'+res.latestVersion+' (téléchargement en cours...)');}
-    }
+    if(res.updateAvailable){_setUpdateStatus('Mise à jour disponible : v'+res.latestVersion+' (téléchargement en cours...)');}
     else{_setUpdateStatus('À jour ✓');}
   });
 }
 function installUpdate(){
-  if(_appPlatform==='darwin'){
-    if(window.electronAPI&&window.electronAPI.openExternal)window.electronAPI.openExternal(MAC_DMG_URL);
-    toast('📥 Le .dmg se télécharge dans ton navigateur — installe-le, puis clic droit → Ouvrir au premier lancement');
-    return;
-  }
   if(!window.electronAPI||!window.electronAPI.installUpdate)return;
   if(!confirm('Installer la mise à jour maintenant ?\n\nL\'application va redémarrer.'))return;
   window.electronAPI.installUpdate();
@@ -10357,14 +10342,8 @@ if(window.electronAPI&&window.electronAPI.onUpdateStatus){
     var s=payload.status,d=payload.data||{};
     if(s==='checking'){_setUpdateStatus('Vérification...');_hideUpdateProgress();}
     else if(s==='available'){
-      if(_appPlatform==='darwin'){
-        _setUpdateStatus('Mise à jour v'+d.version+' disponible');
-        _showMacDownloadBtn();
-        toast('Mise à jour v'+d.version+' disponible — voir Paramètres → Compte');
-      } else {
-        _setUpdateStatus('Mise à jour v'+d.version+' disponible — téléchargement...');
-        _setUpdateProgress(0,0,0,0);
-      }
+      _setUpdateStatus('Mise à jour v'+d.version+' disponible — téléchargement...');
+      _setUpdateProgress(0,0,0,0);
     }
     else if(s==='not-available'){_setUpdateStatus('À jour ✓');_hideUpdateProgress();}
     else if(s==='progress'){
@@ -10373,15 +10352,9 @@ if(window.electronAPI&&window.electronAPI.onUpdateStatus){
     }
     else if(s==='downloaded'){
       _hideUpdateProgress();
-      if(_appPlatform==='darwin'){
-        // Ne devrait plus arriver (autoDownload off sur Mac) — garde-fou : jamais d'install auto
-        _setUpdateStatus('Mise à jour v'+d.version+' disponible');
-        _showMacDownloadBtn();
-      } else {
-        _setUpdateStatus('✅ Mise à jour v'+d.version+' téléchargée — prête à installer');
-        var btn=document.getElementById('btnInstallUpdate');if(btn){btn.innerHTML='&#9989; Installer la mise à jour';btn.style.display='inline-flex';}
-        toast('✅ Mise à jour v'+d.version+' disponible — voir Paramètres');
-      }
+      _setUpdateStatus('✅ Mise à jour v'+d.version+' téléchargée — prête à installer');
+      var btn=document.getElementById('btnInstallUpdate');if(btn){btn.innerHTML='&#9989; Installer la mise à jour';btn.style.display='inline-flex';}
+      toast('✅ Mise à jour v'+d.version+' disponible — voir Paramètres');
     }
     else if(s==='force-install'){_showForceUpdateOverlay(d.version,d.seconds||15);}
     else if(s==='error'){_setUpdateStatus(_shortUpdateError(d.message),true);_hideUpdateProgress();}

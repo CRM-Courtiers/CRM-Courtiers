@@ -760,18 +760,16 @@ ipcMain.handle('check-for-updates', async () => {
 });
 
 ipcMain.handle('install-update', async () => {
-  // Garde-fou Mac : jamais d'install auto tant que la notarisation Apple est bloquée
-  if (process.platform === 'darwin') return { ok: false, error: 'Installation automatique indisponible sur Mac — installer le .dmg manuellement' };
   autoUpdater.quitAndInstall();
   return { ok: true };
 });
 
 // ─── Auto-update : configuration ────────────────────────────
-// Mac : PAS de téléchargement auto ni d'install auto — sur un build signé mais non
-// notarisé, quitAndInstall produit une app bloquée par Gatekeeper (confirmé 2026-06-03).
-// Le renderer affiche plutôt un bouton qui ouvre le .dmg dans le navigateur.
-autoUpdater.autoDownload = process.platform !== 'darwin';
-autoUpdater.autoInstallOnAppQuit = process.platform !== 'darwin';
+// Mac réactivé depuis v0.3.45 : les builds sont signés + notarisés (v0.3.44+), donc
+// quitAndInstall est sûr — Squirrel.Mac refuse d'installer une mise à jour non signée
+// (échec de validation, l'app reste sur la version courante) au lieu de la casser.
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
 
 // Logs : capturer les événements et les relayer à la fenêtre
 function sendUpdateStatus(status, data) {
@@ -792,17 +790,14 @@ autoUpdater.on('download-progress', (progress) => sendUpdateStatus('progress', {
 }));
 autoUpdater.on('update-downloaded', (info) => {
   sendUpdateStatus('downloaded', { version: info.version });
-  // Mise à jour OBLIGATOIRE (Windows) : installation silencieuse + redémarrage auto après un
-  // court compte à rebours (le renderer affiche un écran bloquant pendant ce délai).
-  // Mac exclu : l'installation auto est impossible tant que la notarisation Apple est bloquée.
-  if (process.platform !== 'darwin') {
-    const delaySec = 15;
-    sendUpdateStatus('force-install', { version: info.version, seconds: delaySec });
-    setTimeout(() => {
-      try { autoUpdater.quitAndInstall(true, true); }
-      catch (e) { console.warn('[update] quitAndInstall failed:', e && e.message); }
-    }, delaySec * 1000);
-  }
+  // Mise à jour OBLIGATOIRE (Windows + Mac depuis v0.3.45) : installation silencieuse +
+  // redémarrage auto après un court compte à rebours (le renderer affiche un écran bloquant).
+  const delaySec = 15;
+  sendUpdateStatus('force-install', { version: info.version, seconds: delaySec });
+  setTimeout(() => {
+    try { autoUpdater.quitAndInstall(true, true); }
+    catch (e) { console.warn('[update] quitAndInstall failed:', e && e.message); }
+  }, delaySec * 1000);
 });
 autoUpdater.on('error', (err) => sendUpdateStatus('error', { message: err && err.message }));
 
