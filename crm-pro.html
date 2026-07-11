@@ -1719,10 +1719,10 @@ body.app-readonly th .rz{pointer-events:none}
 
         <div class="settings-tab-content" data-stab-content="equipe">
         <div class="settings-group">
-          <div class="settings-group-title">&#129309; Adjoint(e) <span style="font-size:9px;background:#0FBFAB;color:#fff;border-radius:8px;padding:2px 8px;letter-spacing:.05em">B&Ecirc;TA</span></div>
-          <div class="settings-group-desc">Pour un courtier et son adjoint(e) : chaque poste publie ses changements dans un <strong>journal</strong> du dossier de sauvegarde partag&eacute; (OneDrive/Dropbox), et lit ceux des autres. Fusion automatique champ par champ, suppression fiable, aucun serveur — vos donn&eacute;es ne quittent jamais votre nuage. <strong>Pr&eacute;requis :</strong> tous les postes utilisent le <em>m&ecirc;me</em> dossier de sauvegarde partag&eacute; et cette version (ou plus r&eacute;cente) de TRI-ANGLE.</div>
+          <div class="settings-group-title">&#128260; Synchronisation entre postes <span style="font-size:9px;background:#0FBFAB;color:#fff;border-radius:8px;padding:2px 8px;letter-spacing:.05em">B&Ecirc;TA</span></div>
+          <div class="settings-group-desc"><strong>&Agrave; activer d&egrave;s que TRI-ANGLE tourne sur plus d'un ordinateur</strong> — ton propre 2e poste (bureau + portable) ou le poste de ton adjoint(e). Chaque poste publie ses changements dans un <strong>journal</strong> du dossier de sauvegarde partag&eacute; (OneDrive/Dropbox), et lit ceux des autres. Fusion automatique champ par champ, suppression fiable, aucun serveur — vos donn&eacute;es ne quittent jamais votre nuage. <strong>Pr&eacute;requis :</strong> tous les postes utilisent le <em>m&ecirc;me</em> dossier de sauvegarde partag&eacute; et cette version (ou plus r&eacute;cente) de TRI-ANGLE.</div>
           <div class="settings-actions">
-            <button class="btn-import" id="syncToggleBtn" onclick="syncEnable()">Activer le partage avec l'adjoint(e)</button>
+            <button class="btn-import" id="syncToggleBtn" onclick="syncEnable()">Activer la synchronisation</button>
             <button class="btn-csv" onclick="_syncPull();_syncRenderSettings()" title="Lire les journaux des autres postes maintenant (sinon automatique aux 45 secondes)">Lire maintenant</button>
           </div>
           <div id="syncSettingsStatus" style="font-size:12px;color:#475569;margin-top:10px;line-height:1.6"></div>
@@ -2918,21 +2918,21 @@ function _syncStartLoop(){
 }
 // Activation : publie l'état COMPLET courant comme baseline dans mon journal
 function syncEnable(){
-  if(!(window.electronAPI&&window.electronAPI.syncAppend)){toast('⚠ Travail à deux : disponible dans l\'application de bureau seulement');return;}
+  if(!(window.electronAPI&&window.electronAPI.syncAppend)){toast('⚠ Synchronisation entre postes : disponible dans l\'application de bureau seulement');return;}
   try{localStorage.setItem('crmpro-sync-on','1');}catch(e){}
   _syncLoadState();
   _syncShadow={}; // baseline = tout l'état part en ops complètes
   _syncOnLocalChange();
   _syncStartLoop();
   _syncPull();
-  toast('✓ Travail à deux activé — ce poste publie son journal dans le dossier partagé');
+  toast('✓ Synchronisation activée — ce poste publie son journal dans le dossier partagé');
   _syncRenderSettings();
 }
 function syncDisable(){
   try{localStorage.setItem('crmpro-sync-on','0');}catch(e){}
   if(_syncTimer){clearInterval(_syncTimer);_syncTimer=null;}
   var chip=document.getElementById('syncChip');if(chip)chip.style.display='none';
-  toast('Travail à deux désactivé (les journaux existants sont conservés)');
+  toast('Synchronisation désactivée (les journaux existants sont conservés)');
   _syncRenderSettings();
 }
 function _syncInit(){
@@ -3293,7 +3293,7 @@ function _syncRenderSettings(){
   var btn=document.getElementById('syncToggleBtn');
   var on=false;try{on=localStorage.getItem('crmpro-sync-on')==='1';}catch(e){}
   var avail=!!(window.electronAPI&&window.electronAPI.syncAppend);
-  if(btn){btn.textContent=on?'Désactiver':'Activer le travail à deux';btn.onclick=on?syncDisable:syncEnable;btn.disabled=!avail;}
+  if(btn){btn.textContent=on?'Désactiver':'Activer la synchronisation';btn.onclick=on?syncDisable:syncEnable;btn.disabled=!avail;}
   if(!avail){el.innerHTML='<span style="color:#94A3B8">Disponible dans l\'application de bureau seulement.</span>';return;}
   var h='Identifiant de ce poste : <strong>'+esc(_syncDeviceId())+'</strong>';
   if(on&&window.electronAPI.syncList){
@@ -3337,7 +3337,28 @@ var _electronDirPath="";
 async function pickElectronFolder(){
   if(!window.electronAPI||!window.electronAPI.pickFolder)return;
   var res=await window.electronAPI.pickFolder();
-  if(res.ok){_electronDirName=res.name;_electronDirPath=res.dir;updateAutoSaveBtn();await writeAutoSave();toast("\u2705 Dossier chang\u00e9 \u2192 \u00ab "+res.name+" \u00bb");}
+  if(res.ok){
+    _electronDirName=res.name;_electronDirPath=res.dir;updateAutoSaveBtn();
+    await autoImportFromFile(); // le dossier peut d\u00e9j\u00e0 contenir des donn\u00e9es (autre poste) \u2014 les charger AVANT d'\u00e9crire
+    await writeAutoSave();
+    toast("\u2705 Dossier chang\u00e9 \u2192 \u00ab "+res.name+" \u00bb");
+    _proposeSyncIfOtherPoste();
+  }
+}
+// D\u00e9tection 2e poste : si le dossier connect\u00e9 contient d\u00e9j\u00e0 le journal d'un AUTRE poste,
+// proposer d'activer la synchronisation (\u00e9vite le mode fragile \u00ab 2 postes, m\u00eame fichier \u00bb)
+async function _proposeSyncIfOtherPoste(){
+  try{
+    if(_syncOn()||!(window.electronAPI&&window.electronAPI.syncList))return;
+    var sl=await window.electronAPI.syncList();
+    if(!sl||!sl.ok||!sl.files)return;
+    var mine=_syncJournalName();
+    var others=sl.files.filter(function(f){return f.name!==mine;});
+    if(!others.length)return;
+    if(confirm('Ce dossier est d\u00e9j\u00e0 utilis\u00e9 par un autre poste TRI-ANGLE.\n\nActiver la synchronisation entre postes (recommand\u00e9)?\n\nChaque poste garde son propre journal et tout se fusionne automatiquement \u2014 que ce soit ton propre 2e ordinateur ou le poste de ton adjoint(e).')){
+      syncEnable();
+    }
+  }catch(e){}
 }
 async function connectAutoSave(){
   try{
@@ -4782,9 +4803,11 @@ var TUTORIELS=[
     +'<li><strong>Importer</strong> : restaure tes donn\u00e9es depuis un fichier .json (nouvel ordinateur, retour en arri\u00e8re).</li>'
     +'</ul>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Bonne habitude : un export manuel de temps en temps, gard\u00e9 dans un endroit diff\u00e9rent de ta sauvegarde auto. Double protection.</div></div>'},
-  {sec:'Syst\u00e8me', num:34, titre:'Travailler \u00e0 deux (courtier + adjointe) \u2014 b\u00eata', html:
-    '<p>Le <strong>travail \u00e0 deux</strong> permet \u00e0 un courtier et son adjointe de travailler dans les <strong>m\u00eames donn\u00e9es</strong>, chacun sur son poste \u2014 sans serveur : tout passe par votre dossier de sauvegarde partag\u00e9 (OneDrive ou Dropbox).</p>'
-    +'<h2>Mise en place (une fois)</h2>'
+  {sec:'Syst\u00e8me', num:34, titre:'Synchronisation entre postes (2e ordi, adjointe) \u2014 b\u00eata', html:
+    '<p>La <strong>synchronisation entre postes</strong> permet de travailler dans les <strong>m\u00eames donn\u00e9es</strong> depuis plusieurs ordinateurs \u2014 sans serveur : tout passe par votre dossier de sauvegarde partag\u00e9 (OneDrive ou Dropbox). Deux cas d\u2019usage : <strong>toi-m\u00eame sur un 2e poste</strong> (bureau + portable), ou <strong>ton adjoint(e)</strong> sur son propre poste.</p>'
+    +'<h2>Toi sur un 2e ordinateur</h2>'
+    +'<p>Installe TRI-ANGLE, entre <strong>ta propre cl\u00e9</strong>, choisis le <strong>m\u00eame dossier de sauvegarde</strong> \u2014 l\u2019app d\u00e9tecte l\u2019autre poste et te propose d\u2019activer la synchronisation. Accepte, et active-la aussi sur ton premier poste (Param\u00e8tres &rarr; \u00c9quipe). Garde le profil <strong>Courtier</strong> sur les deux.</p>'
+    +'<h2>Mise en place avec une adjointe (une fois)</h2>'
     +'<ol>'
     +'<li>Dans <strong>Param\u00e8tres \u2192 \u00c9quipe \u2192 Adjoint(e)</strong>, clique <strong>G\u00e9n\u00e9rer sa cl\u00e9</strong> : tu obtiens la cl\u00e9 de ton adjoint(e) et le lien d\u2019installation, pr\u00eats \u00e0 lui transmettre. Sa cl\u00e9 est <strong>li\u00e9e</strong> \u00e0 la tienne (elle suit tes renouvellements) et r\u00e8gle son poste en profil Adjoint(e) automatiquement.</li>'
     +'<li>Le courtier partage son <strong>dossier de sauvegarde</strong> (OneDrive/Dropbox) avec l\u2019adjointe.</li>'
@@ -10618,6 +10641,7 @@ async function onboardingPick(folderPath){
   await autoImportFromFile(); // le dossier peut déjà contenir des données (2e poste) — les charger AVANT d'écrire
   await writeAutoSave();
   toast('&#9989; Sauvegarde configur&eacute;e dans &laquo; '+res.name+' &raquo;');
+  await _proposeSyncIfOtherPoste();
   // Transitionner vers étape Google Calendar (au lieu de fermer)
   await _wizPrepareGcalStep();
 }
@@ -10631,6 +10655,7 @@ async function onboardingCustom(){
   await autoImportFromFile(); // le dossier peut déjà contenir des données (2e poste) — les charger AVANT d'écrire
   await writeAutoSave();
   toast('&#9989; Sauvegarde configur&eacute;e dans &laquo; '+res.name+' &raquo;');
+  await _proposeSyncIfOtherPoste();
   await _wizPrepareGcalStep();
 }
 
