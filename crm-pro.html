@@ -3725,10 +3725,12 @@ function fm(n){var v=parseFloat(n);if(!v)return"\u2014";return _fmtN(v)+" $";}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 
 function chk(v){return v?'<span class="chky">&#10003;</span>':'<span class="chkn">&#10003;</span>';}
-function condCell(v){
+function condCell(v,withTime){
   if(!v)return'<span class="cond-empty">&#8212;</span>';
   if(v===true||v==='done')return'<span class="cond-done">&#10003;</span>';
-  return'<span class="cond-date" title="'+esc(fdTitle(v))+'">'+fd(v)+'</span>';
+  // withTime (Échéance PA) : l'heure limite est une info légale — l'afficher dans la cellule
+  var t=withTime?_timeOnly(v):'';
+  return'<span class="cond-date" title="'+esc(fdTitle(v))+'">'+fd(v)+(t?'<br><span style="font-size:10px;font-weight:700;color:#D97706">&#9202; '+t+'</span>':'')+'</span>';
 }
 function getOpts(k){if(k==="PREQ_STS")return PREQ_STS;if(k==="TYPE_BAT")return TYPE_BAT;if(k==="TYPE_PROP")return TYPE_PROP;if(k==="DOC_STS")return DOC_STS;if(k==="RAISONS")return RAISONS;if(k==="ETAT_ACH")return ETAT_ACH;if(k==="STATUT_PA")return STATUT_PA;return[];}
 
@@ -4292,7 +4294,7 @@ function renderTab(tab){
           if(notObj)notH+='<br><span style="font-size:10px;color:#0EA5E9;font-weight:600">⚖️ '+esc(_notaireFullName(notObj))+'</span>';
           h+=etd(col,tab,rec.id,notH);
         } else {
-          h+=etd(col,tab,rec.id,condCell(rec[col.f]));
+          h+=etd(col,tab,rec.id,condCell(rec[col.f],col.f==='paEcheance'||col.f==='paExterneEcheance'));
         }
       } else if(col.f==="courriel"){
         h+=etd(col,tab,rec.id,fmEmail(rec[col.f]),' emc');
@@ -9726,14 +9728,12 @@ function ie(td){
     var timeSel=document.createElement('select');
     timeSel.style.cssText='padding:6px 8px;border:1.5px solid #CBD5E1;border-radius:6px;font-family:inherit;font-size:13px;color:#0F172A;background:#fff;cursor:pointer';
     var _topts='<option value="">— heure —</option>';
-    for(var _h=6;_h<=21;_h++){for(var _m=0;_m<60;_m+=15){var _hh=(_h<10?'0':'')+_h;var _mm=(_m<10?'0':'')+_m;var _v=_hh+':'+_mm;_topts+='<option value="'+_v+'"'+(_v===_existingTime?' selected':'')+'>'+_v+'</option>';}}
+    for(var _h=6;_h<=23;_h++){for(var _m=0;_m<60;_m+=15){var _hh=(_h<10?'0':'')+_h;var _mm=(_m<10?'0':'')+_m;var _v=_hh+':'+_mm;_topts+='<option value="'+_v+'"'+(_v===_existingTime?' selected':'')+'>'+_v+'</option>';}}
     timeSel.innerHTML=_topts;
     dateRow.style.cssText='padding:6px 8px;display:flex;gap:6px;align-items:center';
-    // Échéance PA : une date limite, pas un rendez-vous — pas de sélecteur d'heure
-    var _noTime=(field==='paEcheance'||field==='paExterneEcheance');
-    dateRow.appendChild(dateInp);if(!_noTime)dateRow.appendChild(timeSel);menu.appendChild(dateRow);
+    dateRow.appendChild(dateInp);dateRow.appendChild(timeSel);menu.appendChild(dateRow);
 
-    function _composedVal(){if(!dateInp.value)return'';if(_noTime)return dateInp.value;var t=timeSel.value||'12:00';return dateInp.value+'T'+t;}
+    function _composedVal(){if(!dateInp.value)return'';var t=timeSel.value||'12:00';return dateInp.value+'T'+t;}
     function _saveDateAndClose(){
       var v=_composedVal();if(!v)return;
       pushUndo('Date '+field);var ov=val;rec[field]=v;_touchAch();sdb();rall();
@@ -9742,7 +9742,7 @@ function ie(td){
     }
     // Auto-save debounce 300ms quand date ET heure sont tous deux sélectionnés
     var _saveTimer;
-    function _scheduleAutoSave(){if(!dateInp.value)return;if(!_noTime&&!timeSel.value)return;clearTimeout(_saveTimer);_saveTimer=setTimeout(_saveDateAndClose,300);}
+    function _scheduleAutoSave(){if(!dateInp.value||!timeSel.value)return;clearTimeout(_saveTimer);_saveTimer=setTimeout(_saveDateAndClose,300);}
     dateInp.addEventListener('change',_scheduleAutoSave);
     timeSel.addEventListener('change',_scheduleAutoSave);
     dateInp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();_saveDateAndClose();}});
