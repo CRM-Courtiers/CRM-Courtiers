@@ -2629,7 +2629,7 @@ function saveFltState(){try{localStorage.setItem('crmprosrch',JSON.stringify(SEA
 // par champ), avec tombstones (les suppressions ne ressuscitent pas) et horloge monotone.
 // ═══════════════════════════════════════════════════════════════
 // ⟦SYNC-ENGINE-BEGIN⟧ — fonctions PURES (testables hors app, ne touchent ni db ni DOM)
-var SYNC_COLLS=['cp','vp','a','pa','v','ac','vc','ca','demandes','templates','courtiers','refs','notaires','taches','financiers','refsh','collabChannels'];
+var SYNC_COLLS=['cp','vp','a','pa','v','ac','vc','archac','archvc','archpa','ca','demandes','templates','courtiers','refs','notaires','taches','financiers','refsh','collabChannels'];
 // Horloge monotone (Lamport-ish) : jamais deux fois le même ts localement, résiste aux horloges décalées
 function _syncTick(clockRef){var t=Date.now();clockRef.v=(t>clockRef.v)?t:clockRef.v+1;return clockRef.v;}
 // meta = {tomb:{coll:{id:ts}}, fts:{coll:{id:{champ:{t:ts,d:dev}}}}} — état de fusion persisté
@@ -10615,6 +10615,7 @@ async function onboardingPick(folderPath){
   _electronDirName=res.name;
   _electronDirPath=res.dir;
   updateAutoSaveBtn();
+  await autoImportFromFile(); // le dossier peut déjà contenir des données (2e poste) — les charger AVANT d'écrire
   await writeAutoSave();
   toast('&#9989; Sauvegarde configur&eacute;e dans &laquo; '+res.name+' &raquo;');
   // Transitionner vers étape Google Calendar (au lieu de fermer)
@@ -10627,6 +10628,7 @@ async function onboardingCustom(){
   try{localStorage.setItem('crmpro-onboarded','1');}catch(e){}
   _electronDirName=res.name;
   updateAutoSaveBtn();
+  await autoImportFromFile(); // le dossier peut déjà contenir des données (2e poste) — les charger AVANT d'écrire
   await writeAutoSave();
   toast('&#9989; Sauvegarde configur&eacute;e dans &laquo; '+res.name+' &raquo;');
   await _wizPrepareGcalStep();
