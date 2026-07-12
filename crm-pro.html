@@ -9569,31 +9569,48 @@ function _tacheDelete(id){
 function _tacheEdit(id){
   var t=null;for(var i=0;i<(db.taches||[]).length;i++){if(db.taches[i].id===id){t=db.taches[i];break;}}
   if(!t)return;
-  // prompt() est désactivé dans Electron → édition EN PLACE dans la ligne
+  // prompt() est désactivé dans Electron → édition EN PLACE dans la ligne (titre + date)
   var row=document.querySelector('.todo-row[data-tid="'+id+'"]');
-  var span=row?row.querySelector('.todo-txt'):null;
-  if(!span)return;
-  var inp=document.createElement('input');
-  inp.type='text';inp.value=t.texte||'';
-  inp.style.cssText='flex:1;min-width:120px;padding:4px 8px;border:1.5px solid #0EA5E9;border-radius:6px;font-family:inherit;font-size:inherit;color:inherit;background:#fff;outline:none';
-  span.replaceWith(inp);
-  inp.focus();inp.select();
+  if(!row)return;
+  var inpStyle='padding:4px 8px;border:1.5px solid #0EA5E9;border-radius:6px;font-family:inherit;font-size:12px;color:inherit;background:#fff;outline:none';
+  var inpTxt=document.createElement('input');
+  inpTxt.type='text';inpTxt.value=t.texte||'';inpTxt.style.cssText='flex:1;min-width:110px;'+inpStyle;
+  var inpDate=document.createElement('input');
+  inpDate.type='date';inpDate.value=_dateOnly(t.echeance);inpDate.style.cssText='width:130px;'+inpStyle;
+  var btnOk=document.createElement('button');
+  btnOk.innerHTML='&#10003;';btnOk.title='Enregistrer (Entrée)';
+  btnOk.style.cssText='border:none;background:#10B981;color:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;font-weight:700';
+  var btnNo=document.createElement('button');
+  btnNo.innerHTML='&#10005;';btnNo.title='Annuler (Échap)';
+  btnNo.style.cssText='border:none;background:#F1F5F9;color:#64748B;border-radius:6px;width:26px;height:26px;cursor:pointer';
+  row.innerHTML='';row.style.gap='6px';
+  row.appendChild(inpTxt);row.appendChild(inpDate);row.appendChild(btnOk);row.appendChild(btnNo);
+  inpTxt.focus();inpTxt.select();
   var fini=false;
   function saveTache(){
     if(fini)return;fini=true;
-    var v=(inp.value||'').trim();
-    if(v&&v!==t.texte){
+    var v=(inpTxt.value||'').trim();
+    var d=inpDate.value||'';
+    var txtChange=(v&&v!==t.texte);
+    var dateChange=(d&&d!==t.echeance);
+    if(txtChange||dateChange){
       pushUndo('Modif tâche');
-      t.texte=v;
+      var oldEch=t.echeance;
+      if(txtChange)t.texte=v;
+      if(dateChange){t.echeance=d;_syncTacheCalDay(oldEch);} // retirer de l'événement de l'ancien jour
       sdb();
       _syncTacheCalDay(t.echeance);
     }
     _renderTaches();
   }
-  inp.addEventListener('blur',saveTache);
-  inp.addEventListener('keydown',function(e){
-    if(e.key==='Enter'){e.preventDefault();inp.blur();}
-    if(e.key==='Escape'){fini=true;_renderTaches();}
+  function cancelTache(){fini=true;_renderTaches();}
+  btnOk.addEventListener('click',saveTache);
+  btnNo.addEventListener('click',cancelTache);
+  [inpTxt,inpDate].forEach(function(el){
+    el.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){e.preventDefault();saveTache();}
+      if(e.key==='Escape'){cancelTache();}
+    });
   });
   return;
   // (ancien code prompt() retiré — jamais fonctionnel dans l'app de bureau)
