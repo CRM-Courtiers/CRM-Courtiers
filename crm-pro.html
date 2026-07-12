@@ -5567,9 +5567,9 @@ function transferVpToV(id){
 function transferReaToRec(id){
   var rec=null;for(var i=0;i<db.refs.length;i++){if(db.refs[i].id===id){rec=db.refs[i];break;}}if(!rec)return;
   if(!rec.dateConclusion){
-    var d=prompt('Date de conclusion (AAAA-MM-JJ) :',_todayStr());
-    if(!d)return;
-    rec.dateConclusion=d;
+    // prompt() désactivé dans Electron → date du jour par défaut, modifiable ensuite
+    // dans la colonne « Date conclusion » de l'onglet Conclues.
+    rec.dateConclusion=_todayStr();
   }
   if(!rec.commissionSophie||parseFloat(rec.commissionSophie)<=0){
     if(!confirm('\u26a0 Aucune commission Sophie saisie. Marquer quand m\u00eame comme conclue ?'))return;
@@ -9569,14 +9569,34 @@ function _tacheDelete(id){
 function _tacheEdit(id){
   var t=null;for(var i=0;i<(db.taches||[]).length;i++){if(db.taches[i].id===id){t=db.taches[i];break;}}
   if(!t)return;
-  var newTxt=prompt('Modifier la tâche :',t.texte||'');
-  if(newTxt===null)return; // annulé
-  newTxt=(newTxt||'').trim();
-  if(!newTxt){alert('La tâche ne peut pas être vide.');return;}
-  pushUndo('Modif tâche');
-  t.texte=newTxt;
-  sdb();_renderTaches();
-  _syncTacheCalDay(t.echeance);
+  // prompt() est désactivé dans Electron → édition EN PLACE dans la ligne
+  var row=document.querySelector('.todo-row[data-tid="'+id+'"]');
+  var span=row?row.querySelector('.todo-txt'):null;
+  if(!span)return;
+  var inp=document.createElement('input');
+  inp.type='text';inp.value=t.texte||'';
+  inp.style.cssText='flex:1;min-width:120px;padding:4px 8px;border:1.5px solid #0EA5E9;border-radius:6px;font-family:inherit;font-size:inherit;color:inherit;background:#fff;outline:none';
+  span.replaceWith(inp);
+  inp.focus();inp.select();
+  var fini=false;
+  function saveTache(){
+    if(fini)return;fini=true;
+    var v=(inp.value||'').trim();
+    if(v&&v!==t.texte){
+      pushUndo('Modif tâche');
+      t.texte=v;
+      sdb();
+      _syncTacheCalDay(t.echeance);
+    }
+    _renderTaches();
+  }
+  inp.addEventListener('blur',saveTache);
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){e.preventDefault();inp.blur();}
+    if(e.key==='Escape'){fini=true;_renderTaches();}
+  });
+  return;
+  // (ancien code prompt() retiré — jamais fonctionnel dans l'app de bureau)
 }
 function _tacheClearDone(){
   var n=(db.taches||[]).filter(function(x){return x.done;}).length;
@@ -9673,7 +9693,7 @@ function _renderTaches(){
       }
       var inCal=!!t.inCal;
       var calBtn='<button class="todo-cal'+(inCal?' on':'')+'" title="'+(inCal?'Au calendrier (journée à 8h30) — cliquer pour retirer cette tâche':'Ajouter cette tâche au calendrier (journée à 8h30)')+'" onclick="_tacheCalToggle(\''+t.id+'\')">'+(inCal?'📅✓':'📅')+'</button>';
-      return '<div class="todo-row'+(t.done?' done':'')+'">'
+      return '<div class="todo-row'+(t.done?' done':'')+'" data-tid="'+t.id+'">'
         +'<input type="checkbox" '+(t.done?'checked':'')+' onclick="_tacheToggle(\''+t.id+'\')">'
         +'<span class="todo-txt">'+esc(t.texte)+'</span>'
         +ech
