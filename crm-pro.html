@@ -6069,16 +6069,25 @@ function getPancartesAInstaller(){
   });
 }
 function getPancartesARetirer(){
-  return (db.vc||[]).filter(function(r){return r.pancarte && !r.pancarteRet;}).map(function(r){
-    return {tab:"vc",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",adresse:r.adresse||"(adresse non saisie)",dateConclusion:r.dateConclusion||""};
+  // Conclus (vc) ET Notariées (archvc) : une pancarte non retirée doit rester visible
+  // même si la vente est archivée — sinon le rappel disparaît et la pancarte traîne.
+  var out=[];
+  [["vc",db.vc],["archvc",db.archvc]].forEach(function(pair){
+    (pair[1]||[]).filter(function(r){return r.pancarte && !r.pancarteRet;}).forEach(function(r){
+      out.push({tab:pair[0],id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",adresse:r.adresse||"(adresse non saisie)",dateConclusion:r.dateConclusion||""});
+    });
   });
+  return out;
 }
 function markPancarteInstalled(id){
   var rec=null;for(var i=0;i<db.v.length;i++){if(db.v[i].id===id){rec=db.v[i];break;}}if(!rec)return;
   pushUndo("Pancarte installée");rec.pancarte=true;sdb();rall();toast("✓ Pancarte marquée installée");
 }
 function markPancarteRetired(id){
-  var rec=null;for(var i=0;i<db.vc.length;i++){if(db.vc[i].id===id){rec=db.vc[i];break;}}if(!rec)return;
+  // La fiche peut être dans Conclus (vc) OU Notariées (archvc)
+  var rec=null;
+  [db.vc,db.archvc].forEach(function(arr){if(rec)return;for(var i=0;i<(arr||[]).length;i++){if(arr[i].id===id){rec=arr[i];break;}}});
+  if(!rec)return;
   pushUndo("Pancarte retirée");rec.pancarteRet=true;sdb();rall();toast("✓ Pancarte marquée retirée");
 }
 // Réinitialise le compteur de relance d'un Acheteur (sans modifier d'autres champs)
@@ -6117,13 +6126,14 @@ function renderPancartes(){
   } else {
     retireList.innerHTML=aRetirer.map(function(p){
       var concText=p.dateConclusion?"Conclu le "+fd(p.dateConclusion):"";
+      var isArch=(p.tab==='archvc');
       return '<div class="panc-row">'
         +'<div class="panc-row-main">'
         +'<div class="panc-row-addr">'+esc(p.adresse)+'</div>'
-        +'<div class="panc-row-name">'+esc(p.name)+(concText?' &middot; '+esc(concText):'')+'</div>'
+        +'<div class="panc-row-name">'+esc(p.name)+(concText?' &middot; '+esc(concText):'')+(isArch?' &middot; Notari&eacute;e':'')+'</div>'
         +'</div>'
         +'<div class="panc-row-actions">'
-        +'<button class="panc-btn muted" onclick="doEdit(\'vc\',\''+p.id+'\')">Ouvrir fiche</button>'
+        +(isArch?'':'<button class="panc-btn muted" onclick="doEdit(\'vc\',\''+p.id+'\')">Ouvrir fiche</button>')
         +'<button class="panc-btn primary" onclick="markPancarteRetired(\''+p.id+'\')">&#10003; Retir&eacute;e</button>'
         +'</div>'
         +'</div>';
