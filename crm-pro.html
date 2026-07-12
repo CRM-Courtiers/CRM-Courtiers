@@ -4776,7 +4776,7 @@ var TUTORIELS=[
   {sec:'Pancartes', num:23, titre:'Suivre les pancartes \u00e0 installer / retirer', html:
     '<p>La section <strong>Pancartes</strong> t\u2019aide \u00e0 ne pas oublier les pancartes \u00e0 poser sur tes nouvelles inscriptions ni celles \u00e0 r\u00e9cup\u00e9rer apr\u00e8s une vente.</p>'
     +'<h2>Comment \u00e7a marche</h2>'
-    +'<p>\u00c0 partir de tes inscriptions, TRI-ANGLE liste les pancartes <strong>\u00e0 installer</strong> (mandats r\u00e9cents sans pancarte pos\u00e9e) et <strong>\u00e0 retirer</strong> (propri\u00e9t\u00e9s conclues). L\u2019Accueil affiche un compteur global.</p>'
+    +'<p>\u00c0 partir de tes inscriptions, TRI-ANGLE liste les pancartes <strong>\u00e0 installer</strong> (mandats r\u00e9cents sans pancarte pos\u00e9e) et <strong>\u00e0 retirer</strong> (ventes <strong>notari\u00e9es</strong> \u2014 tant que l\u2019acte n\u2019est pas sign\u00e9, la pancarte reste en place avec son VENDU). L\u2019Accueil affiche un compteur global.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Coche la pancarte comme pos\u00e9e/retir\u00e9e dans la fiche de l\u2019inscription pour garder la liste \u00e0 jour.</div></div>'},
   {sec:'Courriels & Templates', num:24, titre:'Cr\u00e9er et utiliser des gabarits de courriels', html:
     '<p>Les <strong>gabarits</strong> (templates) sont des courriels pr\u00e9-r\u00e9dig\u00e9s que tu r\u00e9utilises en un clic, organis\u00e9s par section.</p>'
@@ -6069,15 +6069,11 @@ function getPancartesAInstaller(){
   });
 }
 function getPancartesARetirer(){
-  // Conclus (vc) ET Notariées (archvc) : une pancarte non retirée doit rester visible
-  // même si la vente est archivée — sinon le rappel disparaît et la pancarte traîne.
-  var out=[];
-  [["vc",db.vc],["archvc",db.archvc]].forEach(function(pair){
-    (pair[1]||[]).filter(function(r){return r.pancarte && !r.pancarteRet;}).forEach(function(r){
-      out.push({tab:pair[0],id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",adresse:r.adresse||"(adresse non saisie)",dateConclusion:r.dateConclusion||""});
-    });
+  // Règle métier (LP, 11 juillet) : la pancarte reste en place (avec le VENDU) tant que
+  // l'acte n'est pas signé — « à retirer » = ventes NOTARIÉES (archvc) seulement.
+  return (db.archvc||[]).filter(function(r){return r.pancarte && !r.pancarteRet;}).map(function(r){
+    return {tab:"archvc",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",adresse:r.adresse||"(adresse non saisie)",dateConclusion:r.dateConclusion||"",dateNotaire:r.dateNotaire||""};
   });
-  return out;
 }
 function markPancarteInstalled(id){
   var rec=null;for(var i=0;i<db.v.length;i++){if(db.v[i].id===id){rec=db.v[i];break;}}if(!rec)return;
@@ -6125,15 +6121,13 @@ function renderPancartes(){
     retireList.innerHTML='<div class="panc-empty">Aucune pancarte &agrave; retirer &#127881;</div>';
   } else {
     retireList.innerHTML=aRetirer.map(function(p){
-      var concText=p.dateConclusion?"Conclu le "+fd(p.dateConclusion):"";
-      var isArch=(p.tab==='archvc');
+      var notText=p.dateNotaire?("Notari&eacute;e le "+fd(p.dateNotaire)):(p.dateConclusion?("Conclu le "+fd(p.dateConclusion)):"");
       return '<div class="panc-row">'
         +'<div class="panc-row-main">'
         +'<div class="panc-row-addr">'+esc(p.adresse)+'</div>'
-        +'<div class="panc-row-name">'+esc(p.name)+(concText?' &middot; '+esc(concText):'')+(isArch?' &middot; Notari&eacute;e':'')+'</div>'
+        +'<div class="panc-row-name">'+esc(p.name)+(notText?' &middot; '+notText:'')+'</div>'
         +'</div>'
         +'<div class="panc-row-actions">'
-        +(isArch?'':'<button class="panc-btn muted" onclick="doEdit(\'vc\',\''+p.id+'\')">Ouvrir fiche</button>')
         +'<button class="panc-btn primary" onclick="markPancarteRetired(\''+p.id+'\')">&#10003; Retir&eacute;e</button>'
         +'</div>'
         +'</div>';
