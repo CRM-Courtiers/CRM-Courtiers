@@ -10529,7 +10529,13 @@ function checkForUpdatesManual(){
 function installUpdate(){
   if(!window.electronAPI||!window.electronAPI.installUpdate)return;
   if(!confirm('Installer la mise à jour maintenant ?\n\nL\'application va redémarrer.'))return;
-  window.electronAPI.installUpdate();
+  _updSaveAndInstall();
+}
+// Anti-perte : SAUVEGARDER (champ actif commis + fichier écrit) AVANT tout redémarrage de MAJ
+function _updSaveAndInstall(){
+  try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
+  var go=function(){try{window.electronAPI.installUpdate();}catch(e){}};
+  try{Promise.resolve(writeAutoSave()).then(go,go);}catch(e){go();}
 }
 if(window.electronAPI&&window.electronAPI.getAppVersion){
   window.electronAPI.getAppVersion().then(function(info){
@@ -10560,6 +10566,12 @@ if(window.electronAPI&&window.electronAPI.onUpdateStatus){
       toast('✅ Mise à jour v'+d.version+' disponible — voir Paramètres');
     }
     else if(s==='force-install'){_showForceUpdateOverlay(d.version,d.seconds||15);}
+    else if(s==='final-save'){
+      // Dernière sauvegarde avant le redémarrage forcé (anti-perte) : commettre le champ
+      // en cours d'édition (blur déclenche son save) puis pousser le fichier.
+      try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
+      try{writeAutoSave();}catch(e){}
+    }
     else if(s==='error'){_setUpdateStatus(_shortUpdateError(d.message),true);_hideUpdateProgress();}
   });
 }
@@ -10567,6 +10579,8 @@ if(window.electronAPI&&window.electronAPI.onUpdateStatus){
 // redémarre l'app automatiquement à la fin du délai. Aucun moyen de reporter.
 function _showForceUpdateOverlay(version,seconds){
   if(document.getElementById('upd-force-ov'))return;
+  // Anti-perte : commettre le champ en cours d'édition (blur → son save) PUIS sauvegarder.
+  try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   try{writeAutoSave();}catch(e){} // sécurité : pousser une sauvegarde avant le redémarrage
   var ov=document.createElement('div');
   ov.id='upd-force-ov';
@@ -10574,7 +10588,7 @@ function _showForceUpdateOverlay(version,seconds){
   ov.innerHTML='<div style="font-size:21px;font-weight:800;margin-bottom:10px;letter-spacing:-.01em">Mise à jour v'+esc(version)+' prête</div>'
     +'<div style="font-size:14px;color:#CBD5E1;margin-bottom:22px;max-width:430px;line-height:1.55">TRI-ANGLE va redémarrer automatiquement pour installer la mise à jour.<br>Vos données sont sauvegardées.</div>'
     +'<div style="font-size:14px;color:#94A3B8;margin-bottom:18px">Redémarrage dans <strong id="upd-force-count" style="color:#fff;font-size:16px">'+seconds+'</strong> seconde(s)</div>'
-    +'<button onclick="if(window.electronAPI&&window.electronAPI.installUpdate)window.electronAPI.installUpdate()" style="background:#0EA5E9;color:#fff;border:none;border-radius:9px;padding:11px 24px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">Redémarrer maintenant</button>';
+    +'<button onclick="_updSaveAndInstall()" style="background:#0EA5E9;color:#fff;border:none;border-radius:9px;padding:11px 24px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">Redémarrer maintenant</button>';
   document.body.appendChild(ov);
   var n=seconds;
   var t=setInterval(function(){n--;var el=document.getElementById('upd-force-count');if(el)el.textContent=Math.max(0,n);if(n<=0)clearInterval(t);},1000);

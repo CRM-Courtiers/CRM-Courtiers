@@ -823,11 +823,17 @@ autoUpdater.on('update-downloaded', (info) => {
   sendUpdateStatus('downloaded', { version: info.version });
   // Mise à jour OBLIGATOIRE (Windows + Mac depuis v0.3.45) : installation silencieuse +
   // redémarrage auto après un court compte à rebours (le renderer affiche un écran bloquant).
+  // Anti-perte (11 juillet) : 2 s avant le quit, demander au renderer une DERNIÈRE sauvegarde
+  // (blur du champ actif + écriture du fichier) — ce qui a été saisi pendant le téléchargement
+  // ou le compte à rebours atteint le disque avant le redémarrage.
   const delaySec = 15;
   sendUpdateStatus('force-install', { version: info.version, seconds: delaySec });
   setTimeout(() => {
-    try { autoUpdater.quitAndInstall(true, true); }
-    catch (e) { console.warn('[update] quitAndInstall failed:', e && e.message); }
+    sendUpdateStatus('final-save');
+    setTimeout(() => {
+      try { autoUpdater.quitAndInstall(true, true); }
+      catch (e) { console.warn('[update] quitAndInstall failed:', e && e.message); }
+    }, 2000);
   }, delaySec * 1000);
 });
 autoUpdater.on('error', (err) => sendUpdateStatus('error', { message: err && err.message }));
