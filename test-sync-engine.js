@@ -11,7 +11,7 @@ const html = fs.readFileSync(path.join(__dirname, 'crm-pro.html'), 'utf8');
 const m = html.match(/\/\/ ⟦SYNC-ENGINE-BEGIN⟧[\s\S]*?\/\/ ⟦SYNC-ENGINE-END⟧/);
 if (!m) { console.error('FAIL: bloc SYNC-ENGINE introuvable'); process.exit(1); }
 const engine = {};
-new Function('exports', m[0] + '\nexports.SYNC_COLLS=SYNC_COLLS;exports.diff=_syncDiffOps;exports.apply=_syncApplyOps;exports.tick=_syncTick;exports.rescue=_syncRescueOps;exports.sanitize=_collabSanitize;exports.filterIn=_collabFilterIncoming;exports.COLLAB_COLLS=COLLAB_COLLS;')(engine);
+new Function('exports', m[0] + '\nexports.SYNC_COLLS=SYNC_COLLS;exports.diff=_syncDiffOps;exports.apply=_syncApplyOps;exports.tick=_syncTick;exports.rescue=_syncRescueOps;exports.sanitize=_collabSanitize;exports.filterIn=_collabFilterIncoming;exports.COLLAB_COLLS=COLLAB_COLLS;exports.compact=_syncCompactOps;')(engine);
 
 // ── Simulateur de poste ──
 let fakeNow = 1000000;
@@ -189,6 +189,47 @@ check('del du collègue ignoré (je suis propriétaire)', !kept.some(o => o.op =
 const up9 = kept.find(o => o.id === 'v9' && o.op === 'up');
 check('up conservé mais % et commission filtrés', up9 && !('_collabPct' in up9.d) && !('commission' in up9.d) && up9.d.notes === 'maj du collègue');
 check('fiche légitime du collègue passe', kept.some(o => o.id === 'newrec'));
+
+// ── Scénario 13 : Compaction du journal — équivalence stricte ──
+console.log('S13 — compaction : le journal compacté reproduit l\'état, sans écraser plus récent');
+// Poste C construit un historique : créations, éditions, suppression
+let C = device('CCCC'), D = device('DDDD');
+C.coll('a').push({ id: 'c1', prenom: 'Ana', telephone: '111' });
+C.coll('v').push({ id: 'c2', prenom: 'Bob', adresse: 'ici' });
+fakeNow += 1000; C.commit();
+fakeNow += 1000; C.find('a', 'c1').telephone = '222'; C.commit();
+fakeNow += 1000; C.state.v = C.state.v.filter(r => r.id !== 'c2'); C.commit(); // suppression → tombstone
+const compacted = engine.compact(C.state, C.meta, 'CCCC');
+// 13a : rejouer le journal compacté sur un poste VIERGE = même état
+D.receive(compacted);
+check('état reproduit à l\'identique', deepEq(sortedState(D.state), sortedState(C.state)));
+check('tombstone présent dans la compaction', compacted.some(o => o.op === 'del' && o.id === 'c2'));
+// 13b : la fiche supprimée ne ressuscite pas chez un poste qui avait l'ancienne version
+let E = device('EEEE');
+E.receive(C.journal.slice(0, 2)); // E n'a que les créations (avant suppression)
+E.receive(compacted);
+check('suppression appliquée via compaction chez le retardataire', !E.find('v', 'c2'));
+// 13c : une édition PLUS RÉCENTE d'un autre poste n'est pas écrasée par la compaction
+fakeNow += 1000; D.find('a', 'c1').telephone = '333-nouveau'; D.commit();
+C.receive(D.journal); // C connaît l'édition de D
+const compacted2 = engine.compact(C.state, C.meta, 'CCCC');
+const opTel = compacted2.filter(o => o.op === 'up' && o.id === 'c1' && o.d.telephone !== undefined);
+check('le champ édité par D garde le ts/dev de D', opTel.length === 1 && opTel[0].dev === 'DDDD');
+// rejouer compacted2 chez D ne change rien (idempotence croisée)
+const avant13 = canon(sortedState(D.state));
+D.receive(compacted2);
+check('rejouer la compaction chez D = aucun changement', canon(sortedState(D.state)) === avant13);
+checkConverge('S13', C, D);
+// 13d : champs jamais synchronisés (import autosave, pas de fts) → ts=1, toute édition réelle gagne
+let F = device('FFFF'), G = device('GGGG');
+F.state.a = [{ id: 'f1', prenom: 'Zoe', notes: 'import autosave' }]; // injecté SANS commit (pas de fts)
+const compactedF = engine.compact(F.state, F.meta, 'FFFF');
+check('champ sans fts émis à ts=1', compactedF.every(o => o.ts === 1));
+G.coll('a').push({ id: 'f1', prenom: 'Zoé-corrigée' });
+fakeNow += 1000; G.commit();
+G.receive(compactedF);
+check('l\'édition réelle de G bat le ts préhistorique', G.find('a', 'f1').prenom === 'Zoé-corrigée');
+check('le champ inédit de F arrive quand même chez G', G.find('a', 'f1').notes === 'import autosave');
 
 Date.now = realNow;
 console.log('\n══════ RÉSULTAT : ' + pass + ' OK, ' + fail + ' FAIL ══════');

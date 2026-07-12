@@ -45,6 +45,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   syncAppend: (fileName, text) => ipcRenderer.invoke('sync-append', { fileName, text }),
   syncList: () => ipcRenderer.invoke('sync-list'),
   syncRead: (fileName, fromByte) => ipcRenderer.invoke('sync-read', { fileName, fromByte }),
+  syncRewrite: (fileName, text) => ipcRenderer.invoke('sync-rewrite', { fileName, text }),
   // Étape 33 — Collaboration entre courtiers : journaux dans un dossier-canal partagé
   collabPickFolder: () => ipcRenderer.invoke('collab-pick-folder'),
   collabAppend: (dir, fileName, text) => ipcRenderer.invoke('collab-append', { dir, fileName, text }),

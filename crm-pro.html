@@ -2788,6 +2788,41 @@ function _collabFilterIncoming(ops,state,myDev){
   });
   return keep;
 }
+// ── Compaction du journal (2026-07) : remplace le journal append-only par un instantané
+// équivalent (état complet + tombstones) en PRÉSERVANT les timestamps par champ (meta.fts).
+// Rejouer le journal compacté est donc STRICTEMENT idempotent : une édition plus récente
+// d'un autre poste ne peut jamais être écrasée (le champ garde son ts d'origine, pas un neuf).
+// Champs jamais synchronisés (aucune entrée fts, ex. données importées du fichier autosave) :
+// ts=1 (« préhistorique ») — n'importe quelle édition réelle les bat.
+function _syncCompactOps(state,meta,dev){
+  var ops=[];
+  SYNC_COLLS.forEach(function(c){
+    (state[c]||[]).forEach(function(r){
+      if(!r||!r.id)return;
+      var fts=((meta.fts||{})[c]||{})[r.id]||{};
+      // Regroupe les champs par (ts,dev) d'origine → une op par groupe (journal compact)
+      var groups={},k;
+      for(k in r){
+        if(!r.hasOwnProperty(k)||k==='id')continue;
+        var fm=fts[k];
+        var t=(fm&&fm.t)?fm.t:1;
+        var dv=(fm&&fm.d)?fm.d:dev;
+        var gk=t+'|'+dv;
+        if(!groups[gk])groups[gk]={ts:t,dev:dv,d:{}};
+        groups[gk].d[k]=JSON.parse(JSON.stringify(r[k]===undefined?null:r[k]));
+      }
+      var any=false;
+      for(var g in groups){if(groups.hasOwnProperty(g)){ops.push({ts:groups[g].ts,dev:groups[g].dev,op:'up',c:c,id:r.id,d:groups[g].d});any=true;}}
+      if(!any)ops.push({ts:1,dev:dev,op:'up',c:c,id:r.id,d:{}}); // fiche sans champ : garder l'existence
+    });
+    // Les tombstones DOIVENT survivre à la compaction, sinon un poste longtemps hors ligne
+    // ressusciterait ses fiches supprimées au retour.
+    var tomb=(meta.tomb||{})[c]||{};
+    for(var id in tomb){if(tomb.hasOwnProperty(id))ops.push({ts:tomb[id],dev:dev,op:'del',c:c,id:id});}
+  });
+  ops.sort(function(a,b){return a.ts-b.ts||(a.dev<b.dev?-1:a.dev>b.dev?1:0);});
+  return ops;
+}
 // Ré-émission COMPLÈTE de fiches (sauvetage après refus de suppression) — voir _syncApplyOps
 function _syncRescueOps(state,meta,dev,clockRef,list){
   var ops=[],seen={};
@@ -2880,9 +2915,18 @@ async function _syncPull(){
     for(var i=0;i<lst.files.length;i++){
       var f=lst.files[i];
       if(f.name===mine)continue;
-      var cursor=_syncCursors[f.name]||0;
-      if(f.size<=cursor)continue;
-      var rd=await window.electronAPI.syncRead(f.name,cursor);
+      // Curseur {c:octets, h:1re ligne} — l'ancien format numérique est migré à la volée.
+      // Si la 1re ligne du journal a changé (compaction = réécriture), relire depuis 0 :
+      // le journal compacté garde les ts d'origine par champ, la relecture est idempotente.
+      var cu=_syncCursors[f.name];
+      if(typeof cu==='number')cu={c:cu,h:null};
+      if(!cu||typeof cu!=='object')cu={c:0,h:null};
+      if(cu.h!==null&&f.head&&cu.h!==f.head)cu={c:0,h:f.head};
+      if(cu.h===null&&f.head)cu.h=f.head;
+      if(typeof f.size==='number'&&f.size<cu.c)cu={c:0,h:f.head||null}; // fichier raccourci (sécurité)
+      _syncCursors[f.name]=cu;
+      if(f.size<=cu.c)continue;
+      var rd=await window.electronAPI.syncRead(f.name,cu.c);
       if(!rd||!rd.ok)continue;
       var data=rd.data||'';
       var lastNl=data.lastIndexOf('\n');
@@ -2890,9 +2934,9 @@ async function _syncPull(){
       var complete=data.substring(0,lastNl+1);
       complete.split('\n').forEach(function(line){
         line=line.trim();if(!line)return;
-        try{var o=JSON.parse(line);if(o&&o.op&&o.c&&o.id&&o.ts)allOps.push(o);}catch(e){/* ligne corrompue : ignorée */}
+        try{var o=JSON.parse(line);if(o&&o.op&&o.c&&o.id&&o.ts)allOps.push(o);}catch(e){/* ligne corrompue ou marqueur de compaction : ignorée */}
       });
-      _syncCursors[f.name]=cursor+_syncUtf8Len(complete);
+      _syncCursors[f.name]={c:cu.c+_syncUtf8Len(complete),h:cu.h||f.head||null};
     }
     if(allOps.length){
       var rescue=[];
@@ -2916,10 +2960,33 @@ function _syncStartLoop(){
   if(_syncTimer)clearInterval(_syncTimer);
   _syncTimer=setInterval(function(){_syncPull();_syncFlushQueue();_collabPull();_collabFlushAll();},45000);
 }
+// ── Compaction automatique du journal : quand MON journal dépasse le seuil, le remplacer
+// par un instantané équivalent (_syncCompactOps — ts par champ préservés, idempotent).
+// 1re ligne = marqueur → les autres postes voient la tête changer et relisent depuis 0.
+// Fenêtre de course théorique (édition pendant l'écriture) : bornée à quelques ms au
+// démarrage; au pire l'op manquante repart à la prochaine compaction (état complet).
+var SYNC_COMPACT_SEUIL=512*1024; // 512 Ko
+async function _syncMaybeCompact(){
+  if(!_syncOn()||!_syncMeta)return;
+  if(!(window.electronAPI&&window.electronAPI.syncRewrite))return;
+  try{
+    var lst=await window.electronAPI.syncList();
+    if(!lst||!lst.ok||!lst.files)return;
+    var mine=_syncJournalName(),f=null;
+    for(var i=0;i<lst.files.length;i++){if(lst.files[i].name===mine){f=lst.files[i];break;}}
+    if(!f||f.size<SYNC_COMPACT_SEUIL)return;
+    if(_syncWriteQueue||_syncWriting)return; // jamais pendant des écritures en attente
+    var ops=_syncCompactOps(db,_syncMeta,_syncDeviceId());
+    var text='{"j":"compact-'+Date.now()+'-'+_syncDeviceId()+'"}\n';
+    ops.forEach(function(o){text+=JSON.stringify(o)+'\n';});
+    var res=await window.electronAPI.syncRewrite(mine,text);
+    if(res&&res.ok)console.log('[sync] journal compacté : '+f.size+' → '+_syncUtf8Len(text)+' octets');
+  }catch(e){console.warn('[sync] compaction:',e&&e.message);}
+}
 // Activation : publie l'état COMPLET courant comme baseline dans mon journal
 function syncEnable(){
   if(!(window.electronAPI&&window.electronAPI.syncAppend)){toast('⚠ Synchronisation entre postes : disponible dans l\'application de bureau seulement');return;}
-  try{localStorage.setItem('crmpro-sync-on','1');}catch(e){}
+  try{localStorage.setItem('crmpro-sync-on','1');localStorage.removeItem('crmpro-sync-manual-off');}catch(e){}
   _syncLoadState();
   _syncShadow={}; // baseline = tout l'état part en ops complètes
   _syncOnLocalChange();
@@ -2929,7 +2996,8 @@ function syncEnable(){
   _syncRenderSettings();
 }
 function syncDisable(){
-  try{localStorage.setItem('crmpro-sync-on','0');}catch(e){}
+  // manual-off : l'activation automatique (_autoSyncIfOtherPoste) respecte ce choix
+  try{localStorage.setItem('crmpro-sync-on','0');localStorage.setItem('crmpro-sync-manual-off','1');}catch(e){}
   if(_syncTimer){clearInterval(_syncTimer);_syncTimer=null;}
   var chip=document.getElementById('syncChip');if(chip)chip.style.display='none';
   toast('Synchronisation désactivée (les journaux existants sont conservés)');
@@ -2942,6 +3010,11 @@ function _syncInit(){
     _syncLoadState();
     _syncShadow=_syncSnapshotDb();
     setTimeout(_syncPull,2500);
+    setTimeout(_syncMaybeCompact,9000); // compaction éventuelle, après le 1er pull
+  } else {
+    // Activation AUTOMATIQUE : si un autre poste journalise déjà dans ce dossier,
+    // ce poste doit synchroniser aussi (sauf refus manuel de l'utilisateur).
+    setTimeout(_autoSyncIfOtherPoste,3000);
   }
   if(_syncOn()||hasCollab)_syncStartLoop();
   if(hasCollab)setTimeout(_collabPull,3500);
@@ -3342,22 +3415,25 @@ async function pickElectronFolder(){
     await autoImportFromFile(); // le dossier peut d\u00e9j\u00e0 contenir des donn\u00e9es (autre poste) \u2014 les charger AVANT d'\u00e9crire
     await writeAutoSave();
     toast("\u2705 Dossier chang\u00e9 \u2192 \u00ab "+res.name+" \u00bb");
-    _proposeSyncIfOtherPoste();
+    _autoSyncIfOtherPoste();
   }
 }
-// D\u00e9tection 2e poste : si le dossier connect\u00e9 contient d\u00e9j\u00e0 le journal d'un AUTRE poste,
-// proposer d'activer la synchronisation (\u00e9vite le mode fragile \u00ab 2 postes, m\u00eame fichier \u00bb)
-async function _proposeSyncIfOtherPoste(){
+// Activation AUTOMATIQUE de la sync : si le dossier contient d\u00e9j\u00e0 le journal d'un AUTRE
+// poste, ce poste-ci s'active tout seul (\u00e9vite le mode fragile \u00ab 2 postes, m\u00eame fichier \u00bb).
+// Les deux postes se recrutent mutuellement : d\u00e8s qu'UN poste active (ou d\u00e9tecte), l'autre
+// voit son journal au prochain d\u00e9marrage et s'active aussi. Respecte le refus manuel
+// (crmpro-sync-manual-off, pos\u00e9 par syncDisable).
+async function _autoSyncIfOtherPoste(){
   try{
     if(_syncOn()||!(window.electronAPI&&window.electronAPI.syncList))return;
+    try{if(localStorage.getItem('crmpro-sync-manual-off')==='1')return;}catch(e){}
     var sl=await window.electronAPI.syncList();
     if(!sl||!sl.ok||!sl.files)return;
     var mine=_syncJournalName();
     var others=sl.files.filter(function(f){return f.name!==mine;});
     if(!others.length)return;
-    if(confirm('Ce dossier est d\u00e9j\u00e0 utilis\u00e9 par un autre poste TRI-ANGLE.\n\nActiver la synchronisation entre postes (recommand\u00e9)?\n\nChaque poste garde son propre journal et tout se fusionne automatiquement \u2014 que ce soit ton propre 2e ordinateur ou le poste de ton adjoint(e).')){
-      syncEnable();
-    }
+    syncEnable();
+    toast('\ud83d\udd04 Un autre poste utilise ce dossier \u2014 synchronisation activ\u00e9e automatiquement');
   }catch(e){}
 }
 async function connectAutoSave(){
@@ -4806,7 +4882,7 @@ var TUTORIELS=[
   {sec:'Syst\u00e8me', num:34, titre:'Synchronisation entre postes (2e ordi, adjointe) \u2014 b\u00eata', html:
     '<p>La <strong>synchronisation entre postes</strong> permet de travailler dans les <strong>m\u00eames donn\u00e9es</strong> depuis plusieurs ordinateurs \u2014 sans serveur : tout passe par votre dossier de sauvegarde partag\u00e9 (OneDrive ou Dropbox). Deux cas d\u2019usage : <strong>toi-m\u00eame sur un 2e poste</strong> (bureau + portable), ou <strong>ton adjoint(e)</strong> sur son propre poste.</p>'
     +'<h2>Toi sur un 2e ordinateur</h2>'
-    +'<p>Installe TRI-ANGLE, entre <strong>ta propre cl\u00e9</strong>, choisis le <strong>m\u00eame dossier de sauvegarde</strong> \u2014 l\u2019app d\u00e9tecte l\u2019autre poste et te propose d\u2019activer la synchronisation. Accepte, et active-la aussi sur ton premier poste (Param\u00e8tres &rarr; \u00c9quipe). Garde le profil <strong>Courtier</strong> sur les deux.</p>'
+    +'<p>Installe TRI-ANGLE, entre <strong>ta propre cl\u00e9</strong>, choisis le <strong>m\u00eame dossier de sauvegarde</strong> \u2014 l\u2019app d\u00e9tecte l\u2019autre poste et <strong>active la synchronisation automatiquement</strong>, sur ce poste comme sur l\u2019autre (au d\u00e9marrage suivant). Garde le profil <strong>Courtier</strong> sur les deux. Les journaux sont compact\u00e9s automatiquement quand ils grossissent \u2014 rien \u00e0 g\u00e9rer.</p>'
     +'<h2>Mise en place avec une adjointe (une fois)</h2>'
     +'<ol>'
     +'<li>Dans <strong>Param\u00e8tres \u2192 \u00c9quipe \u2192 Adjoint(e)</strong>, clique <strong>G\u00e9n\u00e9rer sa cl\u00e9</strong> : tu obtiens la cl\u00e9 de ton adjoint(e) et le lien d\u2019installation, pr\u00eats \u00e0 lui transmettre. Sa cl\u00e9 est <strong>li\u00e9e</strong> \u00e0 la tienne (elle suit tes renouvellements) et r\u00e8gle son poste en profil Adjoint(e) automatiquement.</li>'
@@ -10641,7 +10717,7 @@ async function onboardingPick(folderPath){
   await autoImportFromFile(); // le dossier peut déjà contenir des données (2e poste) — les charger AVANT d'écrire
   await writeAutoSave();
   toast('&#9989; Sauvegarde configur&eacute;e dans &laquo; '+res.name+' &raquo;');
-  await _proposeSyncIfOtherPoste();
+  await _autoSyncIfOtherPoste();
   // Transitionner vers étape Google Calendar (au lieu de fermer)
   await _wizPrepareGcalStep();
 }
@@ -10655,7 +10731,7 @@ async function onboardingCustom(){
   await autoImportFromFile(); // le dossier peut déjà contenir des données (2e poste) — les charger AVANT d'écrire
   await writeAutoSave();
   toast('&#9989; Sauvegarde configur&eacute;e dans &laquo; '+res.name+' &raquo;');
-  await _proposeSyncIfOtherPoste();
+  await _autoSyncIfOtherPoste();
   await _wizPrepareGcalStep();
 }
 

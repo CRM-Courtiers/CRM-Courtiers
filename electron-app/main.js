@@ -239,10 +239,41 @@ ipcMain.handle('sync-list', async () => {
     const dir = _syncDir();
     if (!fs.existsSync(dir)) return { ok: true, files: [] };
     const files = fs.readdirSync(dir).filter(f => SYNC_FILE_RE.test(f)).map(f => {
-      try { const st = fs.statSync(path.join(dir, f)); return { name: f, size: st.size }; }
-      catch (e) { return { name: f, size: 0 }; }
+      try {
+        const p = path.join(dir, f);
+        const st = fs.statSync(p);
+        // head = début de la 1re ligne : stable sur un journal append-only, change à la
+        // compaction (réécriture) → permet aux lecteurs de détecter et relire depuis 0
+        let head = '';
+        try {
+          const fd = fs.openSync(p, 'r');
+          try {
+            const buf = Buffer.alloc(Math.min(96, st.size));
+            fs.readSync(fd, buf, 0, buf.length, 0);
+            head = buf.toString('utf8').split('\n')[0];
+          } finally { fs.closeSync(fd); }
+        } catch (e) {}
+        return { name: f, size: st.size, head: head };
+      }
+      catch (e) { return { name: f, size: 0, head: '' }; }
     });
     return { ok: true, files: files };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+// Compaction (2026-07) : réécrit ATOMIQUEMENT le journal du poste (tmp + rename).
+// N'accepte que les noms journal-*.jsonl — chaque poste ne réécrit que le sien.
+ipcMain.handle('sync-rewrite', async (event, payload) => {
+  try {
+    const fileName = (payload && payload.fileName) || '';
+    const text = (payload && payload.text) || '';
+    if (!SYNC_FILE_RE.test(fileName)) return { ok: false, error: 'nom de fichier invalide' };
+    const dir = _syncDir();
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const finalPath = path.join(dir, fileName);
+    const tmpPath = finalPath + '.tmp';
+    fs.writeFileSync(tmpPath, text, 'utf8');
+    fs.renameSync(tmpPath, finalPath);
+    return { ok: true };
   } catch (e) { return { ok: false, error: e.message }; }
 });
 ipcMain.handle('sync-read', async (event, payload) => {
