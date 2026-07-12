@@ -4323,7 +4323,7 @@ function renderTab(tab){
           var linkBtnPaev=rec.linkId
             ?'<button class="bsm bdl" onclick="unlinkRecord(\'pa\',\''+rec.id+'\')" title="Annuler la liaison">&#128274; D\u00e9lier</button>'
             :'<button class="bsm bret" onclick="openLinkModal(\'pa\',\''+rec.id+'\')" title="Lier \u00e0 un autre acheteur (m\u00eame PA)">&#128279; Lier</button>';
-          extraBtns='<button class="bsm bret" onclick="transferToConclus(\'pa\',\''+rec.id+'\')" title="Marquer comme conclu">&#9989; Conclu</button> '+linkBtnPaev+' <button class="bsm bdl" onclick="transferPaevToDemande(\''+rec.id+'\')" title="Retour \u00e0 Demandes (PA refus\u00e9e)">&#8617; Demandes</button>';
+          extraBtns='<button class="bsm bret" onclick="transferToConclus(\'pa\',\''+rec.id+'\')" title="Marquer comme conclu">&#9989; Conclu</button> <button class="bsm bret" onclick="_paArchOrphan(\''+rec.id+'\')" title="La propri\u00e9t\u00e9 a d\u00e9j\u00e0 \u00e9t\u00e9 vendue \u2014 archiver cette promesse et la lier \u00e0 la vente conclue">&#128451; Vendu</button> '+linkBtnPaev+' <button class="bsm bdl" onclick="transferPaevToDemande(\''+rec.id+'\')" title="Retour \u00e0 Demandes (PA refus\u00e9e)">&#8617; Demandes</button>';
         }
         if(tab==="v"){
           var linkBtnV=rec.linkId
@@ -4675,7 +4675,9 @@ var TUTORIELS=[
     +'<p>Comme pour les promesses en cours : conditions, \u00e9ch\u00e9ances, notaire. Quand tout est lev\u00e9, <strong>Marquer conclu</strong> sur l\u2019inscription envoie la transaction dans Ventes conclues.</p>'
     +'<h2>Que devient la promesse re\u00e7ue \u00e0 la conclusion ?</h2>'
     +'<p>Quand tu conclus la vente, la promesse re\u00e7ue de l\u2019acheteur ne dispara\u00eet pas dans le vide : elle descend automatiquement dans la section repliable <strong>Archiv\u00e9es</strong>, au bas de la page Promesses re\u00e7ues. Tu y retrouves le contact de l\u2019acheteur, le statut, et surtout l\u2019<strong>Acte conclus</strong> (le vendeur \u00e0 qui la transaction est rattach\u00e9e) \u2014 tout reste tra\u00e7able.</p>'
-    +'<p>Et dans <strong>Ventes conclues</strong>, une colonne <strong>Acheteur</strong> affiche un badge \ud83d\udc64 : clique-le pour sauter directement \u00e0 la promesse archiv\u00e9e correspondante (elle se surligne en jaune).</p>'
+    +'<p>Et dans <strong>Ventes conclues</strong> (sections Conclus et Notari\u00e9es), une colonne <strong>Acheteur</strong> affiche un badge \ud83d\udc64 : clique-le pour sauter directement \u00e0 la promesse archiv\u00e9e correspondante (elle se surligne en jaune).</p>'
+    +'<h2>Une promesse rest\u00e9e en haut alors que la vente est conclue ?</h2>'
+    +'<p>\u00c7a arrive si la promesse a \u00e9t\u00e9 saisie apr\u00e8s la conclusion (ou conclue avec une ancienne version). Utilise <strong>\u2630 Actions &rarr; \ud83d\uddc4 Vendu</strong> sur la promesse : choisis la vente conclue correspondante, et la promesse descend dans Archiv\u00e9es, li\u00e9e \u00e0 l\u2019acte, avec le badge \ud83d\udc64 pos\u00e9 sur la vente.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Les gabarits de courriels \u00ab Courtiers collaborateurs \u00bb te font gagner du temps pour communiquer avec l\u2019autre courtier.</div></div>'},
   {sec:'En vente', num:15, titre:'Suivre les conditions et les \u00e9ch\u00e9ances', html:
     '<p>Les <strong>conditions</strong> (inspection, financement, R2.1/R2.2, assurance, fosse septique, test d\u2019eau, notaire\u2026) sont le c\u0153ur du suivi d\u2019une promesse. TRI-ANGLE t\u2019aide \u00e0 ne jamais manquer une date.</p>'
@@ -5854,6 +5856,51 @@ function transferToConclus(fromTab,id){
   if (fromTab === 'v' && vIdsTransferred.length) {
     setTimeout(function(){ _promptDemandesAfterVConclu(vIdsTransferred, noms.join(' + ')); }, 250);
   }
+}
+
+// ── Promesse reçue ORPHELINE → archiver manuellement en la liant à une vente conclue ──
+// Le flux automatique n'archive que les PA présentes AU MOMENT de la conclusion; une
+// promesse restée ouverte (ou saisie après coup) reste dans la section du haut. Le bouton
+// « 🗄 Vendu » (Actions, Promesses reçues) répare : choisir l'acte → archivage + lien + badge 👤.
+function _paArchOrphan(paId){
+  var pa=null;for(var i=0;i<(db.pa||[]).length;i++){if(db.pa[i].id===paId){pa=db.pa[i];break;}}
+  if(!pa)return;
+  var actes=[];
+  (db.vc||[]).forEach(function(a){actes.push({acte:a,sec:'Conclus — attente notaire'});});
+  (db.archvc||[]).forEach(function(a){actes.push({acte:a,sec:'Notariées'});});
+  if(!actes.length){alert('Aucune vente conclue à associer — conclus d\'abord la vente correspondante.');return;}
+  var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)';
+  var box=document.createElement('div');box.style.cssText='background:#fff;border-radius:16px;padding:22px;width:min(560px,92vw);max-height:78vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.3)';
+  var h='<div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:4px">Associer à la vente conclue</div>'
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:14px">La promesse de <strong>'+esc(((pa.prenom||'')+' '+(pa.nom||'')).trim())+'</strong> descendra dans « Archivées » (bas de Promesses reçues), liée à l\'acte choisi — le badge 👤 apparaîtra sur la vente.</div>';
+  actes.forEach(function(it,ix){
+    var a=it.acte;
+    h+='<button data-ix="'+ix+'" class="pa-orph-pick" style="display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;border:1.5px solid #E2E8F0;border-radius:8px;background:#F8FAFC;cursor:pointer;font-family:inherit">'
+      +'<div style="font-weight:700;font-size:13px;color:#0F172A">'+esc(((a.prenom||'')+' '+(a.nom||'')).trim()||'(sans nom)')+' <span style="font-weight:400;color:#94A3B8;font-size:11px">· '+esc(it.sec)+'</span></div>'
+      +'<div style="font-size:12px;color:#475569">'+esc(a.adresse||'(sans adresse)')+(a.dateConclusion?' — conclu le '+fd(a.dateConclusion):'')+'</div>'
+      +'</button>';
+  });
+  h+='<div style="text-align:right;margin-top:8px"><button id="pa-orph-cancel" style="padding:8px 20px;background:none;border:1.5px solid #CBD5E1;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#6B7280">Annuler</button></div>';
+  box.innerHTML=h;ov.appendChild(box);document.body.appendChild(ov);
+  function closeOrph(){if(ov.parentNode)document.body.removeChild(ov);}
+  ov.onclick=function(e){if(e.target===ov)closeOrph();};
+  box.querySelector('#pa-orph-cancel').onclick=closeOrph;
+  box.querySelectorAll('.pa-orph-pick').forEach(function(btn){
+    btn.onclick=function(){
+      var it=actes[parseInt(btn.getAttribute('data-ix'),10)];
+      if(!it)return;
+      var acte=it.acte;
+      pushUndo('Archiver promesse (vente conclue)');
+      var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:pa.statutPa||"",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||acte.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:acte.dateConclusion||_todayStr(),linkedToActeId:acte.id,linkedToActeNom:((acte.prenom||"")+" "+(acte.nom||"")).trim()||"(sans nom)"};
+      if(!db.archpa)db.archpa=[];
+      db.archpa.push(archEntry);
+      db.pa=(db.pa||[]).filter(function(x){return x.id!==pa.id;});
+      // Poser le badge 👤 sur l'acte s'il n'en a pas déjà un
+      if(!acte.acheteurNom){acte.acheteurNom=((pa.prenom||'')+' '+(pa.nom||'')).trim();acte.acheteurId=pa.id;}
+      sdb();rall();closeOrph();
+      toast('✓ Promesse archivée et liée à '+archEntry.linkedToActeNom);
+    };
+  });
 }
 
 // Modal de choix pour les demandes restantes apres conclusion d'une vente (decision par lead)
