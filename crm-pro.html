@@ -5846,7 +5846,7 @@ function transferToConclus(fromTab,id){
     toTransfer.forEach(function(vendeur){
       var paCorrespondantes=(db.pa||[]).filter(function(p){return p.propertyId===vendeur.id;});
       paCorrespondantes.forEach(function(pa){
-        var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:pa.statutPa||"",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:dateConc,linkedToActeId:vendeur.id,linkedToActeNom:((vendeur.prenom||"")+" "+(vendeur.nom||"")).trim()||"(sans nom)"};
+        var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:"Acceptée",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:dateConc,linkedToActeId:vendeur.id,linkedToActeNom:((vendeur.prenom||"")+" "+(vendeur.nom||"")).trim()||"(sans nom)"};
         db.archpa.push(archEntry);
         db.pa=(db.pa||[]).filter(function(x){return x.id!==pa.id;});
       });
@@ -5917,12 +5917,15 @@ function _paArchOrphan(paId){
       if(!it)return;
       var acte=it.acte;
       pushUndo('Archiver promesse (vente conclue)');
-      var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:pa.statutPa||"",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||acte.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:acte.dateConclusion||_todayStr(),linkedToActeId:acte.id,linkedToActeNom:((acte.prenom||"")+" "+(acte.nom||"")).trim()||"(sans nom)"};
+      // statutPa forcé à « Acceptée » : la vente s'est conclue, la promesse a été acceptée
+      var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:"Acceptée",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||acte.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:acte.dateConclusion||_todayStr(),linkedToActeId:acte.id,linkedToActeNom:((acte.prenom||"")+" "+(acte.nom||"")).trim()||"(sans nom)"};
       if(!db.archpa)db.archpa=[];
       db.archpa.push(archEntry);
       db.pa=(db.pa||[]).filter(function(x){return x.id!==pa.id;});
-      // Poser le badge 👤 sur l'acte s'il n'en a pas déjà un
-      if(!acte.acheteurNom){acte.acheteurNom=((pa.prenom||'')+' '+(pa.nom||'')).trim();acte.acheteurId=pa.id;}
+      // Le choix explicite de l'utilisateur fait autorité : poser badge ET lien (même si un
+      // nom existait déjà sans lien — c'était le cas des données historiques de Sophie)
+      acte.acheteurNom=((pa.prenom||'')+' '+(pa.nom||'')).trim();
+      acte.acheteurId=pa.id;
       sdb();rall();closeOrph();
       toast('✓ Promesse archivée et liée à '+archEntry.linkedToActeNom);
     };
