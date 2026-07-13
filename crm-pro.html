@@ -6200,7 +6200,7 @@ function openPancListesModal(){
   box.innerHTML='<div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:4px">Listes de pancartes</div>'
     +'<div style="font-size:12px;color:#64748B;margin-bottom:14px">Coche ce que tu veux inclure — le document est <strong>anonyme</strong> (adresses seulement), prêt à imprimer ou envoyer à ton installateur.</div>'
     +[['pl-inst','📥 Pancartes à installer',getPancartesAInstaller().length,true],
-      ['pl-vendu','🏷️ Autocollant VENDU à ajouter',getPancartesVenduAAjouter().length,true],
+      ['pl-vendu','🏷️ VENDU à ajouter',getPancartesVenduAAjouter().length,true],
       ['pl-ret','📤 Pancartes à retirer',getPancartesARetirer().length,true],
       ['pl-place','🗺️ Inventaire — pancartes en place',getPancartesEnPlace().length,false]].map(function(o){
         return '<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:6px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:13px;color:#0F172A"><input type="checkbox" id="'+o[0]+'"'+(o[3]?' checked':'')+' style="width:auto">'+o[1]+' <span style="margin-left:auto;color:#94A3B8;font-size:12px">('+o[2]+')</span></label>';
@@ -6223,7 +6223,7 @@ function openPancListesModal(){
 function _pancCollectSections(sel){
   var secs=[];
   if(sel.inst)secs.push({titre:'PANCARTES À INSTALLER',rows:getPancartesAInstaller().map(function(p){return p.adresse;})});
-  if(sel.vendu)secs.push({titre:'AUTOCOLLANT « VENDU » À AJOUTER',rows:getPancartesVenduAAjouter().map(function(p){return p.adresse;})});
+  if(sel.vendu)secs.push({titre:'VENDU À AJOUTER',rows:getPancartesVenduAAjouter().map(function(p){return p.adresse;})});
   if(sel.ret)secs.push({titre:'PANCARTES À RETIRER',rows:getPancartesARetirer().map(function(p){return p.adresse;})});
   if(sel.place)secs.push({titre:'INVENTAIRE — PANCARTES EN PLACE',rows:getPancartesEnPlace().map(function(p){return p.adresse+'  ('+p.stade+')';})});
   return secs;
