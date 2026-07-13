@@ -4323,7 +4323,7 @@ function renderTab(tab){
           var linkBtnPaev=rec.linkId
             ?'<button class="bsm bdl" onclick="unlinkRecord(\'pa\',\''+rec.id+'\')" title="Annuler la liaison">&#128274; D\u00e9lier</button>'
             :'<button class="bsm bret" onclick="openLinkModal(\'pa\',\''+rec.id+'\')" title="Lier \u00e0 un autre acheteur (m\u00eame PA)">&#128279; Lier</button>';
-          extraBtns='<button class="bsm bret" onclick="transferToConclus(\'pa\',\''+rec.id+'\')" title="Marquer comme conclu">&#9989; Conclu</button> <button class="bsm bret" onclick="_paArchOrphan(\''+rec.id+'\')" title="La propri\u00e9t\u00e9 a d\u00e9j\u00e0 \u00e9t\u00e9 vendue \u2014 archiver cette promesse et la lier \u00e0 la vente conclue">&#128451; Vendu</button> '+linkBtnPaev+' <button class="bsm bdl" onclick="transferPaevToDemande(\''+rec.id+'\')" title="Retour \u00e0 Demandes (PA refus\u00e9e)">&#8617; Demandes</button>';
+          extraBtns='<button class="bsm bret" onclick="_paevConclure(\''+rec.id+'\')" title="Conclure la vente de cette propri\u00e9t\u00e9 (la promesse sera archiv\u00e9e et li\u00e9e automatiquement)">&#9989; Conclu</button> <button class="bsm bret" onclick="_paArchOrphan(\''+rec.id+'\')" title="La propri\u00e9t\u00e9 a d\u00e9j\u00e0 \u00e9t\u00e9 vendue \u2014 archiver cette promesse et la lier \u00e0 la vente conclue">&#128451; Vendu</button> '+linkBtnPaev+' <button class="bsm bdl" onclick="transferPaevToDemande(\''+rec.id+'\')" title="Retour \u00e0 Demandes (PA refus\u00e9e)">&#8617; Demandes</button>';
         }
         if(tab==="v"){
           var linkBtnV=rec.linkId
@@ -5858,6 +5858,31 @@ function transferToConclus(fromTab,id){
   }
 }
 
+// ── « Conclu » sur une promesse REÇUE : conclure LA VENTE (pas l'acheteur!) ──
+// L'ancien bouton appelait transferToConclus('pa',…) → la promesse partait dans les
+// Achats conclus (fiche erronée), sans archivage ni badge. La bonne sémantique :
+// conclure l'INSCRIPTION correspondante — le flux complet archive la promesse, pose le
+// badge 👤 et gère les demandes actives. Si la propriété est déjà vendue (promesse
+// orpheline), on ouvre directement le sélecteur « Vendu ».
+function _paevConclure(paId){
+  var pa=null;for(var i=0;i<(db.pa||[]).length;i++){if(db.pa[i].id===paId){pa=db.pa[i];break;}}
+  if(!pa)return;
+  if(pa.propertyId){
+    var v=_vById(pa.propertyId);
+    if(v){
+      if(confirm('Conclure la VENTE de « '+(v.adresse||'(sans adresse)')+' » ?\n\nLa fiche passera dans Ventes conclues, et cette promesse sera archivée et liée automatiquement (badge 👤).'))
+        transferToConclus('v',v.id);
+      return;
+    }
+    // Propriété absente de En vente = déjà vendue → association manuelle
+    toast('🏡 Cette propriété est déjà vendue — choisis la vente à lier.');
+    _paArchOrphan(paId);
+    return;
+  }
+  // Promesse reçue sans propriété rattachée (ne devrait pas exister) : proposer l'association
+  _paArchOrphan(paId);
+}
+
 // ── Promesse reçue ORPHELINE → archiver manuellement en la liant à une vente conclue ──
 // Le flux automatique n'archive que les PA présentes AU MOMENT de la conclusion; une
 // promesse restée ouverte (ou saisie après coup) reste dans la section du haut. Le bouton
@@ -6033,9 +6058,11 @@ function _openAcheteurPA(acheteurId){
     },150);
     return;
   }
-  // Sinon chercher dans pa (PA actives encore en cours)
-  if((db.pa||[]).some(function(p){return p.id===acheteurId;})){doEdit('pa',acheteurId);return;}
-  toast('⚠ Promesse d\'achat non trouvée');
+  // Sinon chercher dans pa (PA actives encore en cours) — ouvrir le BON formulaire :
+  // une promesse avec propertyId est une promesse REÇUE (vue pa-en-vente), pas une promesse en cours
+  var paLive=null;for(var i=0;i<(db.pa||[]).length;i++){if(db.pa[i].id===acheteurId){paLive=db.pa[i];break;}}
+  if(paLive){doEdit(paLive.propertyId?'pa-en-vente':'pa',acheteurId);return;}
+  toast('⚠ Promesse d\'achat introuvable — elle a peut-être été déplacée ou supprimée');
 }
 // Met à jour les compteurs des sections Notariés (appelé dans rall)
 function _updateArchCounts(){
