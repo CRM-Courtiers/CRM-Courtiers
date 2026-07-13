@@ -10574,7 +10574,9 @@ function installUpdate(){
   _updSaveAndInstall();
 }
 // Anti-perte : SAUVEGARDER (champ actif commis + fichier écrit) AVANT tout redémarrage de MAJ
+var _updInstalling=false;
 function _updSaveAndInstall(){
+  if(_updInstalling)return;_updInstalling=true;
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   var go=function(){try{window.electronAPI.installUpdate();}catch(e){}};
   try{Promise.resolve(writeAutoSave()).then(go,go);}catch(e){go();}
@@ -10619,9 +10621,35 @@ if(window.electronAPI&&window.electronAPI.onUpdateStatus){
 }
 // Mise à jour OBLIGATOIRE (Windows) : écran bloquant + compte à rebours, le main process
 // redémarre l'app automatiquement à la fin du délai. Aucun moyen de reporter.
+// Un formulaire/modal est-il ouvert ? (le modal principal #ov, ou tout modal tpl-modal-ov)
+function _updModalOpen(){
+  try{
+    var ov=document.getElementById('ov');
+    if(ov&&ov.style.display==='block')return true;
+    if(document.querySelector('.tpl-modal-ov'))return true;
+  }catch(e){}
+  return false;
+}
 function _showForceUpdateOverlay(version,seconds){
-  if(document.getElementById('upd-force-ov'))return;
-  // Anti-perte : commettre le champ en cours d'édition (blur → son save) PUIS sauvegarder.
+  if(document.getElementById('upd-force-ov')||document.getElementById('upd-wait-banner'))return;
+  // Anti-perte v2 : si un FORMULAIRE est ouvert, ne pas bloquer l'écran — bandeau discret,
+  // et le compte à rebours ne démarre qu'à la fermeture du formulaire (saisie préservée).
+  if(_updModalOpen()){
+    var ban=document.createElement('div');
+    ban.id='upd-wait-banner';
+    ban.style.cssText='position:fixed;top:0;left:0;right:0;z-index:199000;background:linear-gradient(90deg,#0F172A,#1E293B);color:#fff;padding:10px 18px;font-size:13px;font-weight:600;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.35)';
+    ban.innerHTML='&#128257; Mise à jour v'+esc(version)+' prête — elle s\'installera automatiquement dès que tu auras terminé ton formulaire (Enregistrer ou Annuler).';
+    document.body.appendChild(ban);
+    var poll=setInterval(function(){
+      if(!_updModalOpen()){
+        clearInterval(poll);
+        if(ban.parentNode)ban.parentNode.removeChild(ban);
+        _showForceUpdateOverlay(version,seconds);
+      }
+    },2000);
+    return;
+  }
+  // Commettre le champ en cours d'édition (blur → son save) PUIS sauvegarder.
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   try{writeAutoSave();}catch(e){} // sécurité : pousser une sauvegarde avant le redémarrage
   var ov=document.createElement('div');
@@ -10632,8 +10660,14 @@ function _showForceUpdateOverlay(version,seconds){
     +'<div style="font-size:14px;color:#94A3B8;margin-bottom:18px">Redémarrage dans <strong id="upd-force-count" style="color:#fff;font-size:16px">'+seconds+'</strong> seconde(s)</div>'
     +'<button onclick="_updSaveAndInstall()" style="background:#0EA5E9;color:#fff;border:none;border-radius:9px;padding:11px 24px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">Redémarrer maintenant</button>';
   document.body.appendChild(ov);
+  // Anti-perte v2 : c'est l'INTERFACE qui déclenche le redémarrage à la fin du compte à
+  // rebours (sauvegarde finale incluse) — le moteur ne garde qu'un filet à 10 minutes.
   var n=seconds;
-  var t=setInterval(function(){n--;var el=document.getElementById('upd-force-count');if(el)el.textContent=Math.max(0,n);if(n<=0)clearInterval(t);},1000);
+  var t=setInterval(function(){
+    n--;
+    var el=document.getElementById('upd-force-count');if(el)el.textContent=Math.max(0,n);
+    if(n<=0){clearInterval(t);_updSaveAndInstall();}
+  },1000);
 }
 
 // ─── WIZARD ONBOARDING (premier lancement) ────────────────────

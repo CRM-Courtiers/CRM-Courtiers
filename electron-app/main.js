@@ -834,11 +834,11 @@ autoUpdater.on('download-progress', (progress) => sendUpdateStatus('progress', {
 }));
 autoUpdater.on('update-downloaded', (info) => {
   sendUpdateStatus('downloaded', { version: info.version });
-  // Mise à jour OBLIGATOIRE (Windows + Mac depuis v0.3.45) : installation silencieuse +
-  // redémarrage auto après un court compte à rebours (le renderer affiche un écran bloquant).
-  // Anti-perte (11 juillet) : 2 s avant le quit, demander au renderer une DERNIÈRE sauvegarde
-  // (blur du champ actif + écriture du fichier) — ce qui a été saisi pendant le téléchargement
-  // ou le compte à rebours atteint le disque avant le redémarrage.
+  // Mise à jour OBLIGATOIRE (Windows + Mac depuis v0.3.45), anti-perte v2 (13 juillet) :
+  // le RENDERER pilote le redémarrage — si un formulaire est ouvert, il affiche un bandeau
+  // et attend sa fermeture avant le compte à rebours (sauvegarde finale incluse).
+  // Filet de sécurité : si le renderer n'a pas redémarré après 10 min (page morte, etc.),
+  // on force ici : sauvegarde finale + quit.
   const delaySec = 15;
   sendUpdateStatus('force-install', { version: info.version, seconds: delaySec });
   setTimeout(() => {
@@ -847,7 +847,7 @@ autoUpdater.on('update-downloaded', (info) => {
       try { autoUpdater.quitAndInstall(true, true); }
       catch (e) { console.warn('[update] quitAndInstall failed:', e && e.message); }
     }, 2000);
-  }, delaySec * 1000);
+  }, 10 * 60 * 1000);
 });
 autoUpdater.on('error', (err) => sendUpdateStatus('error', { message: err && err.message }));
 
