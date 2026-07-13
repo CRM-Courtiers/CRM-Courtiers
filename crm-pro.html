@@ -1643,6 +1643,8 @@ body.app-readonly th .rz{pointer-events:none}
       <div class="pancartes-wrap">
         <div class="pancartes-head">
           <h3>&#128681; Gestion des pancartes</h3>
+          <span style="flex:1"></span>
+          <button class="bmail" onclick="openPancListesModal()">&#128203; Listes &mdash; imprimer / partager</button>
         </div>
         <div class="pancartes-sub">Installation et retrait des pancartes &mdash; pour ne rien laisser tra&icirc;ner chez les clients.</div>
 
@@ -1669,6 +1671,12 @@ body.app-readonly th .rz{pointer-events:none}
             <div class="panc-section-count" id="panc-retire-count">0</div>
           </div>
           <div class="panc-list" id="panc-retire-list"></div>
+        </div>
+
+        <!-- Inventaire terrain : toutes les pancartes posées, section repliable (demande LP 13 juillet) -->
+        <div class="arch-toggle" id="arch-toggle-panc" onclick="toggleArchSection('panc')">▾ Pancartes en place (<span id="arch-count-panc">0</span>)</div>
+        <div class="arch-body" id="arch-body-panc" style="display:none">
+          <div class="panc-list" id="panc-enplace-list"></div>
         </div>
       </div>
     </div>
@@ -4806,6 +4814,9 @@ var TUTORIELS=[
     +'<li><strong>\ud83d\udce4 \u00c0 retirer</strong> \u2014 l\u2019acte est <strong>notari\u00e9</strong> : r\u00e9cup\u00e8re la pancarte chez le client.</li>'
     +'</ol>'
     +'<p>Chaque \u00e9tape a son bouton \u2713 pour marquer le geste fait, et l\u2019Accueil affiche un compteur global.</p>'
+    +'<h2>Donner les tourn\u00e9es en sous-traitance</h2>'
+    +'<p>Le bouton <strong>\ud83d\udccb Listes \u2014 imprimer / partager</strong> (haut de page) g\u00e9n\u00e8re un document <strong>anonyme</strong> (adresses seulement, jamais tes clients) avec les listes de ton choix : \u00e0 installer, VENDU \u00e0 ajouter, \u00e0 retirer, ou l\u2019inventaire complet. <strong>Imprime-le</strong>, envoie-le par <strong>courriel</strong>, ou <strong>copie-le</strong> dans un texto pour ton installateur.</p>'
+    +'<p>En bas de page, la section repliable <strong>Pancartes en place</strong> te donne l\u2019inventaire terrain complet : chaque pancarte pos\u00e9e, avec son stade (En vente, VENDU \u00e0 poser, VENDU pos\u00e9, \u00c0 retirer).</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Coche la pancarte comme pos\u00e9e/retir\u00e9e dans la fiche de l\u2019inscription pour garder la liste \u00e0 jour.</div></div>'},
   {sec:'Courriels & Templates', num:24, titre:'Cr\u00e9er et utiliser des gabarits de courriels', html:
     '<p>Les <strong>gabarits</strong> (templates) sont des courriels pr\u00e9-r\u00e9dig\u00e9s que tu r\u00e9utilises en un clic, organis\u00e9s par section.</p>'
@@ -6044,14 +6055,17 @@ function _closeVConcluModal() {
 
 // Archiver une fiche Conclus quand le notaire a finalisé (transfert ac→archac ou vc→archvc)
 // Étape 35 — section repliable "Notariés" dans les pages Conclus (ac/vc)
-var _archOpen={ac:false,vc:false,pa:false,reh:false};
+var _archOpen={ac:false,vc:false,pa:false,reh:false,panc:false};
 function toggleArchSection(which){
   _archOpen[which]=!_archOpen[which];
   var body=document.getElementById('arch-body-'+which);
   var tog=document.getElementById('arch-toggle-'+which);
   if(body)body.style.display=_archOpen[which]?'block':'none';
   var cnt,lblWord;
-  if(which==='reh'){
+  if(which==='panc'){
+    cnt=getPancartesEnPlace().length;
+    lblWord='Pancartes en place';
+  } else if(which==='reh'){
     cnt=(db.refsh||[]).filter(function(r){return r.statut==='paid';}).length;
     lblWord='Archivées — commission reçue';
   } else {
@@ -6118,6 +6132,8 @@ function _updateArchCounts(){
   });
   var rc=document.getElementById('arch-count-reh');
   if(rc)rc.textContent=(db.refsh||[]).filter(function(r){return r.statut==='paid';}).length;
+  var pc=document.getElementById('arch-count-panc');
+  if(pc)pc.textContent=getPancartesEnPlace().length;
 }
 function markNotaried(tab,id){
   var rec=null,idx=-1;
@@ -6162,6 +6178,112 @@ function getPancartesARetirer(){
     return {tab:"archvc",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",adresse:r.adresse||"(adresse non saisie)",dateConclusion:r.dateConclusion||"",dateNotaire:r.dateNotaire||""};
   });
 }
+// Inventaire terrain : TOUTES les pancartes posées et pas encore retirées, avec leur stade
+function getPancartesEnPlace(){
+  var out=[];
+  function nm(r){return ((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)";}
+  function ad(r){return r.adresse||"(adresse non saisie)";}
+  (db.v||[]).forEach(function(r){if(r.pancarte&&!r.pancarteRet)out.push({adresse:ad(r),name:nm(r),stade:"En vente"});});
+  (db.vc||[]).forEach(function(r){if(r.pancarte&&!r.pancarteRet)out.push({adresse:ad(r),name:nm(r),stade:r.pancarteVendu?"VENDU posé":"VENDU à poser"});});
+  (db.archvc||[]).forEach(function(r){if(r.pancarte&&!r.pancarteRet)out.push({adresse:ad(r),name:nm(r),stade:"À retirer"});});
+  return out;
+}
+// ── Listes de travail pour SOUS-TRAITANT (demande LP 13 juillet) : modal de sélection
+// multi-cochage → document ANONYME (adresses seulement, jamais les clients) avec
+// Imprimer / Courriel / Copier — pour donner les tournées de pancartes à quelqu'un.
+function openPancListesModal(){
+  var ov=document.createElement('div');
+  ov.id='panc-listes-ov';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)';
+  var box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:16px;padding:24px;width:min(440px,92vw);box-shadow:0 12px 40px rgba(0,0,0,.3)';
+  box.innerHTML='<div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:4px">Listes de pancartes</div>'
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:14px">Coche ce que tu veux inclure — le document est <strong>anonyme</strong> (adresses seulement), prêt à imprimer ou envoyer à ton installateur.</div>'
+    +[['pl-inst','📥 Pancartes à installer',getPancartesAInstaller().length,true],
+      ['pl-vendu','🏷️ Autocollant VENDU à ajouter',getPancartesVenduAAjouter().length,true],
+      ['pl-ret','📤 Pancartes à retirer',getPancartesARetirer().length,true],
+      ['pl-place','🗺️ Inventaire — pancartes en place',getPancartesEnPlace().length,false]].map(function(o){
+        return '<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:6px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:13px;color:#0F172A"><input type="checkbox" id="'+o[0]+'"'+(o[3]?' checked':'')+' style="width:auto">'+o[1]+' <span style="margin-left:auto;color:#94A3B8;font-size:12px">('+o[2]+')</span></label>';
+      }).join('')
+    +'<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px">'
+    +'<button id="pl-cancel" style="padding:8px 20px;background:none;border:1.5px solid #CBD5E1;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#6B7280">Annuler</button>'
+    +'<button id="pl-ok" style="padding:8px 24px;background:linear-gradient(135deg,#0F172A,#1E293B);border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;color:#fff">OK</button>'
+    +'</div>';
+  ov.appendChild(box);document.body.appendChild(ov);
+  function close(){if(ov.parentNode)document.body.removeChild(ov);}
+  ov.onclick=function(e){if(e.target===ov)close();};
+  box.querySelector('#pl-cancel').onclick=close;
+  box.querySelector('#pl-ok').onclick=function(){
+    var sel={inst:box.querySelector('#pl-inst').checked,vendu:box.querySelector('#pl-vendu').checked,ret:box.querySelector('#pl-ret').checked,place:box.querySelector('#pl-place').checked};
+    if(!sel.inst&&!sel.vendu&&!sel.ret&&!sel.place){toast('Coche au moins une liste');return;}
+    close();
+    _pancShowDoc(sel);
+  };
+}
+function _pancCollectSections(sel){
+  var secs=[];
+  if(sel.inst)secs.push({titre:'PANCARTES À INSTALLER',rows:getPancartesAInstaller().map(function(p){return p.adresse;})});
+  if(sel.vendu)secs.push({titre:'AUTOCOLLANT « VENDU » À AJOUTER',rows:getPancartesVenduAAjouter().map(function(p){return p.adresse;})});
+  if(sel.ret)secs.push({titre:'PANCARTES À RETIRER',rows:getPancartesARetirer().map(function(p){return p.adresse;})});
+  if(sel.place)secs.push({titre:'INVENTAIRE — PANCARTES EN PLACE',rows:getPancartesEnPlace().map(function(p){return p.adresse+'  ('+p.stade+')';})});
+  return secs;
+}
+function _pancDocText(secs){
+  var d=new Date().toLocaleDateString('fr-CA');
+  var out='PANCARTES — '+d+'\n';
+  secs.forEach(function(s){
+    out+='\n'+s.titre+'\n';
+    if(!s.rows.length)out+='  (aucune)\n';
+    s.rows.forEach(function(r){out+='  ☐ '+r+'\n';});
+  });
+  return out;
+}
+function _pancShowDoc(sel){
+  var secs=_pancCollectSections(sel);
+  var d=new Date().toLocaleDateString('fr-CA');
+  var docHtml='<h1 style="font-size:18px;margin:0 0 4px">Pancartes</h1><div style="font-size:12px;color:#64748B;margin-bottom:14px">'+esc(d)+'</div>'
+    +secs.map(function(s){
+      return '<h2 style="font-size:14px;border-bottom:1.5px solid #0F172A;padding-bottom:4px;margin:16px 0 8px">'+esc(s.titre)+'</h2>'
+        +(s.rows.length?('<ul style="list-style:none;padding:0;margin:0">'+s.rows.map(function(r){return '<li style="font-size:13px;padding:5px 0;border-bottom:1px dashed #E2E8F0">☐ '+esc(r)+'</li>';}).join('')+'</ul>')
+                        :'<div style="font-size:12px;color:#94A3B8">(aucune)</div>');
+    }).join('');
+  var ov=document.createElement('div');
+  ov.id='panc-doc-ov';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)';
+  var box=document.createElement('div');
+  box.style.cssText='background:#fff;border-radius:16px;padding:24px;width:min(560px,92vw);max-height:82vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.3)';
+  box.innerHTML='<div id="panc-doc-body" style="overflow:auto;flex:1;color:#0F172A">'+docHtml+'</div>'
+    +'<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">'
+    +'<button id="pd-print" class="tpl-btn">&#128424; Imprimer</button>'
+    +'<button id="pd-mail" class="tpl-btn">&#9993; Courriel</button>'
+    +'<button id="pd-copy" class="tpl-btn">&#128203; Copier</button>'
+    +'<span style="flex:1"></span>'
+    +'<button id="pd-close" style="padding:8px 20px;background:none;border:1.5px solid #CBD5E1;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;color:#6B7280">Fermer</button>'
+    +'</div>';
+  ov.appendChild(box);document.body.appendChild(ov);
+  function close(){if(ov.parentNode)document.body.removeChild(ov);}
+  ov.onclick=function(e){if(e.target===ov)close();};
+  box.querySelector('#pd-close').onclick=close;
+  var txt=_pancDocText(secs);
+  box.querySelector('#pd-print').onclick=function(){_pancPrint(docHtml);};
+  box.querySelector('#pd-mail').onclick=function(){_openMailto('','Pancartes — listes du '+d,txt);};
+  box.querySelector('#pd-copy').onclick=function(){
+    try{navigator.clipboard.writeText(txt).then(function(){toast('📋 Listes copiées — colle-les dans un texto ou un courriel');});}catch(e){toast('⚠ Copie impossible');}
+  };
+}
+function _pancPrint(html){
+  var f=document.createElement('iframe');
+  f.style.cssText='position:fixed;left:-9999px;top:0;width:0;height:0;border:0';
+  document.body.appendChild(f);
+  var doc=f.contentDocument||f.contentWindow.document;
+  doc.open();
+  doc.write('<html><head><title>Pancartes</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#000}</style></head><body>'+html+'</body></html>');
+  doc.close();
+  setTimeout(function(){
+    try{f.contentWindow.focus();f.contentWindow.print();}catch(e){toast('⚠ Impression impossible : '+e.message);}
+    setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f);},3000);
+  },150);
+}
 function markPancarteInstalled(id){
   var rec=null;for(var i=0;i<db.v.length;i++){if(db.v[i].id===id){rec=db.v[i];break;}}if(!rec)return;
   pushUndo("Pancarte installée");rec.pancarte=true;sdb();rall();toast("✓ Pancarte marquée installée");
@@ -6192,6 +6314,25 @@ function renderPancartes(){
   if(installCount){installCount.textContent=aInstaller.length;installCount.classList.toggle("dim",aInstaller.length===0);}
   if(venduCount){venduCount.textContent=aVendu.length;venduCount.classList.toggle("dim",aVendu.length===0);}
   if(retireCount){retireCount.textContent=aRetirer.length;retireCount.classList.toggle("dim",aRetirer.length===0);}
+  // Inventaire terrain (section repliable du bas)
+  var enPlaceList=document.getElementById("panc-enplace-list");
+  if(enPlaceList){
+    var enPlace=getPancartesEnPlace();
+    var pcnt=document.getElementById('arch-count-panc');if(pcnt)pcnt.textContent=enPlace.length;
+    if(enPlace.length===0){
+      enPlaceList.innerHTML='<div class="panc-empty">Aucune pancarte en place</div>';
+    } else {
+      enPlaceList.innerHTML=enPlace.map(function(p){
+        return '<div class="panc-row">'
+          +'<div class="panc-row-main">'
+          +'<div class="panc-row-addr">'+esc(p.adresse)+'</div>'
+          +'<div class="panc-row-name">'+esc(p.name)+'</div>'
+          +'</div>'
+          +'<div class="panc-row-actions"><span style="font-size:11px;font-weight:700;color:#7C3AED;background:#F3E8FF;border-radius:8px;padding:4px 10px;white-space:nowrap">'+esc(p.stade)+'</span></div>'
+          +'</div>';
+      }).join("");
+    }
+  }
   if(venduList){
     if(aVendu.length===0){
       venduList.innerHTML='<div class="panc-empty">Aucun VENDU en attente &#10003;</div>';
