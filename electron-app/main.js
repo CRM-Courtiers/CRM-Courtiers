@@ -5,6 +5,14 @@ const os = require('os');
 const crypto = require('crypto');
 const { autoUpdater } = require('electron-updater');
 
+// ─── Mode BAC À SABLE (dev seulement) ───────────────────────
+// TRIANGLE_TEST_USERDATA=<dossier> isole complètement l'instance : localStorage,
+// réglages et verrou single-instance séparés — permet de tester avec des données
+// importées (ex. JSON d'un client) sans toucher la vraie base ni la sync.
+if (process.env.TRIANGLE_TEST_USERDATA) {
+  try { app.setPath('userData', process.env.TRIANGLE_TEST_USERDATA); } catch (e) {}
+}
+
 // Machine fingerprint — utilisé pour empêcher l'abus de l'essai gratuit
 let _machineId = null;
 function getMachineFingerprint() {
@@ -80,6 +88,11 @@ function createWindow() {
 
   mainWindow.loadFile(getHtmlPath());
   mainWindow.setMenuBarVisibility(false);
+  // Bac à sable : titre distinctif pour ne JAMAIS confondre avec la vraie app
+  if (process.env.TRIANGLE_TEST_USERDATA) {
+    mainWindow.on('page-title-updated', function (e) { e.preventDefault(); });
+    mainWindow.setTitle('🧪 BAC À SABLE — TRI-ANGLE (données de test isolées)');
+  }
   // Afficher seulement quand le rendu est prêt → plus de prévisualisation/flash transitoire
   mainWindow.once('ready-to-show', function () {
     mainWindow.show();

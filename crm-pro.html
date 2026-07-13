@@ -4116,7 +4116,8 @@ function _buildActionsForRecord(tab,recId){
     items.push({icon:'&#8617;',label:'Retour Acheteurs (PA refusée)',fn:function(){transferPaToA(recId);}});
   }
   if(tab==='pa-en-vente'){
-    items.push({icon:'&#9989;',label:'Marquer conclu',fn:function(){transferToConclus('pa',recId);}});
+    items.push({icon:'&#9989;',label:'Marquer conclu',title:'Conclut la VENTE — la promesse sera archivée et liée automatiquement',fn:function(){_paevConclure(recId);}});
+    items.push({icon:'&#128451;',label:'Vendu — lier à une vente conclue',title:'La propriété a déjà été vendue : archiver cette promesse et la lier à la vente',fn:function(){_paArchOrphan(recId);}});
     items.push({icon:'&#8617;',label:'Retour Demandes (PA refusée)',fn:function(){transferPaevToDemande(recId);}});
   }
   if(tab==='v')items.push({icon:'&#9989;',label:'Marquer conclu',fn:function(){transferToConclus('v',recId);}});
