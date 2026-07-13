@@ -1654,6 +1654,15 @@ body.app-readonly th .rz{pointer-events:none}
           <div class="panc-list" id="panc-install-list"></div>
         </div>
 
+        <!-- Étape 2 (demande Sophie, 13 juillet) : autocollant VENDU à la conclusion -->
+        <div class="panc-section">
+          <div class="panc-section-head">
+            <div class="panc-section-title"><span class="acc-dot" style="background:#F59E0B"></span> &#127991;&#65039; VENDU &agrave; ajouter</div>
+            <div class="panc-section-count" id="panc-vendu-count">0</div>
+          </div>
+          <div class="panc-list" id="panc-vendu-list"></div>
+        </div>
+
         <div class="panc-section">
           <div class="panc-section-head">
             <div class="panc-section-title"><span class="acc-dot"></span> &#128228; &Agrave; retirer</div>
@@ -4791,7 +4800,13 @@ var TUTORIELS=[
   {sec:'Pancartes', num:23, titre:'Suivre les pancartes \u00e0 installer / retirer', html:
     '<p>La section <strong>Pancartes</strong> t\u2019aide \u00e0 ne pas oublier les pancartes \u00e0 poser sur tes nouvelles inscriptions ni celles \u00e0 r\u00e9cup\u00e9rer apr\u00e8s une vente.</p>'
     +'<h2>Comment \u00e7a marche</h2>'
-    +'<p>\u00c0 partir de tes inscriptions, TRI-ANGLE liste les pancartes <strong>\u00e0 installer</strong> (mandats r\u00e9cents sans pancarte pos\u00e9e) et <strong>\u00e0 retirer</strong> (ventes <strong>notari\u00e9es</strong> \u2014 tant que l\u2019acte n\u2019est pas sign\u00e9, la pancarte reste en place avec son VENDU). L\u2019Accueil affiche un compteur global.</p>'
+    +'<p>La page suit le <strong>cycle complet</strong> d\u2019une pancarte, en 3 \u00e9tapes :</p>'
+    +'<ol>'
+    +'<li><strong>\ud83d\udce5 \u00c0 installer</strong> \u2014 nouvelle inscription, pancarte pas encore pos\u00e9e.</li>'
+    +'<li><strong>\ud83c\udff7\ufe0f VENDU \u00e0 ajouter</strong> \u2014 la vente est <strong>conclue</strong> (toutes les conditions r\u00e9alis\u00e9es) : va coller l\u2019autocollant VENDU sur la pancarte.</li>'
+    +'<li><strong>\ud83d\udce4 \u00c0 retirer</strong> \u2014 l\u2019acte est <strong>notari\u00e9</strong> : r\u00e9cup\u00e8re la pancarte chez le client.</li>'
+    +'</ol>'
+    +'<p>Chaque \u00e9tape a son bouton \u2713 pour marquer le geste fait, et l\u2019Accueil affiche un compteur global.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Coche la pancarte comme pos\u00e9e/retir\u00e9e dans la fiche de l\u2019inscription pour garder la liste \u00e0 jour.</div></div>'},
   {sec:'Courriels & Templates', num:24, titre:'Cr\u00e9er et utiliser des gabarits de courriels', html:
     '<p>Les <strong>gabarits</strong> (templates) sont des courriels pr\u00e9-r\u00e9dig\u00e9s que tu r\u00e9utilises en un clic, organis\u00e9s par section.</p>'
@@ -5384,10 +5399,11 @@ function renderAccueil(){
 
   // ─── Pancartes (widget Accueil) ───
   var pancInstall=getPancartesAInstaller();
+  var pancVendu=getPancartesVenduAAjouter();
   var pancRetire=getPancartesARetirer();
   var pancList=document.getElementById("acc-panc-list");
   var pancTotal=document.getElementById("acc-panc-total");
-  var pancTotalNum=pancInstall.length+pancRetire.length;
+  var pancTotalNum=pancInstall.length+pancVendu.length+pancRetire.length;
   if(pancTotal){pancTotal.textContent=pancTotalNum;pancTotal.classList.toggle("dim",pancTotalNum===0);}
   if(pancList){
     if(pancTotalNum===0){
@@ -5399,6 +5415,13 @@ function renderAccueil(){
           +'<div class="acc-row-icon">&#128229;</div>'
           +'<div class="acc-row-main">&Agrave; installer</div>'
           +'<div class="acc-row-badge acc-badge-purple">'+pancInstall.length+'</div>'
+          +'</div>');
+      }
+      if(pancVendu.length>0){
+        rows.push('<div class="acc-row" onclick="document.querySelector(\'[data-tab=&quot;pancartes&quot;]\').click()">'
+          +'<div class="acc-row-icon">&#127991;&#65039;</div>'
+          +'<div class="acc-row-main">VENDU &agrave; ajouter</div>'
+          +'<div class="acc-row-badge acc-badge-purple">'+pancVendu.length+'</div>'
           +'</div>');
       }
       if(pancRetire.length>0){
@@ -6121,6 +6144,18 @@ function getPancartesAInstaller(){
     return {tab:"v",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",adresse:r.adresse||"(adresse non saisie)"};
   });
 }
+// Étape 2 du cycle pancarte (directive Sophie, 13 juillet) : le VENDU se pose « après la
+// réalisation de toutes les conditions » = à la CONCLUSION (vc, en attente notaire).
+function getPancartesVenduAAjouter(){
+  return (db.vc||[]).filter(function(r){return r.pancarte && !r.pancarteVendu && !r.pancarteRet;}).map(function(r){
+    return {tab:"vc",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",adresse:r.adresse||"(adresse non saisie)",dateConclusion:r.dateConclusion||""};
+  });
+}
+function markPancarteVendu(id){
+  var rec=null;for(var i=0;i<(db.vc||[]).length;i++){if(db.vc[i].id===id){rec=db.vc[i];break;}}
+  if(!rec)return;
+  pushUndo("VENDU ajouté");rec.pancarteVendu=true;sdb();rall();toast("🏷️ Autocollant VENDU marqué ajouté");
+}
 function getPancartesARetirer(){
   // Règle métier (LP, 11 juillet) : la pancarte reste en place (avec le VENDU) tant que
   // l'acte n'est pas signé — « à retirer » = ventes NOTARIÉES (archvc) seulement.
@@ -6146,14 +6181,37 @@ function markAcheteurContacted(id){
 }
 function renderPancartes(){
   var installList=document.getElementById("panc-install-list");
+  var venduList=document.getElementById("panc-vendu-list");
   var retireList=document.getElementById("panc-retire-list");
   var installCount=document.getElementById("panc-install-count");
+  var venduCount=document.getElementById("panc-vendu-count");
   var retireCount=document.getElementById("panc-retire-count");
   if(!installList||!retireList)return;
   var aInstaller=getPancartesAInstaller();
+  var aVendu=getPancartesVenduAAjouter();
   var aRetirer=getPancartesARetirer();
   if(installCount){installCount.textContent=aInstaller.length;installCount.classList.toggle("dim",aInstaller.length===0);}
+  if(venduCount){venduCount.textContent=aVendu.length;venduCount.classList.toggle("dim",aVendu.length===0);}
   if(retireCount){retireCount.textContent=aRetirer.length;retireCount.classList.toggle("dim",aRetirer.length===0);}
+  if(venduList){
+    if(aVendu.length===0){
+      venduList.innerHTML='<div class="panc-empty">Aucun VENDU en attente &#10003;</div>';
+    } else {
+      venduList.innerHTML=aVendu.map(function(p){
+        var concText=p.dateConclusion?"Conclu le "+fd(p.dateConclusion):"";
+        return '<div class="panc-row">'
+          +'<div class="panc-row-main">'
+          +'<div class="panc-row-addr">'+esc(p.adresse)+'</div>'
+          +'<div class="panc-row-name">'+esc(p.name)+(concText?' &middot; '+esc(concText):'')+'</div>'
+          +'</div>'
+          +'<div class="panc-row-actions">'
+          +'<button class="panc-btn muted" onclick="doEdit(\'vc\',\''+p.id+'\')">Ouvrir fiche</button>'
+          +'<button class="panc-btn primary" onclick="markPancarteVendu(\''+p.id+'\')">&#10003; VENDU ajout&eacute;</button>'
+          +'</div>'
+          +'</div>';
+      }).join("");
+    }
+  }
   if(aInstaller.length===0){
     installList.innerHTML='<div class="panc-empty">Toutes les pancartes sont install&eacute;es &#10003;</div>';
   } else {
@@ -6188,7 +6246,7 @@ function renderPancartes(){
   }
 }
 function updatePancartesBadge(){
-  var total=getPancartesAInstaller().length+getPancartesARetirer().length;
+  var total=getPancartesAInstaller().length+getPancartesVenduAAjouter().length+getPancartesARetirer().length;
   var badge=document.getElementById("sb-pancartes-badge");
   if(badge){badge.textContent=total;badge.classList.toggle("zero",total===0);}
 }
