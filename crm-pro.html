@@ -1611,13 +1611,13 @@ body.app-readonly th .rz{pointer-events:none}
     </div>
     <!-- ── PANE : Références hypothécaires (Étape 31) ── -->
     <div class="pane" id="pane-reh">
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;background:#F8FAFC;border-bottom:1px solid #E2E8F0">
-        <span id="reh-mode-label" style="font-size:12px;font-weight:700;color:#0F172A">Références actives</span>
-        <span style="flex:1"></span>
-        <button class="bmail" id="reh-arch-btn" onclick="toggleRehArch()">Voir les archivées (0)</button>
-      </div>
       <div class="sortbar2" id="sortbar-reh"></div>
       <div class="tw"><table id="tbl-reh"><colgroup id="cg-reh"></colgroup><thead id="th-reh"></thead><tbody id="tb-reh"></tbody></table></div>
+      <!-- Section repliable : références archivées (commission reçue) — même patron que Notariés -->
+      <div class="arch-toggle" id="arch-toggle-reh" onclick="toggleArchSection('reh')">▾ Archivées — commission reçue (<span id="arch-count-reh">0</span>)</div>
+      <div class="arch-body" id="arch-body-reh" style="display:none">
+        <div class="tw"><table id="tbl-reharch"><colgroup id="cg-reharch"></colgroup><thead id="th-reharch"></thead><tbody id="tb-reharch"></tbody></table></div>
+      </div>
     </div>
     <!-- ── PANE : Dashboard ── -->
     <div class="pane" id="pane-dashboard">
@@ -2406,6 +2406,19 @@ var COLS = {
     {lbl:"Notes",f:"notes",t:"text",w:140,cls:"nc"},
     {lbl:"Actions",f:null,t:"action",w:200}
   ],
+  // Section repliable « Archivées — commission reçue » au bas de la page Références
+  // hypothécaires (même patron que Conclus→Notariés). Même collection (refsh), filtre statut.
+  reharch: [
+    {lbl:"Prénom",f:"prenom",t:"text",w:100},
+    {lbl:"Nom",f:"nom",t:"text",w:100},
+    {lbl:"Adresse propriété",f:"adresse",t:"text",w:200,cls:"mu"},
+    {lbl:"Courtier hypothécaire",f:"financierId",t:"financier",w:170,cls:"mu"},
+    {lbl:"Commission ($)",f:"montant",t:"number",w:110},
+    {lbl:"Date réf.",f:"dateReference",t:"date",w:100},
+    {lbl:"Reçue le",f:"dateRecue",t:"date",w:100},
+    {lbl:"Notes",f:"notes",t:"text",w:140,cls:"nc"},
+    {lbl:"Actions",f:null,t:"action",w:200}
+  ],
   "pa-en-vente": [
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:100},
     {lbl:"Nom",f:"nom",t:"text",w:100},
@@ -2596,7 +2609,7 @@ var COL_VIS = {};
 var _showFlt = {};
 var ST = {};
 // \u00c9tape 19 \u2014 pa-en-vente est un pseudo-tab UI (storage alias\u00e9 sur db.pa avec filtre propertyId)
-var TABS_UI = TABS.concat(['pa-en-vente','rea','rec','reh']);
+var TABS_UI = TABS.concat(['pa-en-vente','rea','rec','reh','reharch']);
 TABS_UI.forEach(function(t){
   SEARCH[t] = '';
   FLT[t] = {};
@@ -4081,7 +4094,7 @@ function _buildActionsForRecord(tab,recId){
     return its;
   }
   // Étape 31 — Références hypothécaires : menu dédié
-  if(tab==='reh'){
+  if(tab==='reh'||tab==='reharch'){
     var rh=_rehFind(recId);if(!rh)return[];
     var rits=[];
     rits.push({icon:'&#9998;',label:'Modifier',fn:function(){doEdit('reh',recId);}});
@@ -4266,7 +4279,7 @@ function buildHeaders(tab){
 }
 
 // ─── Render functions ────────────────────────────────────────
-function _storeTab(tab){if(tab==="pa-en-vente")return "pa";if(tab==="rea"||tab==="rec")return "refs";if(tab==="reh")return "refsh";return tab;}
+function _storeTab(tab){if(tab==="pa-en-vente")return "pa";if(tab==="rea"||tab==="rec")return "refs";if(tab==="reh"||tab==="reharch")return "refsh";return tab;}
 function renderTab(tab){
   var tbEl=document.getElementById("tb-"+tab);if(!tbEl)return;
   // Étape 19 : P.A. Active (EN COURS) = scénario A (PA sans propertyId)
@@ -4278,7 +4291,8 @@ function renderTab(tab){
   if(tab==="rea")rawData=rawData.filter(function(r){return r.statut!=='concluded';});
   if(tab==="rec")rawData=rawData.filter(function(r){return r.statut==='concluded';});
   // Étape 31 — Références hypothécaires : actives par défaut, archivées (commission reçue) derrière le bouton
-  if(tab==="reh")rawData=rawData.filter(function(r){return _rehShowArch?(r.statut==='paid'):(r.statut!=='paid');});
+  if(tab==="reh")rawData=rawData.filter(function(r){return r.statut!=='paid';});
+  if(tab==="reharch")rawData=rawData.filter(function(r){return r.statut==='paid';});
   var data=filterData(rawData,tab);data=sortedData(data,tab);
   var cols=COLS[tab];
   if(!data.length){tbEl.innerHTML='<tr><td colspan="'+cols.length+'" style="padding:24px;color:#9CA3AF;font-style:italic;text-align:center">Aucun enregistrement &mdash; cliquez sur + Ajouter</td></tr>';return;}
@@ -4769,7 +4783,7 @@ var TUTORIELS=[
     +'<li>Chaque ligne montre le client, la propri\u00e9t\u00e9, le courtier hypoth\u00e9caire assign\u00e9 et le montant attendu.</li>'
     +'<li>Chaque r\u00e9f\u00e9rence a une <strong>date de relance pr\u00e9vue</strong> (d\u00e9faut : 30 jours, modifiable). La <strong>pastille</strong> de l\u2019onglet appara\u00eet seulement quand une date est d\u00e9pass\u00e9e; repousse-la (colonne \u00ab Relance pr\u00e9vue \u00bb ou <strong>\u2630 Actions &rarr; Repousser la relance</strong>) et elle s\u2019\u00e9teint.</li>'
     +'<li><strong>\u2630 Actions &rarr; Courriel au courtier hypoth\u00e9caire</strong> ouvre tes gabarits de la section <strong>Financement</strong>.</li>'
-    +'<li>Quand l\u2019argent rentre : <strong>\u2630 Actions &rarr; Commission re\u00e7ue</strong>. La r\u00e9f\u00e9rence est <strong>archiv\u00e9e</strong> avec la date du jour (modifiable via Modifier). Consulte les archiv\u00e9es avec le bouton <strong>Voir les archiv\u00e9es</strong> en haut de l\u2019onglet.</li>'
+    +'<li>Quand l\u2019argent rentre : <strong>\u2630 Actions &rarr; Commission re\u00e7ue</strong>. La r\u00e9f\u00e9rence descend dans la section repliable <strong>Archiv\u00e9es \u2014 commission re\u00e7ue</strong>, au bas de la page (comme les Notari\u00e9s dans les Conclus). La date est modifiable via Modifier, et \u00ab Renvoyer dans les actives \u00bb la fait remonter au besoin.</li>'
     +'</ol>'
     +'<h2>Dashboard et statistiques</h2>'
     +'<p>Les commissions re\u00e7ues s\u2019ajoutent \u00e0 ton <strong>Encaiss\u00e9</strong> au Dashboard (ligne \u00ab R\u00e9f\u00e9rences hypoth\u00e9caires \u00bb) et les actives \u00e0 ton bloc <strong>En cours</strong>. Dans la banque <strong>Financement</strong>, la colonne <strong>R\u00e9f\u00e9rences</strong> compte les r\u00e9f\u00e9rences de chaque contact, et <strong>\u2630 Actions &rarr; Voir ses r\u00e9f\u00e9rences</strong> affiche le d\u00e9tail.</p>'
@@ -6008,15 +6022,21 @@ function _closeVConcluModal() {
 
 // Archiver une fiche Conclus quand le notaire a finalisé (transfert ac→archac ou vc→archvc)
 // Étape 35 — section repliable "Notariés" dans les pages Conclus (ac/vc)
-var _archOpen={ac:false,vc:false,pa:false};
+var _archOpen={ac:false,vc:false,pa:false,reh:false};
 function toggleArchSection(which){
   _archOpen[which]=!_archOpen[which];
   var body=document.getElementById('arch-body-'+which);
   var tog=document.getElementById('arch-toggle-'+which);
   if(body)body.style.display=_archOpen[which]?'block':'none';
-  var archTab=(which==='ac')?'archac':(which==='vc'?'archvc':'archpa');
-  var cnt=(db[archTab]||[]).length;
-  var lblWord=(which==='ac')?'Notariés':(which==='vc'?'Notariées':'Archivées');
+  var cnt,lblWord;
+  if(which==='reh'){
+    cnt=(db.refsh||[]).filter(function(r){return r.statut==='paid';}).length;
+    lblWord='Archivées — commission reçue';
+  } else {
+    var archTab=(which==='ac')?'archac':(which==='vc'?'archvc':'archpa');
+    cnt=(db[archTab]||[]).length;
+    lblWord=(which==='ac')?'Notariés':(which==='vc'?'Notariées':'Archivées');
+  }
   if(tog)tog.innerHTML=(_archOpen[which]?'▴ ':'▾ ')+lblWord+' (<span id="arch-count-'+which+'">'+cnt+'</span>)';
 }
 // Depuis le Dashboard : ouvre la page Conclus (ac/vc) et déplie la section Notariés
@@ -6074,6 +6094,8 @@ function _updateArchCounts(){
     var cntEl=document.getElementById('arch-count-'+x[0]);
     if(cntEl)cntEl.textContent=(db[x[1]]||[]).length;
   });
+  var rc=document.getElementById('arch-count-reh');
+  if(rc)rc.textContent=(db.refsh||[]).filter(function(r){return r.statut==='paid';}).length;
 }
 function markNotaried(tab,id){
   var rec=null,idx=-1;
@@ -6676,7 +6698,6 @@ function updateDemandesBadges(){
     setBadge('sb-rea-badge',nRea);
     var nReh=(db.refsh||[]).filter(function(r){return r.statut!=='paid'&&_refRelanceDue(r);}).length;
     setBadge('sb-reh-badge',nReh);
-    _rehSyncHeader();
   }catch(e){console.warn('[demandes badges]',e.message);}
 }
 
@@ -7468,22 +7489,12 @@ function deleteFinancierFromEdit(){if(!_financierEditingId)return;var id=_financ
 })();
 
 // ═══ Étape 31 — Références hypothécaires ═══════════════════════
-// Vue archivées (commission reçue) cachée derrière un bouton (décision LP)
-var _rehShowArch=false;
-function toggleRehArch(){_rehShowArch=!_rehShowArch;renderTab('reh');_rehSyncHeader();}
-// Navigation depuis le Dashboard : ouvre l'onglet reh en vue actives (false) ou archivées (true)
+// Navigation depuis le Dashboard : ouvre l'onglet reh; arch=true → déplie la section Archivées
+// (l'ancien bouton-bascule « Voir les archivées » a été remplacé par la section repliable au
+// bas de la page — harmonisation avec Conclus→Notariés, demande de Sophie/LP, 13 juillet)
 function _dashGoRefh(arch){
-  _rehShowArch=!!arch;
-  renderTab('reh');_rehSyncHeader();
   var btn=document.querySelector('.tbtn[data-tab="reh"]');if(btn)btn.click();
-}
-function _rehSyncHeader(){
-  var nArch=(db.refsh||[]).filter(function(r){return r.statut==='paid';}).length;
-  var nAct=(db.refsh||[]).filter(function(r){return r.statut!=='paid';}).length;
-  var btn=document.getElementById('reh-arch-btn');
-  if(btn)btn.textContent=_rehShowArch?('Retour aux actives ('+nAct+')'):('Voir les archivées ('+nArch+')');
-  var lbl=document.getElementById('reh-mode-label');
-  if(lbl)lbl.textContent=_rehShowArch?'Références archivées — commission reçue':'Références actives';
+  if(arch&&!_archOpen.reh)toggleArchSection('reh');
 }
 function _rehFind(id){for(var i=0;i<(db.refsh||[]).length;i++){if(db.refsh[i].id===id)return db.refsh[i];}return null;}
 // Étape 31b — Relance prévue sur les références (pastille SEULEMENT quand la date est dépassée)
