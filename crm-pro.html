@@ -2174,6 +2174,23 @@ body.app-readonly th .rz{pointer-events:none}
   </div>
 </div>
 
+<!-- ── Modal : choix d'envoi quand PJ + service courriel web (#10) ── -->
+<div class="tpl-modal-ov" id="mailweb-choice-ov">
+  <div class="tpl-modal" style="width:min(500px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">📎 Pièces jointes + service web</div>
+      <button class="tpl-btn muted" onclick="_mailWebChoiceClose()">✕</button>
+    </div>
+    <div class="tpl-modal-body">
+      <div style="font-size:13px;color:#475569;line-height:1.6">Gmail et Outlook web ne peuvent pas joindre de fichiers par un simple lien. Choisis comment envoyer ce courriel avec ses pièces jointes :</div>
+    </div>
+    <div class="tpl-modal-foot" style="flex-direction:column;gap:8px;align-items:stretch">
+      <button class="tpl-btn primary" onclick="_mailWebChoicePick('web')">🌐 Ouvrir le web + le dossier des pièces jointes</button>
+      <button class="tpl-btn" onclick="_mailWebChoicePick('eml')">📧 Créer un brouillon .eml avec les PJ incluses</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Modal : Stats références d'un contact Financement (Étape 31) ── -->
 <div class="tpl-modal-ov" id="finh-stats-ov">
   <div class="tpl-modal" style="width:min(560px,95vw)">
@@ -8989,6 +9006,52 @@ function _tplExtraFromRec(rec){
   return ex;
 }
 
+// #10 — Buckets (dossiers PJ) distincts d'une liste d'attachements (chaque att porte son .bucket).
+function _pjMailBucketsFor(atts){var seen={},out=[];(atts||[]).forEach(function(a){if(a&&a.bucket&&!seen[a.bucket]){seen[a.bucket]=1;out.push(a.bucket);}});return out;}
+// Envoi d'un courriel AVEC pièces jointes. Un lien de composition web (Gmail/Outlook web) ne peut pas
+// transporter de fichiers locaux → si le service est WEB, on propose un choix (PAR envoi, sans mémoire) :
+// ouvrir la composition web + le dossier des PJ (à glisser à la main), OU créer un brouillon .eml.
+// Desktop (Outlook/Apple Mail) et 'system' : comportement inchangé (.eml via emailCreateEml).
+// opts : { to | bccArr, subject, body, attachments:[{bucket?,file,name}], folderBuckets:[...], propertyId? }
+function _sendMailWithAttachments(opts){
+  opts=opts||{};
+  var prov=_getMailProvider();
+  var isWeb=(prov==='gmail'||prov==='outlook-web');
+  var nPJ=(opts.attachments||[]).length;
+  function makeEmlPayload(){
+    var p={subject:opts.subject||'',body:opts.body||'',attachments:opts.attachments||[],app:_mailAppForProvider()};
+    if(opts.bccArr)p.bcc=opts.bccArr.join(', ');else p.to=opts.to||'';
+    if(opts.propertyId)p.propertyId=opts.propertyId;
+    return p;
+  }
+  function createEml(){
+    window.electronAPI.emailCreateEml(makeEmlPayload()).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
+    toast('✉ Brouillon créé avec '+nPJ+' pièce(s) jointe(s)');
+  }
+  if(!isWeb){createEml();return;}   // desktop / système : inchangé
+  // Web : dialogue de choix (par envoi, aucune persistance)
+  _mailWebChoice({
+    onWeb:function(){
+      // Composition web SANS PJ (URL) — réutilise le chemin sans-PJ existant.
+      if(opts.bccArr)_openMailtoBulk(opts.bccArr,opts.subject||'',opts.body||'');
+      else _openMailto(opts.to||'',opts.subject||'',opts.body||'');
+      // Ouvrir le(s) dossier(s) des PJ pour glisser-déposer à la main.
+      (opts.folderBuckets||[]).forEach(function(b){if(b&&window.electronAPI&&window.electronAPI.attachmentOpenFolder)window.electronAPI.attachmentOpenFolder(b);});
+      toast('✉ Composition web ouverte — glisse les '+nPJ+' pièce(s) jointe(s) depuis le dossier ouvert');
+    },
+    onEml:createEml
+  });
+}
+// Petite modale de choix (2 boutons). Callbacks conservés le temps du choix (aucune persistance).
+var _mailWebChoiceCtx=null;
+function _mailWebChoice(cbs){_mailWebChoiceCtx=cbs;var ov=document.getElementById('mailweb-choice-ov');if(ov)ov.classList.add('on');}
+function _mailWebChoiceClose(){var ov=document.getElementById('mailweb-choice-ov');if(ov)ov.classList.remove('on');_mailWebChoiceCtx=null;}
+function _mailWebChoicePick(which){
+  var cbs=_mailWebChoiceCtx;_mailWebChoiceClose();
+  if(!cbs)return;
+  if(which==='web'&&cbs.onWeb)cbs.onWeb();
+  else if(which==='eml'&&cbs.onEml)cbs.onEml();
+}
 function sendMailFromTemplate(tplId){
   if(!_mailPickContext){closeTplPicker();return;}
   var tpl=_tplFind(tplId);if(!tpl){toast('⚠ Template introuvable');return;}
@@ -9001,8 +9064,7 @@ function sendMailFromTemplate(tplId){
     if(sigBodyB)bodyB=bodyB+'\n\n'+_substituteTplVars(sigBodyB,'','');
     var attsB=_pjMailAttachmentsFor(tpl.id);
     if(attsB.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
-      window.electronAPI.emailCreateEml({bcc:ctx.emails.join(', '),subject:subjB,body:bodyB,attachments:attsB,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
-      toast('✉ Brouillon créé avec '+attsB.length+' pièce(s) jointe(s)');
+      _sendMailWithAttachments({bccArr:ctx.emails,subject:subjB,body:bodyB,attachments:attsB,folderBuckets:_pjMailBucketsFor(attsB)});
       closeTplPicker();return;
     }
     _openMailtoBulk(ctx.emails,subjB,bodyB);
@@ -9020,8 +9082,7 @@ function sendMailFromTemplate(tplId){
     if(sigBodyC)bodyC=bodyC+'\n\n'+_substituteTplVars(sigBodyC,couPrenom,couNom,ctx.courtier);
     var attsC=_pjMailAttachmentsFor(tpl.id);
     if(attsC.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
-      window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subjC,body:bodyC,attachments:attsC,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
-      toast('✉ Brouillon créé avec '+attsC.length+' pièce(s) jointe(s)');
+      _sendMailWithAttachments({to:ctx.courriel||'',subject:subjC,body:bodyC,attachments:attsC,folderBuckets:_pjMailBucketsFor(attsC)});
       closeTplPicker();return;
     }
     _openMailto(ctx.courriel,subjC,bodyC);
@@ -9038,8 +9099,7 @@ function sendMailFromTemplate(tplId){
     if(sigBodyN)bodyN=bodyN+'\n\n'+_substituteTplVars(sigBodyN,n.prenom||'',n.nom||'',null,extraN);
     var attsN=_pjMailAttachmentsFor(tpl.id);
     if(attsN.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
-      window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subjN,body:bodyN,attachments:attsN,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
-      toast('✉ Brouillon créé avec '+attsN.length+' pièce(s) jointe(s)');
+      _sendMailWithAttachments({to:ctx.courriel||'',subject:subjN,body:bodyN,attachments:attsN,folderBuckets:_pjMailBucketsFor(attsN)});
       closeTplPicker();return;
     }
     _openMailto(ctx.courriel,subjN,bodyN);
@@ -9055,8 +9115,7 @@ function sendMailFromTemplate(tplId){
     if(sigBodyF)bodyF=bodyF+'\n\n'+_substituteTplVars(sigBodyF,fc.prenom||'',fc.nom||'');
     var attsF=_pjMailAttachmentsFor(tpl.id);
     if(attsF.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
-      window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subjF,body:bodyF,attachments:attsF,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
-      toast('✉ Brouillon créé avec '+attsF.length+' pièce(s) jointe(s)');
+      _sendMailWithAttachments({to:ctx.courriel||'',subject:subjF,body:bodyF,attachments:attsF,folderBuckets:_pjMailBucketsFor(attsF)});
       closeTplPicker();return;
     }
     _openMailto(ctx.courriel,subjF,bodyF);
@@ -9084,8 +9143,7 @@ function sendMailFromTemplate(tplId){
   if(sigBody)body=body+'\n\n'+_substituteTplVars(sigBody,prenom,nom,courtierCtx,extraCtx);
   var attsS=_pjMailAttachmentsFor(tpl.id);
   if(attsS.length&&window.electronAPI&&window.electronAPI.emailCreateEml){
-    window.electronAPI.emailCreateEml({to:ctx.courriel||'',subject:subject,body:body,attachments:attsS,app:_mailAppForProvider()}).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
-    toast('✉ Brouillon créé avec '+attsS.length+' pièce(s) jointe(s)');
+    _sendMailWithAttachments({to:ctx.courriel||'',subject:subject,body:body,attachments:attsS,folderBuckets:_pjMailBucketsFor(attsS)});
     closeTplPicker();return;
   }
   if(!ctx.courriel){toast('⚠ Pas de courriel sur cette fiche — ouverture vide');}
@@ -9098,10 +9156,11 @@ function sendEmptyMail(){
   var ctx=_mailPickContext;
   var atts=_pjGetCheckedForMail();
   if(atts.length&&ctx._pjVId&&window.electronAPI&&window.electronAPI.emailCreateEml){
-    var payload={subject:'',body:'',propertyId:ctx._pjVId,attachments:atts,app:_mailAppForProvider()};
-    if(ctx.bulk)payload.bcc=(ctx.emails||[]).join(', ');else payload.to=ctx.courriel||'';
-    window.electronAPI.emailCreateEml(payload).then(function(r){if(r&&!r.ok)toast('⚠ '+(r.error||'Échec création courriel'));});
-    toast('✉ Brouillon créé avec '+atts.length+' pièce(s) jointe(s)');
+    _sendMailWithAttachments({
+      to:ctx.bulk?undefined:(ctx.courriel||''),
+      bccArr:ctx.bulk?(ctx.emails||[]):undefined,
+      subject:'',body:'',attachments:atts,propertyId:ctx._pjVId,folderBuckets:[ctx._pjVId]
+    });
     closeTplPicker();return;
   }
   _openMailto(_mailPickContext.courriel,'','');
