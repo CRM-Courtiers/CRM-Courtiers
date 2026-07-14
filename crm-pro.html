@@ -7406,6 +7406,10 @@ function _courtierMailFlow(){
   document.getElementById('tpl-pick-ov').classList.add('on');
 }
 
+// #11b — Callback consommé UNE fois par saveCourtier après création (remplace le monkey-patch de la
+// globale saveCourtier). null = aucune création initiée depuis le SMS. Remis à null à la fermeture du
+// formulaire (closeCourtierEdit) → aucune fuite si l'utilisateur annule.
+var _smsCourtierCreateCb=null;
 function openCourtierEdit(courtierId){
   closeCourtierPicker();closeCourtierInfo();
   _courtierEditingId=courtierId||null;
@@ -7420,7 +7424,7 @@ function openCourtierEdit(courtierId){
   document.getElementById('cou-edit-ov').classList.add('on');
   setTimeout(function(){var p=document.getElementById('cou-prenom');if(p)p.focus();},50);
 }
-function closeCourtierEdit(){var ov=document.getElementById('cou-edit-ov');if(ov)ov.classList.remove('on');_courtierEditingId=null;}
+function closeCourtierEdit(){var ov=document.getElementById('cou-edit-ov');if(ov)ov.classList.remove('on');_courtierEditingId=null;_smsCourtierCreateCb=null;/* #11b — pas de fuite si annulation */}
 function saveCourtier(){
   var prenom=(document.getElementById('cou-prenom').value||'').trim();
   var nom=(document.getElementById('cou-nom').value||'').trim();
@@ -7444,7 +7448,10 @@ function saveCourtier(){
     var nc={id:newId(),prenom:prenom,nom:nom,agence:agence,telephone:tel,courriel:co,lastModified:now};
     db.courtiers.push(nc);
     toast('✓ Courtier ajouté');
+    // #11b — capturer + consommer le callback SMS AVANT closeCourtierEdit (qui remet le cb à null).
+    var _smsCb=_smsCourtierCreateCb;_smsCourtierCreateCb=null;
     closeCourtierEdit();
+    if(_smsCb)_smsCb(nc);
     // Si on est dans le contexte d'une PA, on assigne directement
     if(_currentCourtierTab&&_currentCourtierRecId){_courtierAssign(nc.id);return;}
   }
@@ -8473,9 +8480,14 @@ function smsStopPolling(){
   if(_smsPollTimer){clearInterval(_smsPollTimer);_smsPollTimer=null;}
 }
 async function _smsPoll(){
-  var lic=_getLicenseKey();if(!lic)return;
+  // #11a — Arrêter le polling quand la licence est morte (sinon le setInterval 60 s tourne à jamais) :
+  //  · plus de clé locale → stop ; · 401/403 (licence invalide/révoquée) → stop.
+  // Une erreur RÉSEAU transitoire (timeout/offline/fetch qui throw, autres statuts) → return : le polling
+  // SURVIT et réessaie (sinon la capture SMS meurt en silence et des demandes clients se perdent).
+  var lic=_getLicenseKey();if(!lic){smsStopPolling();return;}
   try{
     var r=await fetch(LIC_SERVER+'/api/sms-pending?key='+encodeURIComponent(lic));
+    if(r.status===401||r.status===403){smsStopPolling();return;}
     var d=await r.json();
     if(!d.ok)return;
     var newCount=(d.entries||[]).length;
@@ -8703,26 +8715,10 @@ function _smsCfCreateCourtier(){
     var inC=document.getElementById('cou-co');if(inC)inC.value=p.courtier_courriel||'';
     var focusEl=document.getElementById((p.courtier_prenom?'cou-tel':'cou-prenom'));if(focusEl)focusEl.focus();
   },30);
-  // Hook saveCourtier pour capter l'id et le poser dans _smsCfCourtierId
-  var _origSave=saveCourtier;
-  saveCourtier=function(){
-    var prenomVal=(document.getElementById('cou-prenom').value||'').trim();
-    var nomVal=(document.getElementById('cou-nom').value||'').trim();
-    if(!prenomVal||!nomVal){alert('Le prénom et le nom sont requis.');return;}
-    // Anti-doublon : si un courtier existe déjà avec le même nom, lier au lieu de créer
-    var existing=(db.courtiers||[]).find(function(c){return norm(c.prenom)===norm(prenomVal)&&norm(c.nom)===norm(nomVal);});
-    if(existing&&!_courtierEditingId){
-      _smsCfCourtierId=existing.id;
-      _smsCfRenderCourtierStatus();
-      closeCourtierEdit();
-      toast('✓ Courtier existant lié (anti-doublon)');
-      saveCourtier=_origSave;
-      return;
-    }
-    _origSave();
-    var last=db.courtiers[db.courtiers.length-1];
-    if(last){_smsCfCourtierId=last.id;_smsCfRenderCourtierStatus();}
-    saveCourtier=_origSave;
+  // #11b — plus de monkey-patch de la globale saveCourtier. On pose un callback module-level, consommé
+  // UNE fois par saveCourtier après la création du courtier (et nettoyé à la fermeture du formulaire).
+  _smsCourtierCreateCb=function(nc){
+    if(nc){_smsCfCourtierId=nc.id;_smsCfRenderCourtierStatus();}
   };
   openCourtierEdit(null);
 }
