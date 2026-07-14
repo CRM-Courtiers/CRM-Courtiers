@@ -2707,6 +2707,12 @@ function saveFltState(){try{localStorage.setItem('crmprosrch',JSON.stringify(SEA
 // ═══════════════════════════════════════════════════════════════
 // ⟦SYNC-ENGINE-BEGIN⟧ — fonctions PURES (testables hors app, ne touchent ni db ni DOM)
 var SYNC_COLLS=['cp','vp','a','pa','v','ac','vc','archac','archvc','archpa','ca','demandes','templates','courtiers','refs','notaires','taches','financiers','refsh','collabChannels'];
+// #7 — signature et tacheCal sont VOLONTAIREMENT hors de cette liste (jamais synchronisés) :
+//  • tacheCal : map date→eventId PROPRE au calendrier de CE poste — le synchroniser créerait des
+//    références d'événements MORTES sur les autres postes (leur agenda ne connaît pas ces ids).
+//  • signature : chacun la sienne (statu quo). NOTE de design : la clé de licence pourrait un jour
+//    servir de discriminateur pour partager la signature entre 2 postes du MÊME courtier — ROI faible,
+//    non implémenté.
 // Horloge monotone (Lamport-ish) : jamais deux fois le même ts localement, résiste aux horloges décalées
 function _syncTick(clockRef){var t=Date.now();clockRef.v=(t>clockRef.v)?t:clockRef.v+1;return clockRef.v;}
 // meta = {tomb:{coll:{id:ts}}, fts:{coll:{id:{champ:{t:ts,d:dev}}}}} — état de fusion persisté
@@ -4928,6 +4934,7 @@ var TUTORIELS=[
     +'<li>Les <strong>rendez-vous notaire</strong>.</li>'
     +'</ul>'
     +'<p>Les \u00e9v\u00e9nements TRI-ANGLE sont pr\u00e9fix\u00e9s <strong>(Tri-Angle)</strong> dans ton calendrier. Si tu modifies une date dans l\u2019app, l\u2019\u00e9v\u00e9nement se met \u00e0 jour; si tu l\u2019effaces, il est retir\u00e9.</p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Connecte ton calendrier (Google/Outlook) sur <strong>un seul</strong> de tes postes. Sinon, chaque poste cr\u00e9e ses propres \u00e9v\u00e9nements de t\u00e2ches et tu peux voir des <strong>doublons</strong> dans ton agenda.</div></div>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>L\u2019onglet <strong>Calendrier</strong> de TRI-ANGLE te donne aussi une vue d\u2019ensemble de tes dates sans quitter l\u2019app.</div></div>'},
   {sec:'Pilotage', num:31, titre:'Lire ton tableau de bord', html:
     '<p>Le <strong>Tableau de bord</strong> (Dashboard) te donne une lecture honn\u00eate de ton activit\u00e9 et de tes revenus.</p>'
