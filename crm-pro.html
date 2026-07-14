@@ -5889,6 +5889,25 @@ function transferToConclus(fromTab,id){
       baseEntry.pancarte=!!r.pancarte;
       baseEntry.pancarteRet=!!r.pancarteRet;
     }
+    // #3 — Événements calendrier des conditions : ne pas réécrire l'historique d'agenda.
+    // Comparaison DATE-ONLY (aujourd'hui inclus = passé). Pour chaque _evt_ de condition (sauf notaire) :
+    //  • date FUTURE (> aujourd'hui) → rappel devenu sans objet sur un dossier conclu → SUPPRIMER l'événement distant ;
+    //  • date passée/aujourd'hui, OU valeur non datable mais _evt_ présent → TRANSFÉRER l'id (événement gérable, zéro doublon).
+    (GCAL_FIELDS_BY_TAB[fromTab]||[]).forEach(function(champ){
+      if(champ==='notaire')return;           // notaire traité à part (toujours transféré)
+      var k='_evt_'+champ;
+      if(!r[k])return;
+      var dOnly=String(r[champ]||"").slice(0,10);
+      var isFuture=/^\d{4}-\d{2}-\d{2}$/.test(dOnly)&&dOnly>_todayStr();
+      if(isFuture){
+        if(window.electronAPI){try{_calDeleteEvent({eventId:r[k]}).catch(function(){});}catch(e){}}
+      }else{
+        baseEntry[k]=r[k];
+      }
+    });
+    // Notaire — TOUJOURS transférer (RDV de signature à venir) : une future modif de la date notaire
+    // sur la fiche conclue met à jour le MÊME événement (plus de doublon).
+    if(r._evt_notaire)baseEntry._evt_notaire=r._evt_notaire;
     db[targetTab].push(baseEntry);
     noms.push(r.prenom+" "+r.nom);
   });
