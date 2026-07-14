@@ -1732,6 +1732,15 @@ body.app-readonly th .rz{pointer-events:none}
           <span class="save-status" id="saveStatus" style="display:block;margin-top:10px"></span>
         </div>
 
+        <div class="settings-group" id="restoreGroup" style="display:none">
+          <div class="settings-group-title">&#8635; Restaurer une sauvegarde</div>
+          <div class="settings-group-desc">Reviens &agrave; une copie automatique : <strong>quotidienne</strong> (d&eacute;but de journ&eacute;e) ou <strong>avant import</strong> (cr&eacute;&eacute;e juste avant un import ou une restauration). Une copie de s&eacute;curit&eacute; est faite avant toute restauration, et Ctrl+Z reste possible.</div>
+          <div class="settings-actions">
+            <button class="btn-import" onclick="openRestoreList()">&#8635; Restaurer une sauvegarde&hellip;</button>
+          </div>
+          <div id="restoreListZone" style="margin-top:10px"></div>
+        </div>
+
         </div><!-- /sauvegarde -->
 
         <div class="settings-tab-content" data-stab-content="equipe">
@@ -8708,6 +8717,9 @@ function _initSettingsTabs(){
   }
   var last='';try{last=localStorage.getItem('crmpro-settings-tab')||'sauvegarde';}catch(e){last='sauvegarde';}
   switchSettingsTab(last);
+  // UI de restauration : Electron seulement (backups sur disque via IPC).
+  var rg=document.getElementById('restoreGroup');
+  if(rg)rg.style.display=(window.electronAPI&&window.electronAPI.backupList)?'':'none';
 }
 
 function _buildMailUrl(to,subject,body){
@@ -10564,50 +10576,89 @@ function _migrateImportedData(payload){
   if(rvCount>0)notes.push(rvCount+' record(s) Refus achat/vente ignore(s) (onglets retires)');
   return notes;
 }
+// Application d'un payload — logique COMMUNE à l'import (fichier) ET à la restauration
+// d'un backup. Un seul endroit à maintenir → import et restauration restent symétriques
+// (même confirm, même filet pré-écrasement, mêmes 12 collections). Retourne true si appliqué,
+// false si l'utilisateur a annulé. Peut lever (l'appelant gère le catch).
+async function _applyRestorePayload(payload){
+  // Confirmation : REMPLACE les données de ce poste par le contenu du fichier/backup.
+  var msg="⚠ Cette opération va REMPLACER les données de ce poste par le contenu de la sauvegarde.\n\nUne copie de sécurité sera créée avant. Ctrl+Z / Cmd+Z reste possible ensuite.";
+  if(_syncOn())msg+="\n\n⚠ La synchronisation est active — ces données se propageront à tes autres postes.";
+  msg+="\n\nContinuer ?";
+  if(!confirm(msg))return false;
+  // Copie de sécurité AVANT d'appliquer. Le backup quotidien est bridé à 1×/session
+  // → on force un snapshot horodaté dédié (IPC backup-now). Best-effort : un échec
+  // ne bloque pas l'opération (pushUndo reste le filet).
+  if(window.electronAPI&&window.electronAPI.backupNow){
+    try{
+      await writeAutoSave();            // photographier l'état courant sur disque D'ABORD
+      var bk=await window.electronAPI.backupNow();
+      if(!bk||!bk.ok)toast("⚠ Copie de sécurité non créée — opération poursuivie (Ctrl+Z reste possible)");
+    }catch(be){toast("⚠ Copie de sécurité échouée — opération poursuivie (Ctrl+Z reste possible)");}
+  }
+  var migrNotes=_migrateImportedData(payload);
+  pushUndo("Import JSON");
+  TABS.forEach(function(t){if(payload[t])db[t]=payload[t];});
+  if(payload.demandes)db.demandes=payload.demandes;
+  if(payload.templates)db.templates=payload.templates;
+  if(payload.signature)db.signature=payload.signature;
+  if(payload.thresholds){THR.cp=payload.thresholds.cp||14;THR.vp=payload.thresholds.vp||14;THR.a=payload.thresholds.a||20;}
+  // Symétrique à l'export : restaurer aussi les 8 collections de #1.
+  if(payload.courtiers)db.courtiers=payload.courtiers;
+  if(payload.refs)db.refs=payload.refs;
+  if(payload.notaires)db.notaires=payload.notaires;
+  if(payload.taches)db.taches=payload.taches;
+  if(payload.tacheCal)db.tacheCal=payload.tacheCal;
+  if(payload.financiers)db.financiers=payload.financiers;
+  if(payload.refsh)db.refsh=payload.refsh;
+  if(payload.collabChannels)db.collabChannels=payload.collabChannels;
+  // Migration : Acheteurs importés sans lastModified — initialiser à aujourd'hui
+  try{var today=_todayStr();(db.a||[]).forEach(function(r){if(!r.lastModified)r.lastModified=today;});}catch(e){}
+  sdb();sthr();fullRender();
+  if(migrNotes&&migrNotes.length>0){console.log("[import]",migrNotes);alert("Donnees importees !\n\nMigration automatique :\n• "+migrNotes.join("\n• "));}else{toast("✓ Donnees importees!");}
+  return true;
+}
 function importData(input){
   var file=input.files[0];if(!file)return;
   var r=new FileReader();
   r.onload=async function(ev){
     try{
       var payload=JSON.parse(ev.target.result);
-      // Confirmation : l'import REMPLACE les données de ce poste par le contenu du fichier.
-      var msg="⚠ L'import va REMPLACER les données de ce poste par le contenu du fichier.\n\nUne copie de sécurité sera créée avant. Ctrl+Z / Cmd+Z reste possible ensuite.";
-      if(_syncOn())msg+="\n\n⚠ La synchronisation est active — ces données se propageront à tes autres postes.";
-      msg+="\n\nContinuer ?";
-      if(!confirm(msg)){input.value="";return;}
-      // Copie de sécurité AVANT d'appliquer. Le backup quotidien est bridé à 1×/session
-      // → on force un snapshot horodaté dédié (IPC backup-now). Best-effort : un échec
-      // ne bloque pas l'import (pushUndo reste le filet).
-      if(window.electronAPI&&window.electronAPI.backupNow){
-        try{
-          await writeAutoSave();            // photographier l'état courant sur disque D'ABORD
-          var bk=await window.electronAPI.backupNow();
-          if(!bk||!bk.ok)toast("⚠ Copie de sécurité non créée — import poursuivi (Ctrl+Z reste possible)");
-        }catch(be){toast("⚠ Copie de sécurité échouée — import poursuivi (Ctrl+Z reste possible)");}
-      }
-      var migrNotes=_migrateImportedData(payload);
-      pushUndo("Import JSON");
-      TABS.forEach(function(t){if(payload[t])db[t]=payload[t];});
-      if(payload.demandes)db.demandes=payload.demandes;
-      if(payload.templates)db.templates=payload.templates;
-      if(payload.signature)db.signature=payload.signature;
-      if(payload.thresholds){THR.cp=payload.thresholds.cp||14;THR.vp=payload.thresholds.vp||14;THR.a=payload.thresholds.a||20;}
-      // Import symétrique à l'export : restaurer aussi les 8 collections manquantes.
-      if(payload.courtiers)db.courtiers=payload.courtiers;
-      if(payload.refs)db.refs=payload.refs;
-      if(payload.notaires)db.notaires=payload.notaires;
-      if(payload.taches)db.taches=payload.taches;
-      if(payload.tacheCal)db.tacheCal=payload.tacheCal;
-      if(payload.financiers)db.financiers=payload.financiers;
-      if(payload.refsh)db.refsh=payload.refsh;
-      if(payload.collabChannels)db.collabChannels=payload.collabChannels;
-      // Migration : Acheteurs importés sans lastModified — initialiser à aujourd'hui
-      try{var today=_todayStr();(db.a||[]).forEach(function(r){if(!r.lastModified)r.lastModified=today;});}catch(e){}
-      sdb();sthr();fullRender();
-      if(migrNotes&&migrNotes.length>0){console.log("[import]",migrNotes);alert("Donnees importees !\n\nMigration automatique :\n• "+migrNotes.join("\n• "));}else{toast("✓ Donnees importees!");}
+      await _applyRestorePayload(payload);
     }catch(e){alert("Erreur : "+e.message);}
     input.value="";
   };r.readAsText(file);
+}
+// ─── Restauration d'un backup (UI Paramètres → Sauvegarde) ───
+function _fmtBackupSize(n){var kb=n/1024;return kb<1024?(kb.toFixed(kb<10?1:0)+' Ko'):((kb/1024).toFixed(1)+' Mo');}
+function _fmtBackupDate(ms){try{return new Date(ms).toLocaleString('fr-CA',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+async function openRestoreList(){
+  if(!(window.electronAPI&&window.electronAPI.backupList))return;
+  var zone=document.getElementById('restoreListZone');if(!zone)return;
+  zone.innerHTML='<div style="font-size:12px;color:#94A3B8">Chargement…</div>';
+  var res;try{res=await window.electronAPI.backupList();}catch(e){res={ok:false,error:e.message};}
+  if(!res||!res.ok){zone.innerHTML='<div style="font-size:12px;color:#DC2626">Erreur : '+((res&&res.error)||'liste indisponible')+'</div>';return;}
+  var files=res.files||[];
+  if(!files.length){zone.innerHTML='<div style="font-size:12px;color:#94A3B8">Aucune sauvegarde disponible pour le moment.</div>';return;}
+  var rows=files.map(function(f){
+    var avImp=f.type==='avant-import';
+    var badge='<span style="font-size:9px;border-radius:8px;padding:2px 8px;letter-spacing:.03em;color:#fff;background:'+(avImp?'#D97706':'#0FBFAB')+'">'+(avImp?'Avant import':'Quotidien')+'</span>';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EEF2F7">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#0F172A">'+_fmtBackupDate(f.mtime)+' '+badge+'</div>'
+      +'<div style="font-size:10px;color:#94A3B8">'+_fmtBackupSize(f.size)+' — '+f.name+'</div></div>'
+      +'<button class="btn-import" style="padding:6px 12px;font-size:11px" onclick="doRestore(\''+f.name.replace(/'/g,"\\'")+'\')">&#8635; Restaurer</button></div>';
+  }).join('');
+  zone.innerHTML='<div style="border:1px solid #E2E8F0;border-radius:8px;padding:4px 12px;max-height:280px;overflow:auto">'+rows+'</div>';
+}
+async function doRestore(fileName){
+  if(!(window.electronAPI&&window.electronAPI.backupRead))return;
+  try{
+    var res=await window.electronAPI.backupRead(fileName);
+    if(!res||!res.ok){alert('Restauration impossible : '+((res&&res.error)||'lecture échouée'));return;}
+    var payload=JSON.parse(res.data);
+    var applied=await _applyRestorePayload(payload);
+    if(applied){toast('✓ Sauvegarde restaurée');openRestoreList();}
+  }catch(e){alert('Erreur : '+e.message);}
 }
 function resetAllData(){
   if(!confirm("\u26a0\ufe0f Effacer TOUTES les donn\u00e9es ?\n\nCtrl+Z / Cmd+Z pour annuler apr\u00e8s."))return;

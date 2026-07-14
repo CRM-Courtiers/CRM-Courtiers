@@ -151,14 +151,31 @@ function _backupBeforeOverwrite() {
 }
 
 // IPC : restauration (pour récupération assistée). Liste les backups dispo.
+// Inclut les quotidiens (CRM-Pro-autosauve-*) ET les pré-import (CRM-Pro-avant-import-*),
+// chaque entrée étiquetée par son ORIGINE (type). Tri par date décroissante.
 ipcMain.handle('backup-list', async () => {
   try {
     if (!fs.existsSync(BACKUP_DIR)) return { ok: true, dir: BACKUP_DIR, files: [] };
     const files = fs.readdirSync(BACKUP_DIR)
-      .filter(f => /^CRM-Pro-autosauve-.*\.json$/.test(f))
-      .map(f => { const st = fs.statSync(path.join(BACKUP_DIR, f)); return { name: f, size: st.size, mtime: st.mtimeMs }; })
+      .filter(f => /^CRM-Pro-(autosauve|avant-import)-.*\.json$/.test(f))
+      .map(f => {
+        const st = fs.statSync(path.join(BACKUP_DIR, f));
+        return { name: f, size: st.size, mtime: st.mtimeMs, type: /^CRM-Pro-avant-import-/.test(f) ? 'avant-import' : 'quotidien' };
+      })
       .sort((a, b) => b.mtime - a.mtime);
     return { ok: true, dir: BACKUP_DIR, files: files };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+// IPC : lecture d'un backup choisi (pour restauration). SÉCURITÉ : le nom doit matcher
+// la whitelist stricte (aucun séparateur / \ ni « .. » ne peut passer) → pas de traversée.
+const BACKUP_NAME_RE = /^CRM-Pro-(autosauve|avant-import)-[0-9-]+\.json$/;
+ipcMain.handle('backup-read', async (event, fileName) => {
+  try {
+    if (typeof fileName !== 'string' || !BACKUP_NAME_RE.test(fileName)) return { ok: false, error: 'nom de fichier non autorisé' };
+    const p = path.join(BACKUP_DIR, fileName);
+    if (!fs.existsSync(p)) return { ok: false, error: 'fichier introuvable' };
+    return { ok: true, data: fs.readFileSync(p, 'utf8') };
   } catch (e) { return { ok: false, error: e.message }; }
 });
 
