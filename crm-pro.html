@@ -1727,7 +1727,7 @@ body.app-readonly th .rz{pointer-events:none}
             <button class="btn-export" onclick="exportData()">&#8595; Exporter JSON</button>
             <label class="btn-import">&#8593; Importer JSON<input type="file" accept=".json" onchange="importData(this)" style="display:none"></label>
             <button class="btn-csv" onclick="exportCSV()">&#8595; Exporter CSV</button>
-            <button class="btn-reset" onclick="resetAllData()">&#128465; R&eacute;initialiser</button>
+            <button class="btn-reset" onclick="resetAllData()">&#128465; Effacer les dossiers clients</button>
           </div>
           <span class="save-status" id="saveStatus" style="display:block;margin-top:10px"></span>
         </div>
@@ -2149,6 +2149,27 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="tpl-modal-foot">
       <button class="tpl-btn muted" onclick="closeAToPA_Modal()">Annuler</button>
       <button class="tpl-btn primary" onclick="submitAToPA_Modal()">Créer la promesse</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal : Effacer les dossiers clients (#6) ── -->
+<div class="tpl-modal-ov" id="reset-modal-ov">
+  <div class="tpl-modal" style="width:min(500px,95vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">🗑 Effacer les dossiers clients</div>
+      <button class="tpl-btn muted" onclick="closeResetModal()">✕</button>
+    </div>
+    <div class="tpl-modal-body">
+      <div style="font-size:13px;color:#475569;line-height:1.6">Efface tous les <strong>dossiers clients</strong> de ce poste (prospects, acheteurs, promesses, inscriptions, conclus, demandes, références, tâches). Tes <strong>banques de contacts</strong>, gabarits et signature sont <strong>conservés</strong> par défaut. <strong>Ctrl+Z / Cmd+Z</strong> permet d'annuler juste après.</div>
+      <label style="display:flex;align-items:flex-start;gap:9px;margin-top:14px;font-size:13px;color:#0F172A;cursor:pointer">
+        <input type="checkbox" id="reset-inc-banks" style="margin-top:2px">
+        <span>Effacer aussi mes <strong>banques de contacts</strong> (courtiers, notaires, financement), <strong>gabarits</strong> de courriels et <strong>signature</strong>.</span>
+      </label>
+    </div>
+    <div class="tpl-modal-foot">
+      <button class="tpl-btn muted" onclick="closeResetModal()">Annuler</button>
+      <button class="btn-reset" onclick="_resetConfirm()">🗑 Effacer</button>
     </div>
   </div>
 </div>
@@ -10794,27 +10815,44 @@ async function doRestore(fileName){
   }catch(e){alert('Erreur : '+e.message);}
 }
 function resetAllData(){
-  if(!confirm("\u26a0\ufe0f Effacer TOUTES les donn\u00e9es ?\n\nCtrl+Z / Cmd+Z pour annuler apr\u00e8s."))return;
-  // \u00c9tape 32 \u2014 s\u00e9curit\u00e9 : la r\u00e9initialisation reste LOCALE. On coupe le travail \u00e0 deux d'abord,
-  // sinon le diff journaliserait des suppressions massives qui effaceraient AUSSI l'autre poste.
+  // Ouvre la mini-modale (case \u00ab banques \u00bb d\u00e9coch\u00e9e par d\u00e9faut) \u2014 plus de confirm() natif.
+  var cb=document.getElementById('reset-inc-banks');if(cb)cb.checked=false;
+  var ov=document.getElementById('reset-modal-ov');if(ov)ov.classList.add('on');
+}
+function closeResetModal(){var ov=document.getElementById('reset-modal-ov');if(ov)ov.classList.remove('on');}
+function _resetConfirm(){
+  var incBanks=!!(document.getElementById('reset-inc-banks')||{}).checked;
+  // \u00c9tape 32 \u2014 s\u00e9curit\u00e9 : l'effacement reste LOCAL. On coupe le travail \u00e0 deux d'abord, sinon le diff
+  // journaliserait des suppressions massives qui effaceraient AUSSI l'autre poste.
   try{
     if(_syncOn()){
       localStorage.setItem('crmpro-sync-on','0');
       if(_syncTimer){clearInterval(_syncTimer);_syncTimer=null;}
       var sc=document.getElementById('syncChip');if(sc)sc.style.display='none';
-      toast('Travail \u00e0 deux d\u00e9sactiv\u00e9 par s\u00e9curit\u00e9 (r\u00e9initialisation locale seulement)');
+      toast('Travail \u00e0 deux d\u00e9sactiv\u00e9 par s\u00e9curit\u00e9 (effacement local seulement)');
     }
   }catch(e){}
-  pushUndo("R\u00e9initialisation");
+  pushUndo("Effacer les dossiers clients");
+  // \u2500\u2500 Transactionnel : TOUJOURS effac\u00e9 (m\u00e9moire + localStorage). \u2500\u2500
   TABS.forEach(function(t){try{localStorage.removeItem("crmpro-"+t);}catch(e){}db[t]=[];});
-  try{localStorage.removeItem("crmpro-demandes");}catch(e){}
-  db.demandes=[];
-  try{localStorage.removeItem("crmpro-templates");}catch(e){}
-  db.templates=[];
-  try{localStorage.removeItem("crmpro-signature");}catch(e){}
-  db.signature={body:""};
-  THR={cp:14,vp:14,a:20};fullRender();
-  toast("\uD83D\uDDD1 Donn\u00e9es effac\u00e9es");
+  try{localStorage.removeItem("crmpro-demandes");}catch(e){}db.demandes=[];
+  try{localStorage.removeItem("crmpro-refs");}catch(e){}db.refs=[];
+  try{localStorage.removeItem("crmpro-refsh");}catch(e){}db.refsh=[];
+  try{localStorage.removeItem("crmpro-taches");}catch(e){}db.taches=[];
+  try{localStorage.removeItem("crmpro-tachecal");}catch(e){}db.tacheCal={};   // cl\u00e9 minuscule (cf. sdb)
+  try{localStorage.removeItem("crmpro-collabchannels");}catch(e){}db.collabChannels=[]; // cl\u00e9 minuscule (cf. sdb)
+  // \u2500\u2500 Banques + gabarits + signature : SEULEMENT si la case est coch\u00e9e. \u2500\u2500
+  if(incBanks){
+    try{localStorage.removeItem("crmpro-courtiers");}catch(e){}db.courtiers=[];
+    try{localStorage.removeItem("crmpro-notaires");}catch(e){}db.notaires=[];
+    try{localStorage.removeItem("crmpro-financiers");}catch(e){}db.financiers=[];
+    try{localStorage.removeItem("crmpro-templates");}catch(e){}db.templates=[];
+    try{localStorage.removeItem("crmpro-signature");}catch(e){}db.signature={body:""};
+  }
+  THR={cp:14,vp:14,a:20};
+  closeResetModal();
+  fullRender();
+  toast(incBanks?"\uD83D\uDDD1 Dossiers clients + banques effac\u00e9s \u2014 Ctrl+Z pour annuler":"\uD83D\uDDD1 Dossiers clients effac\u00e9s \u2014 Ctrl+Z pour annuler");
 }
 function updateSaveDirDisplay(){if(_electronDirPath){var display=document.getElementById("saveDirDisplay"),pathEl=document.getElementById("saveDirPath");if(display&&pathEl){display.style.display='block';pathEl.textContent=_electronDirPath;}}}
 
