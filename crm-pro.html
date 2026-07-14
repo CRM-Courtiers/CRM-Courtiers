@@ -5646,6 +5646,7 @@ function transferRecToRea(id){
   pushUndo('R\u00e9f\u00e9rence \u2192 Active');
   rec.statut='active';
   rec.dateRelance=_datePlusDays(60); // \u00c9tape 31b \u2014 repart avec une relance fra\u00eeche
+  delete rec.dateConclusion; // #5 \u2014 aligne sur reopenRefh : la prochaine conclusion re-tamponnera today (bonne ann\u00e9e Dashboard)
   rec.lastModified=_todayStr();
   sdb();rall();
   toast('\u21bb R\u00e9f\u00e9rence renvoy\u00e9e dans Actives (relance dans 60 jours)');
