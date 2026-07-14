@@ -6450,13 +6450,55 @@ function _demSourceOptions(sel){
 // ─── Rendu : Demandes entrantes (accordion par propriété + tableau éditable) ─
 var _demExpanded={}; // état par propriété (true = expanded, false = collapsed, undefined = défaut)
 
+// ── Groupe « ⚠ Propriété supprimée » : demandes dont la propriété n'existe plus ──
+// Filet permanent : rend visibles + actionnables les demandes orphelines (propertyId défini
+// mais absent de db.v). Actions identiques aux demandes normales (flux normal → tombstones sync).
+// Le groupe disparaît de lui-même quand il est vide.
+var _demOrphExpanded=true;   // déplié par défaut
+var _demOrphShowArch=false;
+function toggleDemOrphans(){_demOrphExpanded=!_demOrphExpanded;renderDemandes();}
+function toggleDemOrphArchive(){_demOrphShowArch=!_demOrphShowArch;renderDemandes();}
+function _demOrphans(){
+  var vIds={};(db.v||[]).forEach(function(v){vIds[v.id]=true;});
+  return (db.demandes||[]).filter(function(d){return d.propertyId&&!vIds[d.propertyId];});
+}
+function _demOrphanGroupHtml(orphans){
+  if(!orphans.length)return '';
+  var actives=orphans.filter(function(d){return d.status==='new'||d.status==='en-attente'||d.status==='qualified';});
+  var archived=orphans.filter(function(d){return d.status==='converted-pa'||d.status==='converted-acheteur'||d.status==='converted-cp'||d.status==='lost';});
+  var exp=_demOrphExpanded;
+  var h=['<div class="dem-prop'+(exp?' expanded':'')+'" id="dem-prop-__orphans__" style="border-color:#FCA5A5">'];
+  h.push('<div class="dem-prop-head" onclick="toggleDemOrphans()">'
+    +'<div class="dem-prop-chevron">'+(exp?'▾':'▸')+'</div>'
+    +'<div class="dem-prop-info">'
+    +'<div class="dem-prop-addr">⚠ Propriété supprimée ('+orphans.length+')</div>'
+    +'<div class="dem-prop-meta">Demandes dont la propriété n\'existe plus — convertis, archive ou supprime.</div>'
+    +'</div>'
+    +'<div class="dem-prop-badges">'+(actives.length?'<span class="dem-prop-badge dem-prop-badge-new">'+actives.length+' active'+(actives.length>1?'s':'')+'</span>':'')+(archived.length?'<span class="dem-prop-badge dem-prop-badge-arch">'+archived.length+' archivée'+(archived.length>1?'s':'')+'</span>':'')+'</div>'
+    +'</div>');
+  if(exp){
+    h.push('<div class="dem-prop-body">');
+    h.push(_demTable(actives,{archived:false}));
+    if(archived.length){
+      h.push('<div class="dem-archive-toggle" onclick="toggleDemOrphArchive()">'
+        +(_demOrphShowArch?'▴ Masquer historique':'▾ Voir historique ('+archived.length+')')
+        +'</div>');
+      if(_demOrphShowArch)h.push(_demTable(archived,{archived:true}));
+    }
+    h.push('</div>');
+  }
+  h.push('</div>');
+  return h.join('');
+}
 function renderDemandes(){
   var w=document.getElementById('dem-wrap');if(!w)return;
   var vs=db.v||[];
+  var orphans=_demOrphans();
+  var orphanHtml=_demOrphanGroupHtml(orphans);
   if(!vs.length){
     w.innerHTML='<div class="dem-head"><h3>📩 Demandes entrantes</h3></div>'
       +'<div class="dem-sub">Note ici tout lead reçu pour une de tes propriétés (Messenger, Centris, courriel, téléphone, SMS...).</div>'
-      +'<div class="dem-empty-prop">Aucune propriété en vente pour le moment.<br>Ajoute une propriété dans l\'onglet <strong>En Vente</strong> pour pouvoir y rattacher des demandes.</div>';
+      +(orphans.length?orphanHtml:'<div class="dem-empty-prop">Aucune propriété en vente pour le moment.<br>Ajoute une propriété dans l\'onglet <strong>En Vente</strong> pour pouvoir y rattacher des demandes.</div>');
     return;
   }
   var html=['<div class="dem-head"><h3>📩 Demandes entrantes</h3></div>',
@@ -6505,6 +6547,7 @@ function renderDemandes(){
     }
     html.push('</div>');
   });
+  if(orphans.length)html.push(orphanHtml);
   w.innerHTML=html.join('');
 }
 
@@ -10481,7 +10524,47 @@ function saveEntry(){
   }
 }
 
-function doDel(tab,id){var _st=_storeTab(tab);var rec=null;for(var i=0;i<db[_st].length;i++){if(db[_st][i].id===id){rec=db[_st][i];break;}}if(!rec)return;pushUndo("Suppression");db[_st]=db[_st].filter(function(x){return x.id!==id;});sdb();rall();toast("\uD83D\uDDD1 Supprim\u00e9 \u2014 Ctrl+Z / Cmd+Z pour annuler");}
+function doDel(tab,id){
+  var _st=_storeTab(tab);
+  var rec=null;for(var i=0;i<db[_st].length;i++){if(db[_st][i].id===id){rec=db[_st][i];break;}}
+  if(!rec)return;
+  // \u2500\u2500 Cas particulier : propri\u00e9t\u00e9 En vente (v) \u2014 prot\u00E8ge les deals + cascade chiffr\u00e9e \u2500\u2500
+  var demLinked=[];
+  if(_st==='v'){
+    // Promesses re\u00E7ues ACTIVES rattach\u00e9es = deals \u2192 BLOQUER la suppression tant qu'il en reste.
+    var paActive=(db.pa||[]).filter(function(p){return p.propertyId===rec.id;});
+    if(paActive.length){
+      alert("Cette propri\u00e9t\u00e9 a "+paActive.length+" promesse(s) re\u00E7ue(s) active(s).\n\nConclus-les (Marquer conclu) ou retourne-les aux Demandes avant de supprimer l'inscription.");
+      return;
+    }
+    demLinked=(db.demandes||[]).filter(function(d){return d.propertyId===rec.id;});
+    var nPJ=_pjCountById(rec.id);
+    var nEvt=0;for(var ke in rec){if(ke.indexOf('_evt_')===0&&rec[ke])nEvt++;}
+    var msg="Supprimer cette inscription ?\n\nSeront aussi supprim\u00e9s :\n\u2022 "+demLinked.length+" demande(s) rattach\u00e9e(s)\n\u2022 "+nPJ+" pi\u00E8ce(s) jointe(s)\n\u2022 "+nEvt+" \u00e9v\u00e9nement(s) calendrier\n\nCtrl+Z / Cmd+Z pour annuler.";
+    if(!confirm(msg))return;
+  }
+  pushUndo("Suppression");
+  // \u2500\u2500 Nettoyage commun \u00E0 TOUS les onglets \u2500\u2500
+  // 1. \u00C9v\u00e9nements calendrier distants de la fiche (best-effort, fire-and-forget \u2014 cf. transferPaToA).
+  for(var kv in rec){
+    if(kv.indexOf('_evt_')===0&&rec[kv]&&window.electronAPI){
+      try{_calDeleteEvent({eventId:rec[kv]}).catch(function(){});}catch(e){}
+    }
+  }
+  // 2. D\u00e9lier le partenaire : vider le linkId des autres fiches du m\u00EAme onglet (cf. unlinkRecord).
+  if(rec.linkId){var lid=rec.linkId;db[_st].forEach(function(x){if(x.id!==rec.id&&x.linkId===lid)x.linkId="";});}
+  // 3. Partage collab : le retrait est D\u00C9J\u00C0 propag\u00e9 par le tombstone `del` via sdb()\u2192_collabOnChange
+  //    (diff de _collabView) \u2014 NE PAS dupliquer ici.
+  // \u2500\u2500 Cascade propre \u00E0 la propri\u00e9t\u00e9 'v' \u2500\u2500
+  if(_st==='v'){
+    if(demLinked.length){var del={};demLinked.forEach(function(d){del[d.id]=true;});db.demandes=(db.demandes||[]).filter(function(d){return !del[d.id];});}
+    if(window.electronAPI&&window.electronAPI.attachmentDeleteProperty){try{window.electronAPI.attachmentDeleteProperty(rec.id).catch(function(){});}catch(e){}}
+  }
+  // \u2500\u2500 Suppression de la fiche elle-m\u00EAme \u2500\u2500
+  db[_st]=db[_st].filter(function(x){return x.id!==id;});
+  sdb();rall();
+  toast("\uD83D\uDDD1 Supprim\u00e9 \u2014 Ctrl+Z / Cmd+Z pour annuler");
+}
 
 // ─── Export / Import ─────────────────────────────────────────
 function exportData(){
