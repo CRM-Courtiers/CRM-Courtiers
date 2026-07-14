@@ -4620,7 +4620,7 @@ var TUTORIELS=[
     +'<p>Si tu changes d\u2019ordinateur ou veux repartir d\u2019un export, va dans <strong>Param\u00e8tres &rarr; Sauvegarde &rarr; Importer</strong> et s\u00e9lectionne ton fichier <strong>.json</strong>. Tes contacts, propri\u00e9t\u00e9s et r\u00e9glages sont r\u00e9tablis.</p>'
     +'<h2>Partir d\u2019une autre source</h2>'
     +'<p>Pour un import depuis Excel ou un autre logiciel, pr\u00e9pare ta liste (nom, t\u00e9l\u00e9phone, courriel) et ajoute les fiches dans la bonne section avec le bouton <strong>+ Ajouter</strong>. Pour un gros volume, contacte le support : un format d\u2019import peut \u00eatre pr\u00e9par\u00e9.</p>'
-    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019import remplace ou fusionne selon le cas \u2014 fais toujours un <strong>export de s\u00e9curit\u00e9</strong> avant d\u2019importer un gros fichier.</div></div>'},
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019import <strong>remplace</strong> les donn\u00e9es de ce poste par le contenu du fichier. Avant de remplacer, TRI-ANGLE te demande confirmation et cr\u00e9e <strong>automatiquement une copie de s\u00e9curit\u00e9</strong> ; <span class="aide-kbd">Ctrl</span>+<span class="aide-kbd">Z</span> peut aussi annuler juste apr\u00e8s. Pour revenir \u00e0 une copie pr\u00e9cise, vois \u00ab Sauvegarde et restauration \u00bb.</div></div>'},
   {sec:'Prospects', num:5, titre:'G\u00e9rer tes prospects acheteurs', html:
     '<p>Les <strong>Prospects acheteurs</strong> sont les gens qui cherchent \u00e0 acheter mais n\u2019ont pas encore sign\u00e9 avec toi. C\u2019est ton pipeline d\u2019entr\u00e9e : on les cultive jusqu\u2019\u00e0 ce qu\u2019ils deviennent des acheteurs actifs.</p>'
     +'<h2>Ajouter un prospect</h2>'
@@ -4742,6 +4742,8 @@ var TUTORIELS=[
     +'<p>Si la demande vient d\u2019un autre courtier, la colonne <strong>Repr\u00e9sent\u00e9 par</strong> l\u2019indique, et la fiche peut h\u00e9riter automatiquement du courtier lors de la conversion en promesse.</p>'
     +'<h2>\ud83d\udcce Pi\u00e8ces jointes par propri\u00e9t\u00e9</h2>'
     +'<p>Depuis cette section, le bouton <strong>\ud83d\udcce PJ</strong> ouvre le dossier de pi\u00e8ces jointes de la propri\u00e9t\u00e9 : fiche, zonage, cadastre, taxes, d\u00e9claration du vendeur, et autres documents. Glisse-d\u00e9pose tes fichiers; ils sont rang\u00e9s dans ton dossier de sauvegarde et peuvent \u00eatre joints \u00e0 tes courriels.</p>'
+    +'<h2>Si tu supprimes l\u2019inscription</h2>'
+    +'<p>Supprimer une inscription est <strong>bloqu\u00e9</strong> tant qu\u2019il reste des <strong>promesses re\u00e7ues actives</strong> dessus \u2014 conclus-les ou retourne-les aux Demandes d\u2019abord. Sinon, TRI-ANGLE te chiffre ce qui sera supprim\u00e9 en cascade (demandes rattach\u00e9es, pi\u00e8ces jointes, \u00e9v\u00e9nements calendrier) avant de confirmer. Et si une demande se retrouve orpheline (sa propri\u00e9t\u00e9 n\u2019existe plus), elle n\u2019est jamais perdue : elle se regroupe dans <strong>\u26a0 Propri\u00e9t\u00e9 supprim\u00e9e</strong>, en bas des Demandes re\u00e7ues, o\u00f9 tu peux encore la convertir, l\u2019archiver ou la supprimer.</p>'
     +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Les pi\u00e8ces jointes d\u2019une propri\u00e9t\u00e9 sont supprim\u00e9es automatiquement quand la vente est conclue, pour garder ton dossier propre.</div></div>'},
   {sec:'En vente', num:14, titre:'Les promesses re\u00e7ues / double repr\u00e9sentation', html:
     '<p>Les <strong>Promesses re\u00e7ues</strong> sont les promesses d\u2019achat d\u00e9pos\u00e9es sur tes inscriptions. C\u2019est le pendant \u00ab c\u00f4t\u00e9 vente \u00bb des promesses en cours.</p>'
@@ -4899,7 +4901,7 @@ var TUTORIELS=[
     +'<li><strong>Gmail web / Outlook web</strong> \u2014 ouvre le brouillon dans ton navigateur.</li>'
     +'<li><strong>Apple Mail</strong> \u2014 sur Mac.</li>'
     +'</ul>'
-    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Le <strong>webmail (Gmail/Outlook web) et Apple Mail sont support\u00e9s</strong>, mais offrent <strong>moins de fonctionnalit\u00e9s</strong> \u2014 notamment, les pi\u00e8ces jointes ne peuvent pas toujours \u00eatre ajout\u00e9es automatiquement. Pour l\u2019exp\u00e9rience compl\u00e8te, utilise <strong>Outlook en application</strong>. Ta signature, elle, se configure directement dans ton Outlook.</div></div>'},
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Le <strong>webmail (Gmail/Outlook web) et Apple Mail sont support\u00e9s</strong>, mais offrent <strong>moins de fonctionnalit\u00e9s</strong> : un lien de composition web ne peut pas transporter de fichiers. Avec des pi\u00e8ces jointes, TRI-ANGLE te propose alors de cr\u00e9er un <strong>brouillon .eml</strong> (qui inclut les PJ) ou d\u2019ouvrir le webmail + le dossier des fichiers \u00e0 glisser. Pour l\u2019exp\u00e9rience compl\u00e8te, utilise <strong>Outlook en application</strong>. Ta signature, elle, se configure directement dans ton Outlook.</div></div>'},
   {sec:'Courriels & Templates', num:27, titre:'Envoi group\u00e9 (BCC)', html:
     '<p>L\u2019<strong>envoi group\u00e9</strong> te permet d\u2019\u00e9crire \u00e0 plusieurs contacts d\u2019un coup, en gardant leurs adresses confidentielles.</p>'
     +'<h2>Comment faire</h2>'
@@ -4915,7 +4917,7 @@ var TUTORIELS=[
     +'<p>Dans l\u2019\u00e9diteur de gabarit, utilise la zone <strong>\ud83d\udcce Pi\u00e8ces jointes du gabarit</strong> pour d\u00e9poser tes fichiers (ex. : brochure, formulaire type, guide de l\u2019acheteur).</p>'
     +'<h2>\u00c0 l\u2019envoi</h2>'
     +'<p>Les PJ du gabarit se combinent avec les \u00e9ventuelles pi\u00e8ces de la propri\u00e9t\u00e9 (voir tuto Demandes re\u00e7ues). Le brouillon s\u2019ouvre avec tout joint.</p>'
-    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019attachement automatique fonctionne avec <strong>Outlook en application</strong> (ou Apple Mail). En webmail, le navigateur ne permet pas de joindre automatiquement : TRI-ANGLE t\u2019ouvre alors le dossier des fichiers \u00e0 glisser manuellement.</div></div>'},
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019attachement automatique fonctionne avec <strong>Outlook en application</strong> (ou Apple Mail). En <strong>webmail</strong> (Gmail/Outlook web), un lien de composition ne peut pas transporter de fichiers : TRI-ANGLE te laisse alors <strong>choisir</strong> \u2014 ouvrir le webmail <strong>+ le dossier des PJ</strong> (\u00e0 glisser \u00e0 la main), ou cr\u00e9er un <strong>brouillon .eml</strong> avec les pi\u00e8ces jointes incluses.</div></div>'},
   {sec:'Calendrier', num:29, titre:'Connecter Google ou Outlook', html:
     '<p>En connectant ton calendrier, toutes tes dates (visites, conditions, rendez-vous notaire) y apparaissent automatiquement.</p>'
     +'<h2>Se connecter</h2>'
@@ -4924,6 +4926,7 @@ var TUTORIELS=[
     +'<li>Choisis <strong>Google Calendar</strong> ou <strong>Outlook</strong> et autorise l\u2019acc\u00e8s.</li>'
     +'</ol>'
     +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Un seul calendrier \u00e0 la fois est actif. Connecter l\u2019un d\u00e9connecte l\u2019autre (pour \u00e9viter les doublons d\u2019\u00e9v\u00e9nements).</div></div>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Si tu <strong>changes de fournisseur</strong> (Google \u2194 Outlook), les \u00e9v\u00e9nements d\u00e9j\u00e0 cr\u00e9\u00e9s restent dans l\u2019ancien agenda et TRI-ANGLE repart \u00e0 neuf : chaque rendez-vous <strong>se recr\u00e9e dans le nouveau calendrier \u00e0 sa prochaine modification de date</strong>.</div></div>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Tu n\u2019as besoin de faire cette connexion qu\u2019une seule fois sur ton ordinateur.</div></div>'},
   {sec:'Calendrier', num:30, titre:'La synchronisation automatique des rendez-vous', html:
     '<p>Une fois ton calendrier connect\u00e9, TRI-ANGLE y cr\u00e9e et met \u00e0 jour les \u00e9v\u00e9nements tout seul.</p>'
@@ -4969,8 +4972,10 @@ var TUTORIELS=[
     +'<h2>Export / Import manuel</h2>'
     +'<ul>'
     +'<li><strong>Exporter</strong> (Param\u00e8tres &rarr; Sauvegarde) : cr\u00e9e un fichier .json complet \u2014 ta copie de s\u00e9curit\u00e9 \u00e0 conserver \u00e0 part.</li>'
-    +'<li><strong>Importer</strong> : restaure tes donn\u00e9es depuis un fichier .json (nouvel ordinateur, retour en arri\u00e8re).</li>'
+    +'<li><strong>Importer</strong> : restaure tes donn\u00e9es depuis un fichier .json (nouvel ordinateur, retour en arri\u00e8re). Avant de remplacer, TRI-ANGLE confirme et cr\u00e9e une copie de s\u00e9curit\u00e9.</li>'
     +'</ul>'
+    +'<h2>Restaurer une sauvegarde</h2>'
+    +'<p>Dans <strong>Param\u00e8tres \u2192 Sauvegarde</strong>, le bouton <strong>\u21bb Restaurer une sauvegarde\u2026</strong> liste les copies automatiques faites pour toi : les <strong>quotidiennes</strong> (une par jour, en d\u00e9but de journ\u00e9e) et celles cr\u00e9\u00e9es <strong>juste avant un import</strong> ou une restauration. Chaque copie est \u00e9tiquet\u00e9e (<strong>Quotidien</strong> / <strong>Avant import</strong>), dat\u00e9e et tri\u00e9e de la plus r\u00e9cente \u00e0 la plus ancienne. Choisis-en une et confirme : tes donn\u00e9es reviennent \u00e0 cet \u00e9tat. Une copie de s\u00e9curit\u00e9 est encore prise juste avant, et <span class="aide-kbd">Ctrl</span>+<span class="aide-kbd">Z</span> reste possible \u2014 c\u2019est ton filet de s\u00e9curit\u00e9.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Bonne habitude : un export manuel de temps en temps, gard\u00e9 dans un endroit diff\u00e9rent de ta sauvegarde auto. Double protection.</div></div>'},
   {sec:'Syst\u00e8me', num:34, titre:'Synchronisation entre postes (2e ordi, adjointe) \u2014 b\u00eata', html:
     '<p>La <strong>synchronisation entre postes</strong> permet de travailler dans les <strong>m\u00eames donn\u00e9es</strong> depuis plusieurs ordinateurs \u2014 sans serveur : tout passe par votre dossier de sauvegarde partag\u00e9 (OneDrive ou Dropbox). Deux cas d\u2019usage : <strong>toi-m\u00eame sur un 2e poste</strong> (bureau + portable), ou <strong>ton adjoint(e)</strong> sur son propre poste.</p>'
