@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveJSON: (jsonString) => ipcRenderer.invoke('save-json', jsonString),
   loadJSON: () => ipcRenderer.invoke('load-json'),
   getAutosavePath: () => ipcRenderer.invoke('get-autosave-path'),
+  // Snapshot horodaté avant un import (filet distinct du backup quotidien)
+  backupNow: () => ipcRenderer.invoke('backup-now'),
   pickFolder: () => ipcRenderer.invoke('pick-folder'),
   detectCloudFolders: () => ipcRenderer.invoke('detect-cloud-folders'),
   setAutoSaveFolder: (folderPath) => ipcRenderer.invoke('set-autosave-folder', folderPath),

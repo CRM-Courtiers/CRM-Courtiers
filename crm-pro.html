@@ -10567,9 +10567,24 @@ function _migrateImportedData(payload){
 function importData(input){
   var file=input.files[0];if(!file)return;
   var r=new FileReader();
-  r.onload=function(ev){
+  r.onload=async function(ev){
     try{
       var payload=JSON.parse(ev.target.result);
+      // Confirmation : l'import REMPLACE les données de ce poste par le contenu du fichier.
+      var msg="⚠ L'import va REMPLACER les données de ce poste par le contenu du fichier.\n\nUne copie de sécurité sera créée avant. Ctrl+Z / Cmd+Z reste possible ensuite.";
+      if(_syncOn())msg+="\n\n⚠ La synchronisation est active — ces données se propageront à tes autres postes.";
+      msg+="\n\nContinuer ?";
+      if(!confirm(msg)){input.value="";return;}
+      // Copie de sécurité AVANT d'appliquer. Le backup quotidien est bridé à 1×/session
+      // → on force un snapshot horodaté dédié (IPC backup-now). Best-effort : un échec
+      // ne bloque pas l'import (pushUndo reste le filet).
+      if(window.electronAPI&&window.electronAPI.backupNow){
+        try{
+          await writeAutoSave();            // photographier l'état courant sur disque D'ABORD
+          var bk=await window.electronAPI.backupNow();
+          if(!bk||!bk.ok)toast("⚠ Copie de sécurité non créée — import poursuivi (Ctrl+Z reste possible)");
+        }catch(be){toast("⚠ Copie de sécurité échouée — import poursuivi (Ctrl+Z reste possible)");}
+      }
       var migrNotes=_migrateImportedData(payload);
       pushUndo("Import JSON");
       TABS.forEach(function(t){if(payload[t])db[t]=payload[t];});
@@ -10577,6 +10592,15 @@ function importData(input){
       if(payload.templates)db.templates=payload.templates;
       if(payload.signature)db.signature=payload.signature;
       if(payload.thresholds){THR.cp=payload.thresholds.cp||14;THR.vp=payload.thresholds.vp||14;THR.a=payload.thresholds.a||20;}
+      // Import symétrique à l'export : restaurer aussi les 8 collections manquantes.
+      if(payload.courtiers)db.courtiers=payload.courtiers;
+      if(payload.refs)db.refs=payload.refs;
+      if(payload.notaires)db.notaires=payload.notaires;
+      if(payload.taches)db.taches=payload.taches;
+      if(payload.tacheCal)db.tacheCal=payload.tacheCal;
+      if(payload.financiers)db.financiers=payload.financiers;
+      if(payload.refsh)db.refsh=payload.refsh;
+      if(payload.collabChannels)db.collabChannels=payload.collabChannels;
       // Migration : Acheteurs importés sans lastModified — initialiser à aujourd'hui
       try{var today=_todayStr();(db.a||[]).forEach(function(r){if(!r.lastModified)r.lastModified=today;});}catch(e){}
       sdb();sthr();fullRender();

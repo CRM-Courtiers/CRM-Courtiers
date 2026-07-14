@@ -143,7 +143,7 @@ function _backupBeforeOverwrite() {
     // Rotation : supprimer les backups de plus de BACKUP_KEEP_DAYS jours
     const cutoff = Date.now() - BACKUP_KEEP_DAYS * 86400000;
     fs.readdirSync(BACKUP_DIR)
-      .filter(f => /^CRM-Pro-autosauve-.*\.json$/.test(f))
+      .filter(f => /^CRM-Pro-(autosauve|avant-import)-.*\.json$/.test(f))
       .forEach(f => {
         try { if (fs.statSync(path.join(BACKUP_DIR, f)).mtimeMs < cutoff) fs.unlinkSync(path.join(BACKUP_DIR, f)); } catch (x) {}
       });
@@ -159,6 +159,24 @@ ipcMain.handle('backup-list', async () => {
       .map(f => { const st = fs.statSync(path.join(BACKUP_DIR, f)); return { name: f, size: st.size, mtime: st.mtimeMs }; })
       .sort((a, b) => b.mtime - a.mtime);
     return { ok: true, dir: BACKUP_DIR, files: files };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+// IPC : snapshot horodaté AVANT un import. Distinct du backup quotidien (CRM-Pro-autosauve-*)
+// qui est bridé à 1×/session → insuffisant comme filet juste avant un écrasement volontaire.
+// Best-effort : ne copie QUE si le contenu source est sain ; couvert par la rotation 14 j.
+ipcMain.handle('backup-now', async () => {
+  try {
+    if (!fs.existsSync(AUTOSAVE_PATH)) return { ok: false, error: 'aucune sauvegarde source à copier' };
+    const txt = fs.readFileSync(AUTOSAVE_PATH, 'utf8');
+    if (!_isHealthyBackupContent(txt)) return { ok: false, error: 'contenu source non sain — copie annulée' };
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const d = new Date();
+    const p2 = (n) => (n < 10 ? '0' : '') + n;
+    const stamp = d.getFullYear() + '-' + p2(d.getMonth()+1) + '-' + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes());
+    const name = 'CRM-Pro-avant-import-' + stamp + '.json';
+    fs.copyFileSync(AUTOSAVE_PATH, path.join(BACKUP_DIR, name));
+    return { ok: true, file: name };
   } catch (e) { return { ok: false, error: e.message }; }
 });
 
