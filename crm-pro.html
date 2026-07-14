@@ -8194,6 +8194,9 @@ function _intDelete(iid){
   var rec=_intCurrentRec();if(!rec||!rec.interets)return;
   if(!confirm('Supprimer cette propriété d\'intérêt ?'))return;
   pushUndo('Suppr intérêt');
+  // #12a — retirer aussi l'événement de visite du calendrier (modèle : _intCancelVisite).
+  var _it=null;for(var _i=0;_i<rec.interets.length;_i++){if(rec.interets[_i].id===iid){_it=rec.interets[_i];break;}}
+  if(_it&&_it._evtVisite&&window.electronAPI){_calDeleteEvent({eventId:_it._evtVisite}).catch(function(){});}
   rec.interets=rec.interets.filter(function(x){return x.id!==iid;});
   rec.lastModified=_todayStr();
   if(_intExpandedId===iid)_intExpandedId=null;
@@ -9154,6 +9157,31 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var ov=docu
 document.addEventListener('click',function(e){if(e.target&&e.target.id==='gcalPreOverlay')gcalHidePreModal();});
 
 // Bouton "C'est compris, continuer" → lance le vrai flow OAuth
+// #12b — Propriétaire des ids d'événements (_evt_ / _evtVisite / tacheCal). Ces ids sont émis PAR le
+// fournisseur connecté (Google OU Outlook). Au branchement d'un fournisseur DIFFÉRENT, les anciens ids
+// ne sont plus valides pour le nouvel agenda → échecs / doublons. On les PURGE. On NE touche PAS aux
+// événements dans l'ANCIEN agenda (cf. #3, on ne réécrit pas l'agenda du client) : les RDV futurs se
+// recréeront dans le nouveau calendrier à leur prochaine modification de date.
+function _evtPurgeAllIds(){
+  ['cp','vp','a','pa','v','ac','vc','archac','archvc','archpa','ca'].forEach(function(t){
+    (db[t]||[]).forEach(function(r){
+      for(var k in r){if(k.indexOf('_evt_')===0)delete r[k];}
+      if(r.interets)r.interets.forEach(function(it){if(it._evtVisite)delete it._evtVisite;});
+    });
+  });
+  db.tacheCal={};
+  sdb();
+}
+// Appelé APRÈS une connexion réussie. Purge seulement si le propriétaire précédent est un fournisseur
+// DIFFÉRENT (une reconnexion du même fournisseur ne purge rien). 1re connexion : on enregistre, rien à purger.
+function _evtProviderOnConnect(prov){
+  var prev='';try{prev=localStorage.getItem('crmpro-evt-provider')||'';}catch(e){}
+  if(!prev){try{localStorage.setItem('crmpro-evt-provider',prov);}catch(e){}return;}
+  if(prev===prov)return;
+  _evtPurgeAllIds();
+  try{localStorage.setItem('crmpro-evt-provider',prov);}catch(e){}
+  toast('📅 Nouveau calendrier connecté — tes rendez-vous se recréeront dans '+(prov==='google'?'Google Calendar':'Outlook')+' à leur prochaine modification de date.');
+}
 async function gcalDoConnect(){
   gcalHidePreModal();
   if(!window.electronAPI||!window.electronAPI.gcalConnect){toast('⚠ Disponible uniquement dans l\'app installée');return;}
@@ -9167,6 +9195,7 @@ async function gcalDoConnect(){
     var r=await window.electronAPI.gcalConnect();
     if(r&&r.ok){
       _invalidateCalProviderCache();
+      _evtProviderOnConnect('google'); // #12b — purge des _evt_ si l'ancien fournisseur était différent
       toast('✅ Google Calendar connecté !');
       await gcalRefreshStatus();
       // Si on était dans le wizard, on le ferme maintenant
@@ -9256,6 +9285,7 @@ async function outlookConnect(){
     var r=await window.electronAPI.outlookConnect();
     if(r&&r.ok){
       _invalidateCalProviderCache();
+      _evtProviderOnConnect('outlook'); // #12b — purge des _evt_ si l'ancien fournisseur était différent
       toast('✅ Outlook Calendar connecté !');
       await outlookRefreshStatus();
     } else {
@@ -9286,6 +9316,7 @@ var GCAL_LABELS={
   testEau:'Test d\'eau',
   notaire:'Notaire',
   photos:'Photos',
+  paEcheance:'Échéance PA',
   dateContact:'Contact',
   dateConclusion:'Conclusion',
   dateRefus:'Refus'
