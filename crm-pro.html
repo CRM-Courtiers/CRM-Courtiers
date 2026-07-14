@@ -3392,10 +3392,6 @@ function _adjCopy(txt,msg){
   }catch(e){}
   try{var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('✓ '+msg);}catch(e){toast('⚠ Copie échouée');}
 }
-function _adjOpenInstall(){
-  try{if(window.electronAPI&&window.electronAPI.openExternal){window.electronAPI.openExternal(INSTALL_URL_WIN);return;}}catch(e){}
-  try{window.open(INSTALL_URL_WIN,'_blank');}catch(e){}
-}
 async function _adjKeyRender(){
   var z=document.getElementById('adjKeyZone');if(!z)return;
   if(_licRole()==='adjointe'){z.innerHTML='';z.style.display='none';return;}
@@ -5960,7 +5956,7 @@ function transferToConclus(fromTab,id){
     toTransfer.forEach(function(vendeur){
       var paCorrespondantes=(db.pa||[]).filter(function(p){return p.propertyId===vendeur.id;});
       paCorrespondantes.forEach(function(pa){
-        var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:"Acceptée",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:dateConc,linkedToActeId:vendeur.id,linkedToActeNom:((vendeur.prenom||"")+" "+(vendeur.nom||"")).trim()||"(sans nom)"};
+        var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:"Acceptée",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:dateConc,linkedToActeNom:((vendeur.prenom||"")+" "+(vendeur.nom||"")).trim()||"(sans nom)"};
         db.archpa.push(archEntry);
         db.pa=(db.pa||[]).filter(function(x){return x.id!==pa.id;});
       });
@@ -6032,7 +6028,7 @@ function _paArchOrphan(paId){
       var acte=it.acte;
       pushUndo('Archiver promesse (vente conclue)');
       // statutPa forcé à « Acceptée » : la vente s'est conclue, la promesse a été acceptée
-      var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:"Acceptée",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||acte.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:acte.dateConclusion||_todayStr(),linkedToActeId:acte.id,linkedToActeNom:((acte.prenom||"")+" "+(acte.nom||"")).trim()||"(sans nom)"};
+      var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:"Acceptée",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||acte.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:acte.dateConclusion||_todayStr(),linkedToActeNom:((acte.prenom||"")+" "+(acte.nom||"")).trim()||"(sans nom)"};
       if(!db.archpa)db.archpa=[];
       db.archpa.push(archEntry);
       db.pa=(db.pa||[]).filter(function(x){return x.id!==pa.id;});
@@ -6911,7 +6907,6 @@ function convertDemandeToPa(id){
     lastModified:_todayStr()
   });
   d.status='converted-pa';d.statusDate=_todayStr();d.lastModified=_todayStr();
-  d.convertedPaId=newPaId; // lien historique demande → PA (pour traçabilité future)
   sdb();rall();
   toast('✓ Promesse créée dans "Promesses reçues"');
   // Jump vers l'onglet Promesses reçues + scroll sur la nouvelle PA
@@ -8213,17 +8208,6 @@ function _intQuickAdd(){
   // Refocus sur le champ adresse pour enchaîner les ajouts
   setTimeout(function(){var a=document.getElementById('int-qa-adresse');if(a)a.focus();},30);
 }
-// Ancien bouton "+ Ajouter une propriété" du pied de modal → ajoute une ligne vide et la déplie
-function _intAdd(){
-  var rec=_intCurrentRec();if(!rec)return;
-  pushUndo('Ajout propriété d\'intérêt');
-  if(!rec.interets)rec.interets=[];
-  var nid=newId();
-  rec.interets.unshift({id:nid,adresse:'',noCentris:'',courtierId:'',source:'',statut:'a-traiter',dateAjout:_todayStr(),notes:''});
-  rec.lastModified=_todayStr();
-  _intExpandedId=nid;
-  sdb();_renderInteretsModal();rall();
-}
 function _intField(iid,field,val){
   var rec=_intCurrentRec();if(!rec||!rec.interets)return;
   var it=null;for(var i=0;i<rec.interets.length;i++){if(rec.interets[i].id===iid){it=rec.interets[i];break;}}
@@ -8342,7 +8326,7 @@ function _intToPa(iid){
     notaire:'',paEcheance:'',montant:'',commission:'',
     lastModified:_todayStr()
   });
-  it.statut='offre';it.convertedPaId=newPaId;rec.lastModified=_todayStr();
+  it.statut='offre';rec.lastModified=_todayStr();
   sdb();closeInteretsModal();rall();
   toast('✓ Promesse créée dans "Promesses en cours"');
   setTimeout(function(){
@@ -9393,11 +9377,9 @@ var GCAL_LABELS={
   notaire:'Notaire',
   photos:'Photos',
   paEcheance:'Échéance PA',
-  dateContact:'Contact',
-  dateConclusion:'Conclusion',
-  dateRefus:'Refus'
+  dateConclusion:'Conclusion'
 };
-// Dur\u00e9e en heures par champ (Inspection 3h, autres 2h)
+// Dur\u00e9e en heures par champ (Inspection 3 h, autres 30 min)
 function _gcalDuration(field){return field==='inspection'?3:0.5;}
 // Couleur : rose pour Acheteurs, ambre pour Vendeurs
 function _gcalColor(tab){return(tab==='v'||tab==='vp'||tab==='vc')?'ambre':'rose';}
@@ -10711,7 +10693,6 @@ function exportData(){
   var url=URL.createObjectURL(blob);var a=document.createElement("a");
   var ds=new Date().toISOString().slice(0,10);
   a.href=url;a.download="TRI-ANGLE-"+ds+".json";a.click();URL.revokeObjectURL(url);
-  try{localStorage.setItem("sc-lastexport",Date.now().toString());}catch(e){}
   var warn=document.getElementById("exportWarn");if(warn)warn.style.display='none';
   toast("\u2713 Donn\u00e9es export\u00e9es!");
 }
@@ -10994,8 +10975,6 @@ if(window.electronAPI){
   _applyPosteProfil(); // Étape 32 — masque le Dashboard si profil Adjointe
 }
 else{tryRestoreAutoSave();try{var dn=localStorage.getItem("sc-autodir-name");if(dn)showSaveStatus("\uD83D\uDCC2 Dossier pr\u00e9c\u00e9dent : \u00ab "+dn+" \u00bb \u2014 cliquez 'Connecter dossier auto'");}catch(e){}}
-// checkExportWarning() retir\u00e9 \u2014 la banni\u00e8re d'export n'existe plus (fonction supprim\u00e9e).
-if(typeof checkExportWarning==='function')checkExportWarning();
 
 // ─── Version + Mises à jour (Electron only) ──────────────────
 // Stocker la date d'installation au tout premier lancement (utile plus tard pour trial 3 mois)

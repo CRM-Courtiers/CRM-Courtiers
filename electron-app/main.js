@@ -100,7 +100,7 @@ function createWindow() {
 }
 
 // ─── IPC : Auto-save ────────────────────────────────────────
-const CRM_TABS = ['cp','vp','a','pa','v','ac','vc','ra','rv','ca'];
+const CRM_TABS = ['cp','vp','a','pa','v','ac','vc','archac','archvc','archpa','ca'];
 
 // ─── Backup de sécurité SILENCIEUX (filet anti-perte de données) ────────────
 // Stocké en LOCAL (userData), HORS iCloud → ne pollue pas le quota cloud + protège
