@@ -7413,19 +7413,10 @@ function saveCourtier(){
 }
 function _courtierDelete(){
   if(!_courtierEditingId)return;
-  var c=_courtierById(_courtierEditingId);if(!c)return;
-  // Compter combien de PA utilisent ce courtier
-  var used=(db.pa||[]).filter(function(p){return p.courtierId===_courtierEditingId;}).length;
-  var msg='Supprimer '+_courtierFullName(c)+' ?';
-  if(used>0)msg+='\n\n⚠ '+used+' PA utilise(nt) ce courtier — leur champ "Courtier" sera vidé.';
-  if(!confirm(msg))return;
-  pushUndo('Suppr courtier');
-  // Détacher de toutes les PA
-  (db.pa||[]).forEach(function(p){if(p.courtierId===_courtierEditingId)p.courtierId='';});
-  // Retirer de db.courtiers
-  db.courtiers=db.courtiers.filter(function(x){return x.id!==_courtierEditingId;});
-  sdb();closeCourtierEdit();closeCourtierInfo();rall();
-  toast('✓ Courtier supprimé');
+  var id=_courtierEditingId;
+  // Délégation à la logique canonique (nettoyage complet + comptage exact des 4 porteurs).
+  closeCourtierEdit();closeCourtierInfo();
+  deleteCourtierDirect(id);
 }
 // Helpers : sélecteur courtier depuis le formulaire d'édition PA (au lieu du tableau)
 var _courtierFormIsColl=false;
@@ -7496,8 +7487,8 @@ document.getElementById('cou-pick-search').addEventListener('input',function(){_
 // ═══ Étape 26 — Banques Courtiers + Notaires (onglets dédiés) ═══════════════
 function _notaireById(id){if(!id)return null;for(var i=0;i<(db.notaires||[]).length;i++){if(db.notaires[i].id===id)return db.notaires[i];}return null;}
 function _notaireFullName(n){if(!n)return'';return((n.prenom||'')+' '+(n.nom||'')).trim()||'(sans nom)';}
-function _courtierUsageCount(id){var n=0;(db.pa||[]).forEach(function(p){if(p.courtierId===id)n++;});(db.demandes||[]).forEach(function(d){if(d.courtierId===id)n++;});(db.refs||[]).forEach(function(r){if(r.courtierId===id)n++;});return n;}
-function _notaireUsageCount(id){var n=0;(db.pa||[]).forEach(function(p){if(p.notaireId===id)n++;});return n;}
+function _courtierUsageCount(id){var n=0;(db.pa||[]).forEach(function(p){if(p.courtierId===id)n++;});(db.demandes||[]).forEach(function(d){if(d.courtierId===id)n++;});(db.refs||[]).forEach(function(r){if(r.courtierId===id)n++;});(db.a||[]).forEach(function(a){(a.interets||[]).forEach(function(it){if(it.courtierId===id)n++;});});return n;}
+function _notaireUsageCount(id){var n=0;['pa','v','ac','vc','archac','archvc'].forEach(function(t){(db[t]||[]).forEach(function(r){if(r.notaireId===id)n++;});});return n;}
 // Étape 30 — banque Financement (courtiers hypothécaires, banquiers)
 function _financierById(id){if(!id)return null;for(var i=0;i<(db.financiers||[]).length;i++){if(db.financiers[i].id===id)return db.financiers[i];}return null;}
 function _financierFullName(c){if(!c)return'';return((c.prenom||'')+' '+(c.nom||'')).trim()||'(sans nom)';}
@@ -7640,12 +7631,14 @@ function deleteCourtierDirect(id){
   var c=_courtierById(id);if(!c)return;
   var used=_courtierUsageCount(id);
   var msg='Supprimer '+_courtierFullName(c)+' ?';
-  if(used>0)msg+='\n\n⚠ '+used+' dossier(s) référence(nt) ce courtier — leur champ "Courtier" sera vidé.';
+  if(used>0)msg+='\n\n⚠ '+used+' fiche(s) référence(nt) ce courtier — le lien sera retiré.';
   if(!confirm(msg))return;
   pushUndo('Suppr courtier');
+  // Nettoyage canonique : les 4 porteurs de courtierId
   (db.pa||[]).forEach(function(p){if(p.courtierId===id)p.courtierId='';});
   (db.demandes||[]).forEach(function(d){if(d.courtierId===id)d.courtierId='';});
   (db.refs||[]).forEach(function(r){if(r.courtierId===id)r.courtierId='';});
+  (db.a||[]).forEach(function(a){(a.interets||[]).forEach(function(it){if(it.courtierId===id)it.courtierId='';});});
   db.courtiers=db.courtiers.filter(function(x){return x.id!==id;});
   sdb();rall();renderBank('courtiers');toast('✓ Courtier supprimé');
 }
@@ -7653,10 +7646,11 @@ function deleteNotaireDirect(id){
   var n=_notaireById(id);if(!n)return;
   var used=_notaireUsageCount(id);
   var msg='Supprimer '+_notaireFullName(n)+' ?';
-  if(used>0)msg+='\n\n⚠ '+used+' promesse(s) référence(nt) ce notaire — leur notaire sera retiré (les dates restent).';
+  if(used>0)msg+='\n\n⚠ '+used+' fiche(s) référence(nt) ce notaire — le lien sera retiré (les dates restent).';
   if(!confirm(msg))return;
   pushUndo('Suppr notaire');
-  (db.pa||[]).forEach(function(p){if(p.notaireId===id)p.notaireId='';});
+  // Nettoyage canonique : tous les porteurs de notaireId (pa + conclus + archives).
+  ['pa','v','ac','vc','archac','archvc'].forEach(function(t){(db[t]||[]).forEach(function(r){if(r.notaireId===id)r.notaireId='';});});
   db.notaires=db.notaires.filter(function(x){return x.id!==id;});
   sdb();rall();renderBank('notaires');toast('✓ Notaire supprimé');
 }
@@ -7745,10 +7739,15 @@ function saveFinancier(){
 }
 function deleteFinancierDirect(id){
   var c=_financierById(id);if(!c)return;
-  if(!confirm('Supprimer '+_financierFullName(c)+' ?'))return;
+  var used=_finRefsCount(id);
+  var msg='Supprimer '+_financierFullName(c)+' ?';
+  if(used>0)msg+='\n\n⚠ '+used+' référence(s) hypothécaire(s) référence(nt) ce contact — le lien sera retiré.';
+  if(!confirm(msg))return;
   pushUndo('Suppr contact financement');
+  // Nettoyage canonique : le seul porteur de financierId
+  (db.refsh||[]).forEach(function(r){if(r.financierId===id)r.financierId='';});
   db.financiers=db.financiers.filter(function(x){return x.id!==id;});
-  sdb();renderBank('financement');toast('✓ Contact supprimé');
+  sdb();rall();renderBank('financement');toast('✓ Contact supprimé');
 }
 function deleteFinancierFromEdit(){if(!_financierEditingId)return;var id=_financierEditingId;closeFinancierEdit();deleteFinancierDirect(id);}
 (function(){
