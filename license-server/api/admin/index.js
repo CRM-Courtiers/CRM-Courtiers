@@ -347,6 +347,14 @@ const HTML = `<!DOCTYPE html>
       <label>Mois à ajouter</label>
       <input type="number" id="renew-months" min="1" max="120" value="12">
     </div>
+    <div class="form-group">
+      <label>Plan</label>
+      <select id="renew-plan">
+        <option value="free_trial">Essai (free_trial)</option>
+        <option value="paid">Abonnement (payé)</option>
+      </select>
+      <p style="font-size:11px;color:#64748B;margin:4px 0 0">Prérempli avec le plan actuel. À passer sur « Abonnement » quand le client paie — sinon son app continue d'afficher « Essai ».</p>
+    </div>
     <p style="font-size:12px; color:#64748B;" id="renew-hint"></p>
     <div class="modal-actions">
       <button class="btn btn-ghost" data-close>Annuler</button>
@@ -595,6 +603,8 @@ function openRenew(key) {
   RENEW_TARGET = key;
   $('#renew-context').innerHTML = '<strong>' + escapeHtml(e.name || '—') + '</strong> · ' + key + '<br>Expire actuellement : ' + e.expires + (e.revoked ? ' (révoquée, sera réactivée)' : '');
   $('#renew-months').value = 12;
+  // Prérempli avec le plan actuel : ne rien toucher = plan inchangé.
+  $('#renew-plan').value = (e.plan === 'paid') ? 'paid' : 'free_trial';
   $('#renew-hint').textContent = e.status === 'expired' ? 'La clé est expirée — le compteur repart d\\'aujourd\\'hui.' : '';
   openModal('modal-renew');
 }
@@ -603,12 +613,15 @@ $('#renew-submit').addEventListener('click', async () => {
   try {
     const data = await api('/api/admin/renew', {
       method: 'POST',
-      body: { key: RENEW_TARGET, months: parseInt($('#renew-months').value) }
+      body: { key: RENEW_TARGET, months: parseInt($('#renew-months').value), plan: $('#renew-plan').value }
     });
     if (!data) return;
     closeModals();
     refresh();
     toast('Renouvelée : ' + data.key + ' jusqu\\'au ' + data.entry.expires, 'success');
+    if (data.planChange) {
+      toast('Plan : ' + (data.planAvant === 'paid' ? 'Abonnement' : 'Essai') + ' → ' + (data.entry.plan === 'paid' ? 'Abonnement' : 'Essai'), 'success');
+    }
     // Indique si la confirmation est partie au client (garde : fiche sans courriel)
     if (data.emailSent) {
       toast('Confirmation envoyée à ' + data.emailTo, 'success');

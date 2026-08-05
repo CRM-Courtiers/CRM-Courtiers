@@ -82,10 +82,18 @@ module.exports = async (req, res) => {
   const body = req.body || {};
   const rawKey = (body.key || '').toString().toUpperCase().trim();
   const months = parseInt(body.months);
+  // Plan OPTIONNEL. Absent du corps => le plan de la fiche n'est PAS touché.
+  // Évite tout changement silencieux : seul un envoi explicite le modifie.
+  let plan = (body.plan || '').toString().toLowerCase().trim();
+  if (plan === 'trial') plan = 'free_trial';
 
   if (!rawKey) { res.status(400).json({ error: 'Clé manquante' }); return; }
   if (isNaN(months) || months < 1 || months > 120) {
     res.status(400).json({ error: 'Nombre de mois invalide (1-120)' });
+    return;
+  }
+  if (plan && plan !== 'free_trial' && plan !== 'paid') {
+    res.status(400).json({ error: 'Plan invalide (free_trial|paid)' });
     return;
   }
 
@@ -103,6 +111,13 @@ module.exports = async (req, res) => {
     entry.expires = newExpires;
     if (entry.revoked) { delete entry.revoked; delete entry.revokedAt; }
     entry.renewedAt = new Date().toISOString().substring(0, 10);
+
+    // Conversion essai -> abonnement (ou l'inverse) au moment du renouvellement.
+    // `plan` n'était écrit qu'à la création : un client qui payait restait
+    // « Essai » à vie dans son app (Paramètres → Compte).
+    const planAvant = entry.plan;
+    if (plan) entry.plan = plan;
+    const planChange = entry.plan !== planAvant;
 
     await setKey(rawKey, entry);
 
@@ -140,7 +155,7 @@ module.exports = async (req, res) => {
       }
     }
 
-    res.status(200).json({ key: rawKey, entry, emailSent, emailReason, emailTo: entry.email || null });
+    res.status(200).json({ key: rawKey, entry, emailSent, emailReason, emailTo: entry.email || null, planChange, planAvant });
   } catch (err) {
     console.error('[admin/renew] error:', err);
     res.status(500).json({ error: 'Erreur serveur', detail: err.message });
