@@ -43,8 +43,14 @@ async function generateUniqueKey() {
   throw new Error('Impossible de générer une clé unique');
 }
 
+// Date d'expiration en toutes lettres — partagée par la version HTML et la version texte
+// pour qu'elles ne puissent pas diverger.
+function formatExpires(expiresStr) {
+  return new Date(expiresStr + 'T12:00:00').toLocaleDateString('fr-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 function buildEmailHtml({ firstName, key, expiresStr }) {
-  const fmt = new Date(expiresStr + 'T12:00:00').toLocaleDateString('fr-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+  const fmt = formatExpires(expiresStr);
   return `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#F8FAFC;font-family:-apple-system,Segoe UI,sans-serif;color:#0F172A;">
@@ -55,7 +61,7 @@ function buildEmailHtml({ firstName, key, expiresStr }) {
     </div>
     <div style="background:#fff;padding:32px;border-radius:0 0 8px 8px;border:1px solid #E2E8F0;border-top:none;">
       <h1 style="margin:0 0 16px;font-size:20px;">Bonjour ${escapeHtml(firstName)},</h1>
-      <p style="line-height:1.6;color:#334155;">Bienvenue dans TRI-ANGLE ! Votre essai gratuit de <strong>90 jours</strong> est maintenant actif.</p>
+      <p style="line-height:1.6;color:#334155;">Bienvenue dans TRI-ANGLE ! Votre essai gratuit de <strong>${TRIAL_DAYS} jours</strong> est maintenant actif.</p>
       <p style="line-height:1.6;color:#334155;">Votre clé de licence — déjà installée dans votre application :</p>
       <div style="background:#0F172A;color:#84CC16;padding:18px;border-radius:6px;font-family:Consolas,monospace;font-size:18px;text-align:center;letter-spacing:1.5px;font-weight:700;margin:20px 0;">${key}</div>
       <p style="line-height:1.6;color:#334155;">Valide jusqu'au <strong>${fmt}</strong>.</p>
@@ -66,6 +72,30 @@ function buildEmailHtml({ firstName, key, expiresStr }) {
     </div>
   </div>
 </body></html>`;
+}
+
+// Version texte brut du courriel de bienvenue. Envoyée en parallèle du HTML (multipart) :
+// améliore le score anti-spam et couvre les clients qui n'affichent pas le HTML.
+// Pas d'échappement ici — c'est du texte, pas du balisage.
+function buildEmailText({ firstName, key, expiresStr }) {
+  return `Bonjour ${firstName},
+
+Bienvenue dans TRI-ANGLE ! Votre essai gratuit de ${TRIAL_DAYS} jours est maintenant actif.
+
+Votre clé de licence — déjà installée dans votre application :
+
+    ${key}
+
+Valide jusqu'au ${formatExpires(expiresStr)}.
+
+Vous n'avez rien à faire — votre app a déjà enregistré la clé automatiquement.
+Ce courriel est pour vos dossiers.
+
+--
+Questions ou commentaires ? Répondez simplement à ce courriel — ça nous parvient directement.
+
+— L'équipe TRI-ANGLE
+La pierre angulaire de votre réussite`;
 }
 
 function escapeHtml(s) {
@@ -191,8 +221,12 @@ module.exports = async (req, res) => {
       console.warn('[start-trial] RESEND_API_KEY non configurée, notification LP skip');
     }
 
-    // Email de confirmation (best-effort, off par défaut tant qu'un domaine n'est pas vérifié dans Resend)
-    // Pour activer : définir TRIAL_EMAIL_ENABLED=true dans Vercel (et avoir un domaine vérifié)
+    // Email de confirmation au client (best-effort — un échec ne bloque pas la création de la clé).
+    // ACTIF en production : TRIAL_EMAIL_ENABLED='true' et le domaine tri-angle.ca est vérifié dans Resend
+    // (expéditeur contact@tri-angle.ca). Vérifié le 2026-08-05.
+    // ⚠ TRIAL_EMAIL_ENABLED est une variable Vercel de type « sensitive » : sa valeur est illisible
+    // après coup (même via l'API avec decrypt=true). Pour savoir si l'envoi est actif, regarder le
+    // journal Resend plutôt que d'essayer de lire la variable.
     if (process.env.TRIAL_EMAIL_ENABLED === 'true' && process.env.RESEND_API_KEY) {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY);
@@ -200,8 +234,9 @@ module.exports = async (req, res) => {
           from: FROM_EMAIL,
           to: email,
           replyTo: SUPPORT_EMAIL,
-          subject: 'Votre essai gratuit TRI-ANGLE de 90 jours',
-          html: buildEmailHtml({ firstName, key, expiresStr })
+          subject: `Votre essai gratuit TRI-ANGLE de ${TRIAL_DAYS} jours`,
+          html: buildEmailHtml({ firstName, key, expiresStr }),
+          text: buildEmailText({ firstName, key, expiresStr })
         });
       } catch (emailErr) {
         // On log mais on échoue pas la requête — la clé est créée, c'est l'essentiel
