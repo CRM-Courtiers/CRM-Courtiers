@@ -119,14 +119,19 @@ module.exports = async (req, res) => {
       emailReason = 'RESEND_API_KEY non configurée';
     } else {
       try {
+        // `firstName` n'existe que sur les inscriptions self-service (formulaire en 2 champs).
+        // Les clés créées depuis /admin n'ont qu'un `name` global : on en extrait le prénom
+        // pour éviter un « Bonjour, » impersonnel. Si les deux manquent, le gabarit retombe
+        // proprement sur « Bonjour, ».
+        const prenom = entry.firstName || (entry.name || '').trim().split(/\s+/)[0] || '';
         const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
           from: FROM_EMAIL,
           to: entry.email,
           replyTo: SUPPORT_EMAIL,
           subject: 'Votre licence TRI-ANGLE est renouvelée',
-          html: buildRenewHtml({ firstName: entry.firstName, expiresStr: newExpires }),
-          text: buildRenewText({ firstName: entry.firstName, expiresStr: newExpires })
+          html: buildRenewHtml({ firstName: prenom, expiresStr: newExpires }),
+          text: buildRenewText({ firstName: prenom, expiresStr: newExpires })
         });
         emailSent = true;
       } catch (mailErr) {
