@@ -3,6 +3,40 @@
 // Protégée par Basic Auth — le navigateur affiche son prompt natif au chargement.
 
 const { requireAuth } = require('../../lib/auth');
+const { getKey, setKey } = require('../../lib/kv');
+
+function isValidEmail(e) {
+  if (typeof e !== 'string') return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && e.length <= 254;
+}
+
+// POST /api/admin  { action: 'set-email', key, email }
+// Enregistre (ou corrige) le courriel d'une fiche. Sans lui, la confirmation de
+// renouvellement ne peut pas partir — les clés créées depuis /admin n'en avaient aucun.
+//
+// ⚠ N'ENVOIE AUCUN COURRIEL : on ne fait qu'enregistrer l'adresse.
+// ⚠ Ne modifie QUE le champ `email` — expires / plan / name restent intacts.
+// Un courriel vide efface l'adresse (permet de corriger une erreur de saisie).
+//
+// Logé ici plutôt que dans son propre fichier : le plan Vercel Hobby plafonne à
+// 12 fonctions serverless et le projet y est déjà. Même Basic Auth que le reste.
+async function handleSetEmail(body, res) {
+  const rawKey = (body.key || '').toString().toUpperCase().trim();
+  const email = (body.email || '').toString().toLowerCase().trim();
+
+  if (!rawKey) { res.status(400).json({ error: 'Clé manquante' }); return; }
+  if (email && !isValidEmail(email)) { res.status(400).json({ error: 'Courriel invalide.' }); return; }
+
+  const entry = await getKey(rawKey);
+  if (!entry) { res.status(404).json({ error: 'Clé inconnue' }); return; }
+
+  // Modification chirurgicale : seul `email` est touché.
+  if (email) entry.email = email;
+  else delete entry.email;
+
+  await setKey(rawKey, entry);
+  res.status(200).json({ key: rawKey, email: entry.email || null, entry });
+}
 
 const HTML = `<!DOCTYPE html>
 <html lang="fr">
@@ -596,9 +630,9 @@ function openEmail(key) {
 $('#email-submit').addEventListener('click', async () => {
   const btn = $('#email-submit'); btn.disabled = true;
   try {
-    const data = await api('/api/admin/set-email', {
+    const data = await api('/api/admin', {
       method: 'POST',
-      body: { key: EMAIL_TARGET, email: $('#email-value').value.trim() }
+      body: { action: 'set-email', key: EMAIL_TARGET, email: $('#email-value').value.trim() }
     });
     if (!data) return;
     closeModals();
@@ -647,8 +681,23 @@ refresh();
 </body>
 </html>`;
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
   if (!requireAuth(req, res)) return;
+
+  // POST = mutations légères du dashboard, regroupées ici (voir handleSetEmail).
+  if (req.method === 'POST') {
+    const body = req.body || {};
+    try {
+      if (body.action === 'set-email') { await handleSetEmail(body, res); return; }
+      res.status(400).json({ error: 'Action inconnue : ' + (body.action || '(aucune)') });
+    } catch (err) {
+      console.error('[admin] POST error:', err);
+      res.status(500).json({ error: 'Erreur serveur', detail: err.message });
+    }
+    return;
+  }
+
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.status(200).send(HTML);
