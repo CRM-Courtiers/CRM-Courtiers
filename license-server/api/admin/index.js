@@ -479,9 +479,12 @@ function renderTable(keys, filter) {
       ? '<span style="color:#0E7490;font-weight:700" title="Clé liée à ' + r.linkedTo + '">adjointe</span>'
       : r.plan;
     // Courriel visible d'un coup d'œil : sans lui, pas de confirmation de renouvellement possible
+    // Une clé adjointe suit la licence du courtier : c'est LUI qui reçoit les
+    // confirmations. Un courriel y est donc inutile → pas d'alerte ambre sur ces
+    // lignes (on affiche quand même l'adresse si elle existe, en info neutre).
     const mailLine = r.email
       ? '<div style="font-size:11px;color:#64748B">✉ ' + escapeHtml(r.email) + '</div>'
-      : '<div style="font-size:11px;color:#B45309">✉ aucun courriel</div>';
+      : (isChild ? '' : '<div style="font-size:11px;color:#B45309">✉ aucun courriel</div>');
     const nameCell = (isChild
       ? escapeHtml(r.name || '—') + '<div style="font-size:11px;color:#0E7490;font-weight:600">🔗 adjointe de ' + escapeHtml(parentName) + '</div>'
       : escapeHtml(r.name || '—') + (kids.length ? '<div style="font-size:11px;color:#0E7490;font-weight:600">👥 adjointe : ' + kids.map(c => escapeHtml(c.name || '?')).join(', ') + '</div>' : '')) + mailLine;
@@ -498,7 +501,7 @@ function renderTable(keys, filter) {
       + '<td title="Nombre de postes différents vus pour cette clé">' + machinesCell + '</td>'
       + '<td><span class="status status-' + r.status + '">' + STATUS_LABELS[r.status] + '</span></td>'
       + '<td><div class="row-actions">'
-      + '<button class="btn btn-ghost btn-sm" data-setemail="' + r.key + '" title="' + (r.email ? 'Modifier le courriel : ' + escapeHtml(r.email) : 'Ajouter un courriel (aucun pour l\\'instant)') + '">✉</button>'
+      + (isChild ? '' : '<button class="btn btn-ghost btn-sm" data-setemail="' + r.key + '" title="' + (r.email ? 'Modifier le courriel : ' + escapeHtml(r.email) : 'Ajouter un courriel (aucun pour l\\'instant)') + '">✉</button>')
       + (isChild ? '' : '<button class="btn btn-cyan btn-sm" data-renew="' + r.key + '">' + (r.status === 'revoked' ? 'Réactiver' : 'Renouveler') + '</button>')
       + (r.status !== 'revoked' ? '<button class="btn btn-red btn-sm" data-revoke="' + r.key + '">Révoquer</button>' : '')
       + '</div></td>'
