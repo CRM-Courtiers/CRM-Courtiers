@@ -268,6 +268,11 @@ const HTML = `<!DOCTYPE html>
       <input type="text" id="create-name" placeholder="ex. Sophie Tremblay">
     </div>
     <div class="form-group">
+      <label>Courriel du client <span style="font-weight:400;color:#64748B">(optionnel)</span></label>
+      <input type="email" id="create-email" placeholder="ex. sophie@exemple.com">
+      <p style="font-size:11px;color:#64748B;margin:4px 0 0">Sans courriel, le client ne recevra pas de confirmation lors des renouvellements.</p>
+    </div>
+    <div class="form-group">
       <label>Plan</label>
       <select id="create-plan">
         <option value="trial">Essai (free_trial)</option>
@@ -312,6 +317,23 @@ const HTML = `<!DOCTYPE html>
     <div class="modal-actions">
       <button class="btn btn-ghost" data-close>Annuler</button>
       <button class="btn btn-cyan" id="renew-submit">Renouveler</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Courriel du client -->
+<div class="modal-overlay" id="modal-email">
+  <div class="modal">
+    <h2>Courriel du client</h2>
+    <p id="email-context"></p>
+    <div class="form-group">
+      <label>Adresse courriel</label>
+      <input type="email" id="email-value" placeholder="ex. client@exemple.com">
+      <p style="font-size:11px;color:#64748B;margin:4px 0 0">Sert aux confirmations de renouvellement. Laisser vide efface l'adresse. Aucun courriel n'est envoyé maintenant.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close>Annuler</button>
+      <button class="btn btn-primary" id="email-submit">Enregistrer</button>
     </div>
   </div>
 </div>
@@ -422,9 +444,13 @@ function renderTable(keys, filter) {
     const planCell = isChild
       ? '<span style="color:#0E7490;font-weight:700" title="Clé liée à ' + r.linkedTo + '">adjointe</span>'
       : r.plan;
-    const nameCell = isChild
+    // Courriel visible d'un coup d'œil : sans lui, pas de confirmation de renouvellement possible
+    const mailLine = r.email
+      ? '<div style="font-size:11px;color:#64748B">✉ ' + escapeHtml(r.email) + '</div>'
+      : '<div style="font-size:11px;color:#B45309">✉ aucun courriel</div>';
+    const nameCell = (isChild
       ? escapeHtml(r.name || '—') + '<div style="font-size:11px;color:#0E7490;font-weight:600">🔗 adjointe de ' + escapeHtml(parentName) + '</div>'
-      : escapeHtml(r.name || '—') + (kids.length ? '<div style="font-size:11px;color:#0E7490;font-weight:600">👥 adjointe : ' + kids.map(c => escapeHtml(c.name || '?')).join(', ') + '</div>' : '');
+      : escapeHtml(r.name || '—') + (kids.length ? '<div style="font-size:11px;color:#0E7490;font-weight:600">👥 adjointe : ' + kids.map(c => escapeHtml(c.name || '?')).join(', ') + '</div>' : '')) + mailLine;
     const machinesCell = (r.machines || 0) === 0 ? '—' : ((r.machines > (isChild ? 1 : 2) ? '⚠ ' : '') + r.machines);
     const keyCell = isChild
       ? '<span style="color:#94A3B8;font-weight:700;margin-right:4px">└</span><span style="font-size:11px">' + r.key + '</span><button class="copy-btn" data-copy="' + r.key + '" title="Copier">⧉</button>'
@@ -438,6 +464,7 @@ function renderTable(keys, filter) {
       + '<td title="Nombre de postes différents vus pour cette clé">' + machinesCell + '</td>'
       + '<td><span class="status status-' + r.status + '">' + STATUS_LABELS[r.status] + '</span></td>'
       + '<td><div class="row-actions">'
+      + '<button class="btn btn-ghost btn-sm" data-setemail="' + r.key + '" title="' + (r.email ? 'Modifier le courriel : ' + escapeHtml(r.email) : 'Ajouter un courriel (aucun pour l\\'instant)') + '">✉</button>'
       + (isChild ? '' : '<button class="btn btn-cyan btn-sm" data-renew="' + r.key + '">' + (r.status === 'revoked' ? 'Réactiver' : 'Renouveler') + '</button>')
       + (r.status !== 'revoked' ? '<button class="btn btn-red btn-sm" data-revoke="' + r.key + '">Révoquer</button>' : '')
       + '</div></td>'
@@ -457,6 +484,9 @@ function renderTable(keys, filter) {
   });
   $('#table-container').querySelectorAll('[data-revoke]').forEach(btn => {
     btn.addEventListener('click', () => openRevoke(btn.dataset.revoke));
+  });
+  $('#table-container').querySelectorAll('[data-setemail]').forEach(btn => {
+    btn.addEventListener('click', () => openEmail(btn.dataset.setemail));
   });
 }
 
@@ -502,11 +532,13 @@ $('#create-submit').addEventListener('click', async () => {
   try {
     const data = await api('/api/admin/create', {
       method: 'POST',
-      body: { name: $('#create-name').value, plan: $('#create-plan').value, months: parseInt($('#create-months').value) }
+      body: { name: $('#create-name').value, plan: $('#create-plan').value, months: parseInt($('#create-months').value), email: $('#create-email').value.trim() }
     });
     if (!data) return;
+    $('#create-email').value = '';
     $('#result-key').textContent = data.key;
-    $('#result-details').textContent = data.entry.name + ' · ' + data.entry.plan + ' · expire ' + data.entry.expires;
+    $('#result-details').textContent = data.entry.name + ' · ' + data.entry.plan + ' · expire ' + data.entry.expires
+      + (data.entry.email ? ' · ✉ ' + data.entry.email : ' · ✉ aucun courriel');
     openModal('modal-create-result');
     refresh();
     toast('Clé créée : ' + data.key, 'success');
@@ -546,6 +578,32 @@ $('#renew-submit').addEventListener('click', async () => {
     } else {
       toast('Confirmation NON envoyée — ' + (data.emailReason || 'raison inconnue'), 'error');
     }
+  } catch (err) {
+    toast('Erreur : ' + err.message, 'error');
+  } finally { btn.disabled = false; }
+});
+
+// Courriel du client (ajout / modification) — n'envoie AUCUN courriel
+let EMAIL_TARGET = null;
+function openEmail(key) {
+  const e = CURRENT_DATA[key]; if (!e) return;
+  EMAIL_TARGET = key;
+  $('#email-context').innerHTML = '<strong>' + escapeHtml(e.name || '—') + '</strong> · ' + key
+    + '<br>' + (e.email ? 'Courriel actuel : ' + escapeHtml(e.email) : 'Aucun courriel enregistré');
+  $('#email-value').value = e.email || '';
+  openModal('modal-email');
+}
+$('#email-submit').addEventListener('click', async () => {
+  const btn = $('#email-submit'); btn.disabled = true;
+  try {
+    const data = await api('/api/admin/set-email', {
+      method: 'POST',
+      body: { key: EMAIL_TARGET, email: $('#email-value').value.trim() }
+    });
+    if (!data) return;
+    closeModals();
+    refresh();
+    toast(data.email ? 'Courriel enregistré : ' + data.email : 'Courriel retiré de la fiche', 'success');
   } catch (err) {
     toast('Erreur : ' + err.message, 'error');
   } finally { btn.disabled = false; }
