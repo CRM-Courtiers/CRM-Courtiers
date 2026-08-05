@@ -21,6 +21,7 @@ const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'lpbussiere.lpb@gmail.com';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'TRI-ANGLE <onboarding@resend.dev>';
+const NOTIFY_EMAIL = process.env.TRIAL_NOTIFY_TO || 'lpbussiere.lpb@gmail.com';
 
 function isValidEmail(e) {
   if (typeof e !== 'string') return false;
@@ -69,6 +70,36 @@ function buildEmailHtml({ firstName, key, expiresStr }) {
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Notification interne (LP) — courriel envoyé à CHAQUE nouvel essai self-service.
+// Indépendant du courriel de bienvenue client : LP veut être averti même si TRIAL_EMAIL_ENABLED est off.
+function buildNotifyHtml({ key, entry }) {
+  const row = (label, value) =>
+    `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0;color:#64748B;font-size:13px;white-space:nowrap;">${escapeHtml(label)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #E2E8F0;color:#0F172A;font-size:13px;font-weight:600;word-break:break-all;">${escapeHtml(value)}</td>
+    </tr>`;
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F8FAFC;font-family:-apple-system,Segoe UI,sans-serif;color:#0F172A;">
+  <div style="max-width:560px;margin:0 auto;padding:32px 24px;">
+    <div style="background:#0F172A;padding:20px;border-radius:8px 8px 0 0;text-align:center;">
+      <div style="color:#84CC16;font-size:18px;font-weight:700;">🎉 Nouvel essai TRI-ANGLE</div>
+    </div>
+    <div style="background:#fff;padding:24px;border-radius:0 0 8px 8px;border:1px solid #E2E8F0;border-top:none;">
+      <table style="width:100%;border-collapse:collapse;">
+        ${row('Nom', entry.name)}
+        ${row('Courriel', entry.email)}
+        ${row('Clé générée', key)}
+        ${row('Expire le', entry.expires)}
+        ${row('Créé le', entry.createdAt)}
+        ${row('Machine ID', entry.machineId)}
+        ${row('Source', entry.trialSource)}
+      </table>
+    </div>
+  </div>
+</body></html>`;
 }
 
 module.exports = async (req, res) => {
@@ -141,6 +172,24 @@ module.exports = async (req, res) => {
       setAdd(EMAILS_SET, email),
       setAdd(MACHINES_SET, machineId)
     ]);
+
+    // Notification à LP (best-effort, INDÉPENDANT du courriel client et de TRIAL_EMAIL_ENABLED).
+    // try/catch séparé : un échec d'envoi ne doit jamais bloquer la création de la clé ni changer la réponse.
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resendNotify = new Resend(process.env.RESEND_API_KEY);
+        await resendNotify.emails.send({
+          from: FROM_EMAIL,
+          to: NOTIFY_EMAIL,
+          subject: `🎉 Nouvel essai TRI-ANGLE — ${entry.name}`,
+          html: buildNotifyHtml({ key, entry })
+        });
+      } catch (notifyErr) {
+        console.error('[start-trial] notification LP failed:', notifyErr.message);
+      }
+    } else {
+      console.warn('[start-trial] RESEND_API_KEY non configurée, notification LP skip');
+    }
 
     // Email de confirmation (best-effort, off par défaut tant qu'un domaine n'est pas vérifié dans Resend)
     // Pour activer : définir TRIAL_EMAIL_ENABLED=true dans Vercel (et avoir un domaine vérifié)
