@@ -540,6 +540,12 @@ $('#renew-submit').addEventListener('click', async () => {
     closeModals();
     refresh();
     toast('Renouvelée : ' + data.key + ' jusqu\\'au ' + data.entry.expires, 'success');
+    // Indique si la confirmation est partie au client (garde : fiche sans courriel)
+    if (data.emailSent) {
+      toast('Confirmation envoyée à ' + data.emailTo, 'success');
+    } else {
+      toast('Confirmation NON envoyée — ' + (data.emailReason || 'raison inconnue'), 'error');
+    }
   } catch (err) {
     toast('Erreur : ' + err.message, 'error');
   } finally { btn.disabled = false; }

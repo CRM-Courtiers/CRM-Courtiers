@@ -49,6 +49,9 @@ async function applyRenewal(entry, isExpired) {
   console.log('');
   console.log('✅ Prend effet immédiatement (pas besoin de deploy).');
   console.log('');
+  // La clé Resend n'existe que sur Vercel : impossible d'envoyer un courriel depuis le CLI.
+  console.log('⚠  Aucun courriel de confirmation envoyé — utilise le dashboard /admin pour notifier le client.');
+  console.log('');
 }
 
 async function main() {
