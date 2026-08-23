@@ -4086,7 +4086,7 @@ function _extractCellText(td){
   // Récupère le texte affiché dans une cellule (en strippant les boutons "copier" 📋/⎘)
   var clone=td.cloneNode(true);
   // Retire les boutons cpb (copy email button), SVG icons, badges utilitaires
-  clone.querySelectorAll('.cpb,svg,.actions-trigger').forEach(function(el){el.parentNode.removeChild(el);});
+  clone.querySelectorAll('.cpb,svg,.actions-trigger,.bsm').forEach(function(el){el.parentNode.removeChild(el);});
   var txt=(clone.innerText||clone.textContent||'').trim();
   // Si la cellule contient juste "—" (placeholder vide), retourner chaîne vide
   if(txt==='—'||txt==='-')return '';
@@ -4205,8 +4205,8 @@ function _buildActionsForRecord(tab,recId){
   var items=[];
   items.push({icon:'&#9998;',label:'Modifier',fn:function(){doEdit(tab,recId);}});
   if(tab!=='pancartes')items.push({icon:'&#9993;',label:'Envoyer un courriel',fn:function(){openMailPicker(tab,recId);}});
-  if(tab==='a'){
-    items.push({icon:'&#9742;',label:'Marquer contacté',title:'Réinitialise la relance',fn:function(){markAcheteurContacted(recId);}});
+  if(tab==='a'||tab==='cp'||tab==='vp'){
+    items.push({icon:'&#9742;',label:'Marquer contacté',title:(tab==='a'?'Réinitialise la relance':'Inscrit la date du jour dans « Dernier contact »'),fn:function(){markContacted(tab,recId);}});
   }
   items.push({divider:true});
   if(tab==='cp')items.push({icon:'&#8599;',label:'Promouvoir en Acheteur',fn:function(){transferCpToA(recId);}});
@@ -4266,10 +4266,12 @@ function _buildActionsForRecord(tab,recId){
   return items;
 }
 
-function abtns(tab,id,extra,before){
+function abtns(tab,id,extra,before,phone){
   var ci=COLS[tab].length-1;
   var h='<td class="nm c-'+ci+'">';
-  // Tous les boutons spécifiques (before + extra) sont maintenant dans le menu dropdown
+  // Tous les boutons spécifiques (before + extra) sont maintenant dans le menu dropdown.
+  // Seule exception (E4) : le 📞 « Marquer contacté », geste quotidien qui mérite de rester à 1 clic.
+  h+=(phone||'');
   h+='<button class="actions-trigger" onclick="openActionsMenu(\''+tab+'\',\''+id+'\',this,event)" title="Actions">&#9776; Actions</button>';
   return h+'</td>';
 }
@@ -4435,16 +4437,23 @@ function renderTab(tab){
           extraBtns='<button class="bsm bret" onclick="transferToConclus(\'v\',\''+rec.id+'\')" title="Marquer comme conclu">&#9989; Conclu</button> '+linkBtnV;
         }
         var beforeBtns="";
-        if(tab==="a"){
-          var phoneCls=isRel?"bsm bsm-ico alert":"bsm bsm-ico ok";
-          var phoneTitle=isRel?"Relance en attente — cliquer pour marquer comme contact&eacute;":"Marquer comme contact&eacute; (r&eacute;initialise la relance)";
-          beforeBtns='<button class="'+phoneCls+'" onclick="markAcheteurContacted(\''+rec.id+'\')" title="'+phoneTitle+'">&#128222;</button>';
+        // E4 — même geste sur les 3 onglets à relance : ce sont cp/vp qui en avaient le plus besoin.
+        var phoneBtn="";
+        if(tab==="a"||tab==="cp"||tab==="vp"){
+          // Trois états, pas deux : sans date de contact, la fiche est HORS du moteur de relance.
+          // Un voyant vert y serait rassurant à tort — c'est la seule fiche dont l'app ne sait rien.
+          var phoneJamais=(tab!=="a"&&!rec.dateContact);
+          var phoneCls=phoneJamais?"bsm bsm-ico":(isRel?"bsm bsm-ico alert":"bsm bsm-ico ok");
+          var phoneQuoi=(tab==="a")?"r&eacute;initialise la relance":"inscrit la date du jour dans &laquo; Dernier contact &raquo;";
+          var phoneTitle=(phoneJamais?"Jamais contact&eacute; — cliquer pour noter le contact d'aujourd'hui"
+            :(isRel?"Relance en attente — cliquer pour marquer comme contact&eacute;":"Marquer comme contact&eacute;"))+" ("+phoneQuoi+")";
+          phoneBtn='<button class="'+phoneCls+'" onclick="markContacted(\''+tab+'\',\''+rec.id+'\')" title="'+phoneTitle+'">&#128222;</button> ';
         }
         // Étape 22 — bouton ✉ courriel (cp/vp/a/pa/v/pa-en-vente)
         if(tab==="cp"||tab==="vp"||tab==="a"||tab==="pa"||tab==="v"||tab==="pa-en-vente"){
           beforeBtns='<button class="bsm bsm-ico" style="color:#0EA5E9" onclick="openMailPicker(\''+tab+'\',\''+rec.id+'\')" title="Envoyer un courriel à partir d\'un template">&#9993;</button> '+beforeBtns;
         }
-        h+=abtns(tab,rec.id,extraBtns,beforeBtns);
+        h+=abtns(tab,rec.id,extraBtns,beforeBtns,phoneBtn);
       } else if(col.t==="vlookup"){
         // Étape 19 — Adresse depuis la fiche En Vente (mandat vendeur), readonly
         var lv=_vById(rec.propertyId);
@@ -4679,7 +4688,8 @@ var TUTORIELS=[
     +'<h2>R\u00e9gler les seuils</h2>'
     +'<p>Tu peux ajuster le nombre de jours avant relance dans <strong>Param\u00e8tres</strong> (prospects acheteurs, vendeurs, et acheteurs actifs s\u00e9par\u00e9ment).</p>'
     +'<h2>Marquer comme contact\u00e9</h2>'
-    +'<p>Apr\u00e8s avoir rejoint la personne, utilise <strong>\u2630 Actions &rarr; Marquer contact\u00e9</strong> (ou mets \u00e0 jour la date) : la relance dispara\u00eet jusqu\u2019au prochain d\u00e9lai.</p>'
+    +'<p>Apr\u00e8s avoir rejoint la personne, clique le <strong>\ud83d\udcde</strong> au bout de sa ligne : la date du jour est inscrite et la relance dispara\u00eet jusqu\u2019au prochain d\u00e9lai. Le m\u00eame geste est dans <strong>\u2630 Actions &rarr; Marquer contact\u00e9</strong>, et tu peux toujours \u00e9crire la date \u00e0 la main dans la colonne.</p>'
+    +'<p>La couleur du <strong>\ud83d\udcde</strong> dit o\u00f9 tu en es : <strong>rouge</strong> = relance en attente, <strong>vert</strong> = \u00e0 jour, <strong>gris</strong> = jamais contact\u00e9 (cette fiche n\u2019est dans aucune relance tant que tu n\u2019as pas not\u00e9 un premier contact).</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Objectif quotidien : ramener la carte \u00ab En relance \u00bb \u00e0 z\u00e9ro. C\u2019est ta to-do list de prospection.</div></div>'},
   {sec:'Achats', num:8, titre:'G\u00e9rer tes acheteurs', html:
     '<p>La section <strong>Mes acheteurs</strong> regroupe tes clients acheteurs actifs \u2014 ceux avec qui tu travailles concr\u00e8tement \u00e0 trouver une propri\u00e9t\u00e9.</p>'
@@ -5200,7 +5210,7 @@ function getTodayEvents(){
 function getRelancesList(){
   var out=[];
   ["cp","vp"].forEach(function(tab){
-    var thr=THR[tab]||14;
+    var thr=_thrTab(tab); // même source que les toasts et le badge (jamais un seuil recalculé à côté)
     (db[tab]||[]).forEach(function(r){
       var days=dsince(r.dateContact);
       if(days>thr){
@@ -6396,10 +6406,23 @@ function markPancarteRetired(id){
   pushUndo("Pancarte retirée");rec.pancarteRet=true;sdb();rall();toast("✓ Pancarte marquée retirée");
 }
 // Réinitialise le compteur de relance d'un Acheteur (sans modifier d'autres champs)
-function markAcheteurContacted(id){
-  var rec=null;for(var i=0;i<db.a.length;i++){if(db.a[i].id===id){rec=db.a[i];break;}}if(!rec)return;
-  pushUndo("Contact Acheteur");rec.lastModified=_todayStr();sdb();rall();toast("✓ Contact enregistré — relance réinitialisée");
+// ── E4 — « Marquer contacté » : le geste le plus fréquent du suivi, à 1 clic sur les 3 onglets à relance ──
+// Le clic EST la déclaration : la date du jour est inscrite parce que le contact vient d'avoir lieu.
+// a → lastModified (inactivité de la fiche) · cp/vp → dateContact, le champ dont dépend LEUR relance.
+function markContacted(tab,id){
+  if(tab!=='a'&&tab!=='cp'&&tab!=='vp')return;
+  var rec=_findRecord(tab,id);if(!rec)return;
+  var auj=_todayStr();
+  var nom=((rec.prenom||'')+' '+(rec.nom||'')).trim()||(TAB_LABELS[tab]||'Fiche');
+  // Déjà fait aujourd'hui : on le dit, et on ne brûle ni un cran d'annulation ni une écriture.
+  if(_dateOnly(tab==='a'?rec.lastModified:rec.dateContact)===auj){toast('✓ Déjà noté comme contacté aujourd\'hui — '+nom);return;}
+  pushUndo(tab==='a'?"Contact Acheteur":"Contact prospect");
+  if(tab==='a')rec.lastModified=auj;else{rec.dateContact=auj;rec.lastModified=auj;}
+  sdb();rall(); // rall() recalcule les badges : la fiche sort du compte immédiatement
+  var rel=_dateRelance(tab,auj);
+  toast('✓ Contacté : '+nom+(rel?' — prochaine relance le '+_fdCourt(rel):''));
 }
+function markAcheteurContacted(id){markContacted('a',id);} // alias historique
 function renderPancartes(){
   var installList=document.getElementById("panc-install-list");
   var venduList=document.getElementById("panc-vendu-list");
@@ -10697,18 +10720,22 @@ function gc(id){var el=document.getElementById(id);return el?el.checked:false;}
 // ── Engagement (E1) — accusé de réception parlant à l'enregistrement d'une fiche ──
 function _dateAddDays(base,n){var d=new Date(String(base||'').substring(0,10)+'T12:00:00');if(isNaN(d.getTime()))return'';d.setDate(d.getDate()+n);var m=d.getMonth()+1,dd=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd;}
 function _fdCourt(d){var x=new Date(String(d||'').substring(0,10)+'T12:00:00');if(isNaN(x.getTime()))return fd(d);try{return x.toLocaleDateString('fr-CA',{day:'numeric',month:'short'});}catch(e){return fd(d);}}
+// Seuil de relance de l'onglet — une seule source, partagée par les toasts et par le badge.
+function _thrTab(tab){return tab==='cp'?(THR.cp||14):(tab==='vp'?(THR.vp||14):(tab==='a'?(THR.a||20):0));}
+// Date à laquelle le moteur déclenchera la relance : il compare dsince(ref) > seuil, donc ref + seuil + 1.
+function _dateRelance(tab,ref){var t=_thrTab(tab);return (ref&&t)?_dateAddDays(ref,t+1):'';}
 function _joursDici(d){var a=new Date(_todayStr()+'T12:00:00'),b=new Date(String(d||'').substring(0,10)+'T12:00:00');if(isNaN(b.getTime()))return 0;return Math.round((b-a)/86400000);}
 function _toastSave(tab,entry,isEdit,oldRec){
   var nom=((entry.prenom||'')+' '+(entry.nom||'')).trim()||(TAB_LABELS[tab]||'Fiche');
   var relance='';
   if(tab==='cp'||tab==='vp'){
-    var thr=(tab==='cp'?THR.cp:THR.vp)||14;
+    var thr=_thrTab(tab);
     // Le moteur déclenche quand dsince(dateContact) > thr : on annonce exactement ça, avec la même
     // fonction que le badge — impossible que le toast et l'Accueil se contredisent au seuil.
     if(!entry.dateContact)relance=' — pas de date de contact, donc pas de relance automatique';
     else if(dsince(entry.dateContact)>thr)relance=' — à relancer dès maintenant';
     else{
-      var rel=_dateAddDays(entry.dateContact,thr+1),jrs=_joursDici(rel);
+      var rel=_dateRelance(tab,entry.dateContact),jrs=_joursDici(rel);
       relance=' — relance prévue '+(jrs<=0?"aujourd'hui":(jrs===1?'demain':'le '+_fdCourt(rel)));
     }
   }
