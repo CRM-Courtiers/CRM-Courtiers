@@ -10427,7 +10427,7 @@ function selOpts(arr,sel){return arr.map(function(o){return"<option"+(o===sel?" 
 function formForTab(tab,e){
   e=e||{};
   var ck=function(id,v){return'<input type="checkbox" id="'+id+'"'+(v?' checked':'')+' style="width:auto">';};
-  if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Type b\u00e2timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact</label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
+  if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Type b\u00e2timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact <span style="font-size:10px;color:#94A3B8">(la relance se calcule à partir de cette date)</span></label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10)||(e.id?'':_todayStr()))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="a"){
     return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>\u00c9tat</label><select id="fetat"><option value="">\u2014</option>'+selOpts(ETAT_ACH,e.etat)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>CCA</label><br>'+ck("fcca",e.cca)+'</div><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div></div><div class="g4"><div class="fg"><label>Pr\u00e9qualif.</label><br>'+ck("fprequal2",e.prequal2)+'</div><div class="fg"><label>Alerte</label><br>'+ck("falerte",e.alerte)+'</div><div class="fg"></div><div class="fg"></div></div>';
   }
@@ -10478,7 +10478,7 @@ function formForTab(tab,e){
     var couHtml='<div class="fg"><label>Courtier inscripteur</label><div style="display:flex;gap:6px;align-items:center"><input type="hidden" id="fcourtierid" value="'+esc(e.courtierId||'')+'"><div id="fcourtierlabel" style="flex:1;padding:7px 10px;border:1.5px solid #CBD5E1;border-radius:6px;background:#F8FAFC;font-size:13px;color:'+(couCur?'#0F172A':'#94A3B8')+'">'+(couCur?esc(_courtierFullName(couCur))+(couCur.agence?' <span style="color:#94A3B8;font-size:11px">\u00b7 '+esc(couCur.agence)+'</span>':''):'(aucun)')+'</div><button type="button" class="tpl-btn" onclick="_openCourtierPickerFromForm()">'+(couCur?'Changer':'Assigner')+'</button>'+(couCur?'<button type="button" class="tpl-btn muted" onclick="_clearCourtierFromForm()" title="Retirer">\u2715</button>':'')+'</div></div>';
     return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>Statut PA</label><select id="fstatutpa"><option value="">\u2014</option>'+selOpts(STATUT_PA,e.statutPa)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>No. Centris</label><input id="fnocentris" value="'+esc(e.noCentris||'')+'" placeholder="ex: 21246703"></div>'+couHtml+'</div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Documents PA</div><div class="g4"><div class="fg"><label>Fiche MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFpa("finsp","Inspection",e.inspection)+condFpa("ffin","Financement",e.financement)+'</div><div class="g2">'+condFpa("fr21","R2.1",e.r21)+condFpa("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFpa("fassur","Assur. immeuble",e.assurImm)+condFpa("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFpa("feau","Test eau",e.testEau)+condFpa("fnot","Notaire",e.notaire)+'</div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant promesse ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div>';
   }
-  if(tab==="vp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>Type propri\u00e9t\u00e9</label><select id="ftypeprop"><option value="">\u2014</option>'+selOpts(TYPE_PROP,e.typeProp)+'</select></div><div class="fg"><label>Prix demand\u00e9 ($)</label><input type="number" id="fprix" value="'+esc(e.prix)+'"></div></div><div class="fg"><label>Dernier contact</label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10))+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
+  if(tab==="vp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>Type propri\u00e9t\u00e9</label><select id="ftypeprop"><option value="">\u2014</option>'+selOpts(TYPE_PROP,e.typeProp)+'</select></div><div class="fg"><label>Prix demand\u00e9 ($)</label><input type="number" id="fprix" value="'+esc(e.prix)+'"></div></div><div class="fg"><label>Dernier contact <span style="font-size:10px;color:#94A3B8">(la relance se calcule à partir de cette date)</span></label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10)||(e.id?'':_todayStr()))+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="v"){
     var condFv=function(id,lbl,val){
       var isDone=(val===true||val==='done');
@@ -10548,8 +10548,36 @@ function closeModal(){document.getElementById("ov").style.display="none";eid=nul
 function gv(id){var el=document.getElementById(id);return el?el.value.trim():"";}
 function gc(id){var el=document.getElementById(id);return el?el.checked:false;}
 
+// ── Engagement (E1) — accusé de réception parlant à l'enregistrement d'une fiche ──
+function _dateAddDays(base,n){var d=new Date(String(base||'').substring(0,10)+'T12:00:00');if(isNaN(d.getTime()))return'';d.setDate(d.getDate()+n);var m=d.getMonth()+1,dd=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd;}
+function _fdCourt(d){var x=new Date(String(d||'').substring(0,10)+'T12:00:00');if(isNaN(x.getTime()))return fd(d);try{return x.toLocaleDateString('fr-CA',{day:'numeric',month:'short'});}catch(e){return fd(d);}}
+function _joursDici(d){var a=new Date(_todayStr()+'T12:00:00'),b=new Date(String(d||'').substring(0,10)+'T12:00:00');if(isNaN(b.getTime()))return 0;return Math.round((b-a)/86400000);}
+function _toastSave(tab,entry,isEdit,oldRec){
+  var nom=((entry.prenom||'')+' '+(entry.nom||'')).trim()||(TAB_LABELS[tab]||'Fiche');
+  var relance='';
+  if(tab==='cp'||tab==='vp'){
+    var thr=(tab==='cp'?THR.cp:THR.vp)||14;
+    // Le moteur déclenche quand dsince(dateContact) > thr : on annonce exactement ça, avec la même
+    // fonction que le badge — impossible que le toast et l'Accueil se contredisent au seuil.
+    if(!entry.dateContact)relance=' — pas de date de contact, donc pas de relance automatique';
+    else if(dsince(entry.dateContact)>thr)relance=' — à relancer dès maintenant';
+    else{
+      var rel=_dateAddDays(entry.dateContact,thr+1),jrs=_joursDici(rel);
+      relance=' — relance prévue '+(jrs<=0?"aujourd'hui":(jrs===1?'demain':'le '+_fdCourt(rel)));
+    }
+  }
+  else if((tab==='rea'||tab==='reh')&&entry.dateRelance)relance=' — relance prévue le '+_fdCourt(entry.dateRelance);
+  if(isEdit){
+    // À l'édition, le tableau montre déjà la nouvelle valeur : on n'ajoute l'échéance que si elle a
+    // bougé (la seule conséquence invisible dans le tableau). Sinon, accusé sobre.
+    var bouge=((tab==='cp'||tab==='vp')&&oldRec&&String(oldRec.dateContact||'')!==String(entry.dateContact||''));
+    toast('✓ Fiche mise à jour : '+nom+(bouge?relance:''));return;
+  }
+  toast('✓ Fiche créée : '+nom+relance);
+}
 function saveEntry(){
   var prenom=gv("fprenom");if(!prenom){alert("Le pr\u00e9nom est requis.");return;}
+  var _isNew=!eid;
   pushUndo(eid?"Modification":"Ajout");
   var entry={};
   if(ctab==="cp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),prequal:gv("fprequal"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),dateContact:gv("fdate"),notes:gv("fnotes")};
@@ -10639,9 +10667,12 @@ function saveEntry(){
   // Sync Google Calendar (asynchrone, n'attend pas la r\u00e9ponse)
   try{syncCalendarRecord(_stc,oldRec,entry);}catch(e){console.warn('Sync calendar:',e);}
   // D\u00e9tecter passage \u00e0 "PA Actif" dans Acheteurs \u2192 transfert auto vers PA en cours
-  if(ctab==='a'&&entry.etat==='PA Actif'&&(!oldRec||oldRec.etat!=='PA Actif')){
+  var _toPa=(ctab==='a'&&entry.etat==='PA Actif'&&(!oldRec||oldRec.etat!=='PA Actif'));
+  if(_toPa){
     setTimeout(function(){transferAToPa(entry.id);},100);
   }
+  // Engagement (E1) — pas de toast si le modal de transfert PA prend le relais (deux signaux = bruit)
+  if(!_toPa)_toastSave(ctab,entry,!_isNew,oldRec);
 }
 
 function doDel(tab,id){
