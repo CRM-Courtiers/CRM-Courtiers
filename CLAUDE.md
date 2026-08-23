@@ -91,11 +91,20 @@ Vercel CLI auth via `lpbussiere`, team `tri-angle`.
 - Pas de `prompt()` JS (Electron bloque) → modals customs
 - Le user travaille sur plusieurs jours, doit pouvoir reprendre où on était
 
-## Sauvegarde de mémoire (double localisation)
-1. **Source de vérité** : `~/.claude/projects/C--CRM-Sophie/memory/` (système Claude Code — le nom "C--CRM-Sophie" est l'encodage automatique du path initial `C:\CRM Sophie`, pas une référence au dossier physique)
-2. **Backup Dropbox** : `.claude/memory/` (ce dossier) — synchronisé via Dropbox, survit aux reformatages
+## Mémoire — UN SEUL emplacement canonique
 
-Si tu modifies un fichier mémoire, mets à jour les DEUX endroits pour rester en sync.
+**Écris UNIQUEMENT dans `.claude/memory/` de ce repo.** Synchronisé par Dropbox, gitignoré
+(`.gitignore` l.31 : `.claude/`), survit aux reformatages. L'index maître est
+`.claude/memory/MEMORY.md` — toute nouvelle note de mémoire doit y être référencée par une ligne.
+
+⚠ **`~/.claude/projects/C--CRM-Sophie/memory/` = ARCHIVE MORTE — NE PLUS Y ÉCRIRE.**
+Hérité de l'époque où le code vivait dans `C:\CRM Sophie` (le nom est l'encodage automatique de ce
+path, pas un dossier physique). Les deux emplacements avaient divergé pendant des mois.
+**Réconciliés le 2026-08-23** (mandat [MEM]) : le contenu à valeur durable a été rapatrié dans
+`.claude/memory/archive-legacy/`. Le dossier d'origine reste en place, intact, mais plus rien ne
+doit y être écrit ni lu comme source.
+
+**Il n'y a plus de double écriture.** Un seul endroit : `.claude/memory/`.
 
 ## Onglets/IDs internes du HTML (référence)
 - `cp` = Clients potentiels, `vp` = Vendeurs potentiels, `a` = Acheteurs
