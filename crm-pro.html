@@ -1026,6 +1026,21 @@ body.app-readonly th .rz{pointer-events:none}
 .todo-ech{font-size:11px;font-weight:600;color:#64748B;background:#F1F5F9;padding:2px 8px;border-radius:8px;white-space:nowrap;flex-shrink:0}
 .todo-ech.soon{color:#0369A1;background:#E0F2FE}
 .todo-ech.late{color:#B91C1C;background:#FEE2E2}
+/* E3 — « sans échéance » est un état légitime : neutre, jamais alarmant. */
+.todo-ech.none{color:#94A3B8;background:#F8FAFC;border:1px dashed #E2E8F0;font-weight:500}
+.todo-cal.na{opacity:.2}
+.todo-cal.na:hover{opacity:.45;filter:grayscale(1)}
+.todo-ech.none{cursor:pointer}
+.todo-ech.none:hover{color:#475569;border-color:#CBD5E1}
+/* E3 — choix d'échéance en place : sobre, dans la carte, rien de bloquant. */
+.dash-todo-ech{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-6px 0 14px;padding:9px 12px;background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:8px}
+.dash-todo-ech-q{font-size:12px;color:#475569;font-weight:600}
+.dash-todo-ech input[type=date]{padding:7px 10px;border:1.5px solid #CBD5E1;border-radius:8px;font-size:13px;font-family:inherit;color:#0F172A}
+.dash-todo-ech input[type=date]:focus{outline:none;border-color:#0EA5E9;box-shadow:0 0 0 2px rgba(14,165,233,.15)}
+.dash-todo-ech-btn{background:#fff;color:#475569;border:1.5px solid #CBD5E1;border-radius:8px;padding:7px 14px;font-size:12px;font-family:inherit;cursor:pointer}
+.dash-todo-ech-btn:hover{border-color:#94A3B8;color:#0F172A}
+.dash-todo-ech-x{margin-left:auto;border:none;background:none;color:#CBD5E1;cursor:pointer;font-size:14px;font-family:inherit;padding:2px 6px}
+.dash-todo-ech-x:hover{color:#64748B}
 .todo-cal{border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;flex-shrink:0;line-height:1;opacity:.45;filter:grayscale(1)}
 .todo-cal:hover{opacity:1;filter:none}
 .todo-cal.on{opacity:1;filter:none}
@@ -1464,8 +1479,16 @@ body.app-readonly th .rz{pointer-events:none}
           <div class="dash-todo-head"><span class="dash-todo-title">✅ Tâches à faire</span><span class="dash-todo-count" id="dash-todo-count"></span></div>
           <div class="dash-todo-add">
             <input type="text" id="todo-input" placeholder="Nouvelle tâche…" maxlength="200" onkeydown="if(event.key==='Enter')_tacheAdd()">
-            <input type="date" id="todo-date" title="Échéance — aujourd'hui par défaut">
+            <input type="date" id="todo-date" title="Échéance (facultative — on te la demandera sinon)">
             <button class="dash-todo-addbtn" onclick="_tacheAdd()">+ Ajouter</button>
+          </div>
+          <!-- Étape E3 — l'échéance est un choix conscient : demandée en place, jamais imposée. -->
+          <div class="dash-todo-ech" id="todo-ech" style="display:none">
+            <span class="dash-todo-ech-q">Pour quand ?</span>
+            <input type="date" id="todo-ech-date">
+            <button type="button" class="dash-todo-ech-btn dash-todo-ech-auj" onclick="_tacheEchValider(_todayStr())">Aujourd'hui</button>
+            <button type="button" class="dash-todo-ech-btn dash-todo-ech-sans" onclick="_tacheSansEcheance()">Sans échéance</button>
+            <button type="button" class="dash-todo-ech-x" title="Annuler (Échap)" onclick="_tacheEchFermer()">✕</button>
           </div>
           <div class="dash-todo-list" id="dash-todo-list"></div>
           <div class="dash-todo-foot" id="dash-todo-foot"></div>
@@ -4608,7 +4631,7 @@ var TUTORIELS=[
     +'<li>Une quatri\u00e8me carte, r\u00e9serv\u00e9e pour un usage \u00e0 venir.</li>'
     +'</ul>'
     +'<h2>Tes t\u00e2ches \u00e0 faire</h2>'
-    +'<p>Tout en haut de l\u2019Accueil, la carte <strong>\u2705 T\u00e2ches \u00e0 faire</strong> est ta liste personnelle. Tape une t\u00e2che et fais <strong>Entr\u00e9e</strong> : elle est cr\u00e9\u00e9e pour <strong>aujourd\u2019hui</strong>. Si elle est pour un autre jour, change l\u2019<strong>\u00e9ch\u00e9ance</strong> avant d\u2019ajouter \u2014 ou plus tard avec \u270e. Coche-la quand c\u2019est fait (elle se barre), <strong>modifie son texte avec \u270e</strong>, supprime-la avec \u2715, ou efface tout d\u2019un coup les compl\u00e9t\u00e9es. Les \u00e9ch\u00e9ances d\u00e9pass\u00e9es s\u2019affichent en rouge.</p>'
+    +'<p>Tout en haut de l\u2019Accueil, la carte <strong>\u2705 T\u00e2ches \u00e0 faire</strong> est ta liste personnelle. Tape une t\u00e2che et fais <strong>Entr\u00e9e</strong>. Si tu n\u2019as pas choisi d\u2019<strong>\u00e9ch\u00e9ance</strong>, TRI-ANGLE te la demande juste en dessous : choisis une date, ou clique <strong>Aujourd\u2019hui</strong> ou <strong>Sans \u00e9ch\u00e9ance</strong>. Aucune date n\u2019est jamais mise \u00e0 ta place \u2014 une \u00e9ch\u00e9ance, \u00e7a se d\u00e9cide. Tu peux en ajouter (ou en retirer) une plus tard avec \u270e. Coche-la quand c\u2019est fait (elle se barre), <strong>modifie son texte avec \u270e</strong>, supprime-la avec \u2715, ou efface tout d\u2019un coup les compl\u00e9t\u00e9es. Les \u00e9ch\u00e9ances d\u00e9pass\u00e9es s\u2019affichent en rouge.</p>'
     +'<p><strong>Ajouter une t\u00e2che \u00e0 ton agenda :</strong> clique le bouton <strong>\ud83d\udcc5</strong> d\u2019une t\u00e2che pour l\u2019envoyer \u00e0 ton calendrier (Google ou Outlook). Toutes les t\u00e2ches d\u2019une m\u00eame journée que tu ajoutes sont regroup\u00e9es dans <strong>un seul \u00e9v\u00e9nement</strong> ce jour-l\u00e0 (\u00e0 8h30), pour \u00e9viter la confusion. Reclique \ud83d\udcc5\u2713 pour retirer la t\u00e2che de l\u2019\u00e9v\u00e9nement.</p>'
     +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019ajout au calendrier n\u2019est possible que si un calendrier est connect\u00e9 (Param\u00e8tres \u2192 Int\u00e9grations).</div></div>'
     +'<h2>Les listes de l\u2019Accueil</h2>'
@@ -10007,21 +10030,79 @@ function renderDashboard(){
 }
 
 // ─── Tâches à faire (Étape 29) ───
+// ── E3 — L'échéance est l'essence du CRM : elle se CHOISIT, elle ne se devine pas. ──
+// Aucune date n'est jamais préremplie ni posée d'office. Si le champ est vide à l'ajout, on demande
+// le choix EN PLACE (date ou « sans échéance ») : rien ne bloque, et le texte saisi n'est jamais perdu.
 function _tacheAdd(){
   var inp=document.getElementById('todo-input');if(!inp)return;
   var txt=(inp.value||'').trim();if(!txt)return;
   var dEl=document.getElementById('todo-date');
-  // E2 — échéance par défaut = aujourd'hui. Une tâche sans date pensée vaut mieux qu'une tâche jamais
-  // créée : on ne jette plus la saisie derrière une alerte bloquante. La date reste modifiable (_tacheEdit).
-  var ech=(dEl?dEl.value:'')||_todayStr();
+  var ech=dEl?dEl.value:'';
+  if(!ech){_tacheEchOuvrir();return;}
+  _tacheCreer(txt,ech);
+}
+function _tacheCreer(txt,ech){
   pushUndo('Ajout tâche');
   if(!db.taches)db.taches=[];
-  db.taches.unshift({id:newId(),texte:txt,echeance:ech,done:false,dateAjout:_todayStr()});
-  inp.value='';if(dEl)dEl.value=_todayStr();
+  var _id=newId();
+  db.taches.unshift({id:_id,texte:txt,echeance:ech||'',done:false,dateAjout:_todayStr()});
+  var inp=document.getElementById('todo-input'),dEl=document.getElementById('todo-date');
+  if(inp)inp.value='';if(dEl)dEl.value='';
+  _tacheEchFermer();
   sdb();_renderTaches();
-  _syncTacheCalDay(ech); // si ce jour est déjà au calendrier, mettre l'événement à jour
-  inp.focus();
+  if(ech)_syncTacheCalDay(ech); // si ce jour est déjà au calendrier, mettre l'événement à jour
+  else _tacheFlash(_id); // sans échéance = triée en bas : sans ça, l'utilisateur ne voit rien bouger
+  if(inp)inp.focus();
 }
+// Surligne brièvement une ligne (réutilise .row-flash, déjà utilisé pour les sauts depuis un badge).
+function _tacheFlash(id){
+  var r=document.querySelector('.todo-row[data-tid="'+id+'"]');if(!r)return;
+  r.classList.add('row-flash');setTimeout(function(){r.classList.remove('row-flash');},1200);
+}
+// Zone de choix : ouverte seulement quand l'utilisateur ajoute sans avoir choisi de date.
+function _tacheEchOuvrir(){
+  var z=document.getElementById('todo-ech');if(!z){_tacheCreer(((document.getElementById('todo-input')||{}).value||'').trim(),'');return;}
+  var d=document.getElementById('todo-ech-date');if(d)d.value='';
+  z.style.display='flex';
+  if(d){d.focus();setTimeout(function(){d.focus();},30);} // focus tout de suite : le clavier ne doit jamais attendre
+}
+function _tacheEchFermer(){
+  var z=document.getElementById('todo-ech');if(z)z.style.display='none';
+  var d=document.getElementById('todo-ech-date');if(d)d.value='';
+  var inp=document.getElementById('todo-input');
+  if(inp&&z&&document.activeElement&&z.contains(document.activeElement))inp.focus(); // la saisie reste, prête à être reprise
+}
+function _tacheSansEcheance(){
+  var inp=document.getElementById('todo-input');var txt=inp?(inp.value||'').trim():'';
+  if(!txt){_tacheEchFermer();return;}
+  _tacheCreer(txt,'');
+}
+function _tacheEchValider(val){
+  var d=document.getElementById('todo-ech-date');var v=val||(d?d.value:'');
+  if(!v||v<'1900-01-01')return; // garde-fou : jamais de date absurde née d'une saisie à moitié faite
+  var inp=document.getElementById('todo-input');var txt=inp?(inp.value||'').trim():'';
+  if(!txt){_tacheEchFermer();return;}
+  _tacheCreer(txt,v);
+}
+(function(){
+  var z=document.getElementById('todo-ech');if(!z)return;
+  var d=document.getElementById('todo-ech-date');if(!d)return;
+  var _frappe=0;
+  // Un <input type=date> émet un « change » dès que ses trois segments sont remplis : en tapant
+  // 2026-11-20 au clavier, le navigateur annonce d'abord 2026-11-02. Valider là-dessus créerait une
+  // tâche à une date fausse — en rouge, « en retard » — soit exactement ce que ce lot existe pour
+  // empêcher. On ne valide donc sur « change » que s'il ne suit AUCUNE frappe : c'est la signature du
+  // clic dans le calendrier natif, qui n'envoie aucune touche à la page. Au clavier, c'est Entrée.
+  d.addEventListener('change',function(){if(Date.now()-_frappe<1500)return;_tacheEchValider();});
+  d.addEventListener('keydown',function(e){
+    if(e.key!=='Enter'&&e.key!=='Escape'&&e.key!=='Tab')_frappe=Date.now();
+    if(e.key==='Enter'){e.preventDefault();_tacheEchValider();}
+  });
+  // Échap depuis n'importe quel contrôle de la zone (champ date comme boutons), jamais seulement l'un.
+  z.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();_tacheEchFermer();} // Échap = annuler, comme partout ailleurs
+  });
+})();
 function _tacheToggle(id){
   var t=null;for(var i=0;i<(db.taches||[]).length;i++){if(db.taches[i].id===id){t=db.taches[i];break;}}
   if(!t)return;
@@ -10036,7 +10117,7 @@ function _tacheDelete(id){
   sdb();_renderTaches();
   if(day)_syncTacheCalDay(day);
 }
-function _tacheEdit(id){
+function _tacheEdit(id,surLaDate){
   var t=null;for(var i=0;i<(db.taches||[]).length;i++){if(db.taches[i].id===id){t=db.taches[i];break;}}
   if(!t)return;
   // prompt() est désactivé dans Electron → édition EN PLACE dans la ligne (titre + date)
@@ -10047,6 +10128,7 @@ function _tacheEdit(id){
   inpTxt.type='text';inpTxt.value=t.texte||'';inpTxt.style.cssText='flex:1;min-width:110px;'+inpStyle;
   var inpDate=document.createElement('input');
   inpDate.type='date';inpDate.value=_dateOnly(t.echeance);inpDate.style.cssText='width:130px;'+inpStyle;
+  inpDate.title='Laisser vide = sans échéance'; // le retrait d'une date est possible : encore faut-il le savoir
   var btnOk=document.createElement('button');
   btnOk.innerHTML='&#10003;';btnOk.title='Enregistrer (Entrée)';
   btnOk.style.cssText='border:none;background:#10B981;color:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;font-weight:700';
@@ -10055,21 +10137,29 @@ function _tacheEdit(id){
   btnNo.style.cssText='border:none;background:#F1F5F9;color:#64748B;border-radius:6px;width:26px;height:26px;cursor:pointer';
   row.innerHTML='';row.style.gap='6px';
   row.appendChild(inpTxt);row.appendChild(inpDate);row.appendChild(btnOk);row.appendChild(btnNo);
-  inpTxt.focus();inpTxt.select();
+  if(surLaDate){inpDate.focus();}else{inpTxt.focus();inpTxt.select();}
   var fini=false;
   function saveTache(){
     if(fini)return;fini=true;
     var v=(inpTxt.value||'').trim();
     var d=inpDate.value||'';
     var txtChange=(v&&v!==t.texte);
-    var dateChange=(d&&d!==t.echeance);
+    // E3 — vider le champ RETIRE l'échéance : « sans échéance » est un état légitime, donc atteignable
+    // dans les deux sens (avant, une date ne pouvait plus jamais être enlevée).
+    var dateChange=(d!==(t.echeance||''));
     if(txtChange||dateChange){
       pushUndo('Modif tâche');
       var oldEch=t.echeance;
       if(txtChange)t.texte=v;
-      if(dateChange){t.echeance=d;_syncTacheCalDay(oldEch);} // retirer de l'événement de l'ancien jour
+      if(dateChange){
+        t.echeance=d;
+        // Sans date, une tâche ne peut plus être au calendrier (tacheCal est ancré par jour) :
+        // on l'en retire proprement pour ne laisser aucun événement orphelin.
+        if(!d)t.inCal=false;
+        _syncTacheCalDay(oldEch); // retirer de l'événement de l'ancien jour
+      }
       sdb();
-      _syncTacheCalDay(t.echeance);
+      if(t.echeance)_syncTacheCalDay(t.echeance);
     }
     _renderTaches();
   }
@@ -10154,8 +10244,6 @@ function _tacheCalToggle(id){
 }
 function _renderTaches(){
   var list=document.getElementById('dash-todo-list');if(!list)return;
-  // E2 — le champ d'échéance s'ouvre déjà rempli à aujourd'hui (progrès déjà entamé, aucune interruption).
-  var _dIn=document.getElementById('todo-date');if(_dIn&&!_dIn.value)_dIn.value=_todayStr();
   var arr=(db.taches||[]).slice();
   // Tri : non-complétées d'abord, puis par échéance (les sans échéance à la fin), puis ordre d'ajout
   arr.sort(function(a,b){
@@ -10179,9 +10267,18 @@ function _renderTaches(){
         var soon=!t.done&&t.echeance===today;
         var cls=late?'todo-ech late':(soon?'todo-ech soon':'todo-ech');
         ech='<span class="'+cls+'">📅 '+esc(_intVisiteLabel(t.echeance))+(late?' (en retard)':(soon?' (aujourd\'hui)':''))+'</span>';
+      } else {
+        // E3 — choix assumé de l'utilisateur : on le montre, sans jamais le lui reprocher.
+        // Cliquable : l'étiquette n'est pas là pour décrire le vide, elle est le chemin pour en sortir.
+        ech='<span class="todo-ech none" title="Aucune échéance — cliquer pour en ajouter une" onclick="_tacheEdit(\''+t.id+'\',true)">sans échéance</span>';
       }
       var inCal=!!t.inCal;
-      var calBtn='<button class="todo-cal'+(inCal?' on':'')+'" title="'+(inCal?'Au calendrier (journée à 8h30) — cliquer pour retirer cette tâche':'Ajouter cette tâche au calendrier (journée à 8h30)')+'" onclick="_tacheCalToggle(\''+t.id+'\')">'+(inCal?'📅✓':'📅')+'</button>';
+      // E3 — sans échéance, il n'y a pas de jour où poser l'événement : le bouton est inactif et le dit.
+      var calBtn=t.echeance
+        ?'<button class="todo-cal'+(inCal?' on':'')+'" title="'+(inCal?'Au calendrier (journée à 8h30) — cliquer pour retirer cette tâche':'Ajouter cette tâche au calendrier (journée à 8h30)')+'" onclick="_tacheCalToggle(\''+t.id+'\')">'+(inCal?'📅✓':'📅')+'</button>'
+        // Pas 'disabled' : Chromium n'affiche aucun title sur un bouton désactivé — le message serait mort.
+        // Ici le bouton répond, et sa réponse est le geste qui débloque la situation.
+        :'<button class="todo-cal na" title="Pas d\'échéance : il n\'y a pas de jour où poser l\'événement — cliquer pour en ajouter une" onclick="_tacheEdit(\''+t.id+'\',true)">📅</button>';
       return '<div class="todo-row'+(t.done?' done':'')+'" data-tid="'+t.id+'">'
         +'<input type="checkbox" '+(t.done?'checked':'')+' onclick="_tacheToggle(\''+t.id+'\')">'
         +'<span class="todo-txt">'+esc(t.texte)+'</span>'
