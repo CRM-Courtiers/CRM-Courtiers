@@ -4270,11 +4270,11 @@ function _buildActionsForRecord(tab,recId){
   return items;
 }
 
-function abtns(tab,id,extra,before,phone){
+function abtns(tab,id,phone){
   var ci=COLS[tab].length-1;
   var h='<td class="nm c-'+ci+'">';
-  // Tous les boutons spécifiques (before + extra) sont maintenant dans le menu dropdown.
-  // Seule exception (E4) : le 📞 « Marquer contacté », geste quotidien qui mérite de rester à 1 clic.
+  // Toutes les actions de ligne vivent dans le menu ☰ Actions, sauf le 📞 « Marquer contacté »
+  // (E4) : geste quotidien qui mérite de rester à 1 clic. Voir la règle « boutons de ligne ».
   h+=(phone||'');
   h+='<button class="actions-trigger" onclick="openActionsMenu(\''+tab+'\',\''+id+'\',this,event)" title="Actions">&#9776; Actions</button>';
   return h+'</td>';
@@ -4413,34 +4413,6 @@ function renderTab(tab){
     for(var j=0;j<cols.length;j++){
       var col=cols[j];
       if(col.t==="action"){
-        var extraBtns="";
-        if(tab==="cp")extraBtns='<button class="bsm bret" onclick="transferCpToA(\''+rec.id+'\')" title="Promouvoir en Acheteur">&#8599; Acheteur</button>';
-        if(tab==="vp")extraBtns='<button class="bsm bret" onclick="transferVpToV(\''+rec.id+'\')" title="Promouvoir en Vendeur">&#8599; Vendeur</button>';
-        if(tab==="a"){
-          var linkBtn=rec.linkId
-            ?'<button class="bsm bdl" onclick="unlinkRecord(\'a\',\''+rec.id+'\')" title="Annuler la liaison">&#128274; D&eacute;lier</button>'
-            :'<button class="bsm bret" onclick="openLinkModal(\'a\',\''+rec.id+'\')" title="Lier &agrave; un autre acheteur">&#128279; Lier</button>';
-          extraBtns=linkBtn+' <button class="bsm bdl" onclick="transferAToCp(\''+rec.id+'\')" title="Renvoyer aux acheteurs potentiels">&#8617; Acheteur pot.</button>';
-        }
-        if(tab==="pa"){
-          var linkBtnPa=rec.linkId
-            ?'<button class="bsm bdl" onclick="unlinkRecord(\'pa\',\''+rec.id+'\')" title="Annuler la liaison">&#128274; D\u00e9lier</button>'
-            :'<button class="bsm bret" onclick="openLinkModal(\'pa\',\''+rec.id+'\')" title="Lier \u00e0 un autre acheteur (m\u00eame PA)">&#128279; Lier</button>';
-          extraBtns='<button class="bsm bret" onclick="transferToConclus(\'pa\',\''+rec.id+'\')" title="Marquer comme conclu">&#9989; Conclu</button> '+linkBtnPa+' <button class="bsm bdl" onclick="transferPaToA(\''+rec.id+'\')" title="Retour aux Acheteurs (PA refus\u00e9e)">&#8617; Acheteurs</button>';
-        }
-        if(tab==="pa-en-vente"){
-          var linkBtnPaev=rec.linkId
-            ?'<button class="bsm bdl" onclick="unlinkRecord(\'pa\',\''+rec.id+'\')" title="Annuler la liaison">&#128274; D\u00e9lier</button>'
-            :'<button class="bsm bret" onclick="openLinkModal(\'pa\',\''+rec.id+'\')" title="Lier \u00e0 un autre acheteur (m\u00eame PA)">&#128279; Lier</button>';
-          extraBtns='<button class="bsm bret" onclick="_paevConclure(\''+rec.id+'\')" title="Conclure la vente de cette propri\u00e9t\u00e9 (la promesse sera archiv\u00e9e et li\u00e9e automatiquement)">&#9989; Conclu</button> <button class="bsm bret" onclick="_paArchOrphan(\''+rec.id+'\')" title="La propri\u00e9t\u00e9 a d\u00e9j\u00e0 \u00e9t\u00e9 vendue \u2014 archiver cette promesse et la lier \u00e0 la vente conclue">&#128451; Vendu</button> '+linkBtnPaev+' <button class="bsm bdl" onclick="transferPaevToDemande(\''+rec.id+'\')" title="Retour \u00e0 Demandes (PA refus\u00e9e)">&#8617; Demandes</button>';
-        }
-        if(tab==="v"){
-          var linkBtnV=rec.linkId
-            ?'<button class="bsm bdl" onclick="unlinkRecord(\'v\',\''+rec.id+'\')" title="Annuler la liaison">&#128274; D\u00e9lier</button>'
-            :'<button class="bsm bret" onclick="openLinkModal(\'v\',\''+rec.id+'\')" title="Lier \u00e0 un autre vendeur (m\u00eame propri\u00e9t\u00e9)">&#128279; Lier</button>';
-          extraBtns='<button class="bsm bret" onclick="transferToConclus(\'v\',\''+rec.id+'\')" title="Marquer comme conclu">&#9989; Conclu</button> '+linkBtnV;
-        }
-        var beforeBtns="";
         // E4 — même geste sur les 3 onglets à relance : ce sont cp/vp qui en avaient le plus besoin.
         var phoneBtn="";
         if(tab==="a"||tab==="cp"||tab==="vp"){
@@ -4453,11 +4425,7 @@ function renderTab(tab){
             :(isRel?"Relance en attente — cliquer pour marquer comme contact&eacute;":"Marquer comme contact&eacute;"))+" ("+phoneQuoi+")";
           phoneBtn='<button class="'+phoneCls+'" onclick="markContacted(\''+tab+'\',\''+rec.id+'\')" title="'+phoneTitle+'">&#128222;</button> ';
         }
-        // Étape 22 — bouton ✉ courriel (cp/vp/a/pa/v/pa-en-vente)
-        if(tab==="cp"||tab==="vp"||tab==="a"||tab==="pa"||tab==="v"||tab==="pa-en-vente"){
-          beforeBtns='<button class="bsm bsm-ico" style="color:#0EA5E9" onclick="openMailPicker(\''+tab+'\',\''+rec.id+'\')" title="Envoyer un courriel à partir d\'un template">&#9993;</button> '+beforeBtns;
-        }
-        h+=abtns(tab,rec.id,extraBtns,beforeBtns,phoneBtn);
+        h+=abtns(tab,rec.id,phoneBtn);
       } else if(col.t==="vlookup"){
         // Étape 19 — Adresse depuis la fiche En Vente (mandat vendeur), readonly
         var lv=_vById(rec.propertyId);
