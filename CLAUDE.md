@@ -16,13 +16,16 @@ Si l'utilisateur dit "on continue TRI-ANGLE", "on continue CRM Pro" OU "on conti
 - **Domaine** : `tri-angle.ca` (Cloudflare Registrar)
 - **Email** : `contact@tri-angle.ca` (Cloudflare Email Routing → Gmail)
 - **Produit** : CRM Electron pour courtiers immobiliers québécois
-- **Pricing** : 90 jours essai gratuit, puis 80$/mois ou 600$/an (Interac autodépôt à `lpbussiere.lpb@gmail.com`)
+- **Pricing** : 90 jours essai gratuit, puis **60$/mois ou 600$/an** (décision LP 2026-08-23 — l'adjointe reste incluse sans frais). Interac autodépôt à `lpbussiere.lpb@gmail.com`. ⚠ L'app affiche encore 50$/500$ (crm-pro.html ~l.1235 et ~l.11804) — correction = passager du lot 0.3.50.
 - **Cible** : ~14 000 courtiers QC, alternative simple à AVA Client (300$/mois)
 - **User** : Louis-Paul Bussière (GitHub `lpbussiere`), construit l'app pour sa blonde Sophie Morissette (courtière)
 
 ## ⚠ Mémoire détaillée à charger AU DÉMARRAGE
 Lis ces fichiers en premier — ils contiennent l'état complet du projet :
-- **`.claude/memory/project_crmpro_resume_demain.md`** ← **LIRE EN PRIORITÉ**, état complet à jour
+- **`.claude/memory/MEMORY.md`** ← **LIRE EN PRIORITÉ** : l'INDEX VIVANT (état à jour, lots, décisions,
+  backlogs). C'est LUI qui fait foi — suis ses pointeurs.
+- `.claude/memory/project_crmpro_resume_demain.md` — ⚠ HISTORIQUE (mai 2026, périmé — étapes décrites
+  « à faire » livrées depuis). Ne pas s'y fier pour l'état courant.
 - `.claude/memory/project_crmpro_roadmap.md` — état des étapes (historique)
 - `.claude/memory/project_crmpro_autoupdate_plan.md` — auto-update + serveur licences (historique)
 - `.claude/memory/project_crmpro_design.md` — palette + décisions UI
