@@ -505,6 +505,9 @@ td:hover .centris-tooltip{display:inline;color:#0EA5E9;font-style:italic;font-si
 .acc-row-meta{font-size:11px;color:#64748B;font-weight:500;flex-shrink:0;white-space:nowrap}
 .acc-row-sub{font-size:11px;color:#64748B;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
 .acc-row.urgent .acc-row-sub{color:#DC2626}
+/* E6 — le geste sur la ligne de l'Accueil : la liste ne se contente plus de nommer le problème. */
+.acc-row-act{flex-shrink:0;border:1px solid #E2E8F0;background:#fff;border-radius:6px;padding:7px 10px;font-size:12px;line-height:1;cursor:pointer;font-family:inherit;opacity:.65;transition:all .12s}
+.acc-row-act:hover{opacity:1;border-color:#0EA5E9;background:#F0F9FF}
 .acc-row-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
 .acc-badge-urgent{background:#FEE2E2;color:#B91C1C}
 .acc-badge-soon{background:#FEF3C7;color:#92400E}
@@ -746,9 +749,10 @@ td.emc:hover .cpb{opacity:1}
 .bsm-ico{padding:4px 8px!important;font-size:13px;line-height:1}
 .bsm-ico.ok{background:#F0FDF4;border-color:#22C55E;color:#15803D}
 .bsm-ico.ok:hover{background:#DCFCE7;border-color:#15803D}
-.bsm-ico.alert{background:#FEE2E2;border-color:#DC2626;color:#B91C1C;animation:phonePulse 1.6s ease-in-out infinite}
-.bsm-ico.alert:hover{background:#FECACA;border-color:#B91C1C;animation:none}
-@keyframes phonePulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}50%{box-shadow:0 0 0 5px rgba(220,38,38,0)}}
+/* La couleur suffit à dire l'urgence : la ligne porte déjà .rl via le MÊME isRel. Pas d'animation
+   infinie — c'était la seule du produit à se multiplier (N fiches dues = N halos qui pulsent). */
+.bsm-ico.alert{background:#FEE2E2;border-color:#DC2626;color:#B91C1C}
+.bsm-ico.alert:hover{background:#FECACA;border-color:#B91C1C}
 
 /* Save bar */
 .savebar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:#F8FAFC;border-top:1px solid #E2E8F0;gap:12px;flex-wrap:wrap;border-radius:0 0 12px 12px}
@@ -4645,6 +4649,7 @@ var TUTORIELS=[
     +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019ajout au calendrier n\u2019est possible que si un calendrier est connect\u00e9 (Param\u00e8tres \u2192 Int\u00e9grations).</div></div>'
     +'<h2>Les listes de l\u2019Accueil</h2>'
     +'<p>Sous les cartes, tu trouves tes rendez-vous du jour, les promesses \u00e0 suivre, les conditions qui arrivent \u00e0 \u00e9ch\u00e9ance, et les \u00e9l\u00e9ments \u00e0 relancer \u2014 chacun cliquable pour aller directement \u00e0 la fiche concern\u00e9e.</p>'
+    +'<p>Dans <strong>\u00c0 relancer</strong>, pas besoin d\u2019ouvrir la fiche : clique le <strong>\ud83d\udcde</strong> au bout de la ligne d\u00e8s que tu as parl\u00e9 \u00e0 la personne. La date du jour est inscrite, la ligne dispara\u00eet de ta liste du matin, et <span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Z</span> annule si tu t\u2019es tromp\u00e9 de ligne.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Prends l\u2019habitude d\u2019ouvrir l\u2019Accueil en d\u00e9but de journ\u00e9e : si tout est \u00e0 z\u00e9ro, tu es \u00e0 jour\u00a0!</div></div>'},
   {sec:'D\u00e9marrage', num:4, titre:'Importer / migrer tes contacts', html:
     '<p>Tu arrives d\u2019un autre outil (Excel, un autre CRM) ? Tu peux r\u00e9cup\u00e9rer tes donn\u00e9es dans TRI-ANGLE plut\u00f4t que de tout retaper.</p>'
@@ -4688,7 +4693,7 @@ var TUTORIELS=[
     +'<h2>R\u00e9gler les seuils</h2>'
     +'<p>Tu peux ajuster le nombre de jours avant relance dans <strong>Param\u00e8tres</strong> (prospects acheteurs, vendeurs, et acheteurs actifs s\u00e9par\u00e9ment).</p>'
     +'<h2>Marquer comme contact\u00e9</h2>'
-    +'<p>Apr\u00e8s avoir rejoint la personne, clique le <strong>\ud83d\udcde</strong> au bout de sa ligne : la date du jour est inscrite et la relance dispara\u00eet jusqu\u2019au prochain d\u00e9lai. Le m\u00eame geste est dans <strong>\u2630 Actions &rarr; Marquer contact\u00e9</strong>, et tu peux toujours \u00e9crire la date \u00e0 la main dans la colonne.</p>'
+    +'<p>Apr\u00e8s avoir rejoint la personne, clique le <strong>\ud83d\udcde</strong> au bout de sa ligne \u2014 dans l\u2019onglet, ou directement dans <strong>\u00c0 relancer</strong> sur l\u2019Accueil : la date du jour est inscrite et la relance dispara\u00eet jusqu\u2019au prochain d\u00e9lai. Le m\u00eame geste est dans <strong>\u2630 Actions &rarr; Marquer contact\u00e9</strong>, et tu peux toujours \u00e9crire la date \u00e0 la main dans la colonne.</p>'
     +'<p>La couleur du <strong>\ud83d\udcde</strong> dit o\u00f9 tu en es : <strong>rouge</strong> = relance en attente, <strong>vert</strong> = \u00e0 jour, <strong>gris</strong> = jamais contact\u00e9 (cette fiche n\u2019est dans aucune relance tant que tu n\u2019as pas not\u00e9 un premier contact).</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\u2705</span><div>Objectif quotidien : ramener la carte \u00ab En relance \u00bb \u00e0 z\u00e9ro. C\u2019est ta to-do list de prospection.</div></div>'},
   {sec:'Achats', num:8, titre:'G\u00e9rer tes acheteurs', html:
@@ -5336,10 +5341,16 @@ function renderAccueil(){
         var icon=r.kind==="interet"?"&#128142;":"&#9888;";
         // Clic : intérêt → ouvre le modal intérêts de l'acheteur ; sinon → fiche
         var click=r.kind==="interet"?("openInteretsModal('"+r.id+"')"):("doEdit('"+r.tab+"','"+r.id+"')");
+        // E6 — le geste se fait SUR PLACE, sans quitter le rituel du matin : 1 clic au lieu d'ouvrir
+        // la fiche complète. Réutilise markContacted() d'E4 tel quel (toast, badge, Ctrl+Z inclus).
+        // Pas sur les intérêts : un intérêt ne se règle pas en notant un contact.
+        var geste=r.kind==="interet"?''
+          :'<button class="acc-row-act" title="Marquer contacté — inscrit la date du jour et retire cette ligne" onclick="event.stopPropagation();markContacted(\''+r.tab+'\',\''+r.id+'\')">&#128222;</button>';
         return '<div class="acc-row urgent" onclick="'+click+'" style="cursor:pointer">'
           +'<div class="acc-row-icon">'+icon+'</div>'
           +'<div class="acc-row-main">'+esc(r.name)+'<div class="acc-row-sub">'+esc(r.reason)+'</div></div>'
           +'<div class="acc-row-badge '+badgeCls+'">'+badge+'</div>'
+          +geste
           +'</div>';
       }).join("");
       if(rels.length>8)relList.innerHTML+='<div class="acc-empty">+ '+(rels.length-8)+' autres</div>';
