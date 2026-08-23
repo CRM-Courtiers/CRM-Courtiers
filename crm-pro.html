@@ -1464,7 +1464,7 @@ body.app-readonly th .rz{pointer-events:none}
           <div class="dash-todo-head"><span class="dash-todo-title">✅ Tâches à faire</span><span class="dash-todo-count" id="dash-todo-count"></span></div>
           <div class="dash-todo-add">
             <input type="text" id="todo-input" placeholder="Nouvelle tâche…" maxlength="200" onkeydown="if(event.key==='Enter')_tacheAdd()">
-            <input type="date" id="todo-date" title="Échéance (obligatoire)">
+            <input type="date" id="todo-date" title="Échéance — aujourd'hui par défaut">
             <button class="dash-todo-addbtn" onclick="_tacheAdd()">+ Ajouter</button>
           </div>
           <div class="dash-todo-list" id="dash-todo-list"></div>
@@ -4608,7 +4608,7 @@ var TUTORIELS=[
     +'<li>Une quatri\u00e8me carte, r\u00e9serv\u00e9e pour un usage \u00e0 venir.</li>'
     +'</ul>'
     +'<h2>Tes t\u00e2ches \u00e0 faire</h2>'
-    +'<p>Tout en haut de l\u2019Accueil, la carte <strong>\u2705 T\u00e2ches \u00e0 faire</strong> est ta liste personnelle. Tape une t\u00e2che, choisis son <strong>\u00e9ch\u00e9ance</strong> (obligatoire), puis <strong>+ Ajouter</strong> (ou Entr\u00e9e). Coche-la quand c\u2019est fait (elle se barre), <strong>modifie son texte avec \u270e</strong>, supprime-la avec \u2715, ou efface tout d\u2019un coup les compl\u00e9t\u00e9es. Les \u00e9ch\u00e9ances d\u00e9pass\u00e9es s\u2019affichent en rouge.</p>'
+    +'<p>Tout en haut de l\u2019Accueil, la carte <strong>\u2705 T\u00e2ches \u00e0 faire</strong> est ta liste personnelle. Tape une t\u00e2che et fais <strong>Entr\u00e9e</strong> : elle est cr\u00e9\u00e9e pour <strong>aujourd\u2019hui</strong>. Si elle est pour un autre jour, change l\u2019<strong>\u00e9ch\u00e9ance</strong> avant d\u2019ajouter \u2014 ou plus tard avec \u270e. Coche-la quand c\u2019est fait (elle se barre), <strong>modifie son texte avec \u270e</strong>, supprime-la avec \u2715, ou efface tout d\u2019un coup les compl\u00e9t\u00e9es. Les \u00e9ch\u00e9ances d\u00e9pass\u00e9es s\u2019affichent en rouge.</p>'
     +'<p><strong>Ajouter une t\u00e2che \u00e0 ton agenda :</strong> clique le bouton <strong>\ud83d\udcc5</strong> d\u2019une t\u00e2che pour l\u2019envoyer \u00e0 ton calendrier (Google ou Outlook). Toutes les t\u00e2ches d\u2019une m\u00eame journée que tu ajoutes sont regroup\u00e9es dans <strong>un seul \u00e9v\u00e9nement</strong> ce jour-l\u00e0 (\u00e0 8h30), pour \u00e9viter la confusion. Reclique \ud83d\udcc5\u2713 pour retirer la t\u00e2che de l\u2019\u00e9v\u00e9nement.</p>'
     +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019ajout au calendrier n\u2019est possible que si un calendrier est connect\u00e9 (Param\u00e8tres \u2192 Int\u00e9grations).</div></div>'
     +'<h2>Les listes de l\u2019Accueil</h2>'
@@ -5039,8 +5039,9 @@ var TUTORIELS=[
     +'<p>Un <strong>clic-droit</strong> sur une cellule te permet de copier sa valeur, ou de copier toute la ligne. Sur un champ de saisie, tu as couper/copier/coller.</p>'
     +'<h2>\u00c9dition rapide</h2>'
     +'<p>Clique directement dans une cellule du tableau pour la modifier sans ouvrir la fiche compl\u00e8te. Pratique pour ajuster une date ou cocher une case.</p>'
-    +'<h2>Raccourci</h2>'
+    +'<h2>Raccourcis clavier</h2>'
     +'<p><span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Z</span> annule ta derni\u00e8re action (ajout, modification, suppression).</p>'
+    +'<p>Dans une fiche ouverte : <span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Entr\u00e9e</span> (<span class="aide-kbd">\u2318</span> + <span class="aide-kbd">Entr\u00e9e</span> sur Mac) <strong>enregistre</strong> sans toucher \u00e0 la souris, et <span class="aide-kbd">\u00c9chap</span> <strong>annule</strong>. Si tu avais commenc\u00e9 \u00e0 saisir, l\u2019app te demande confirmation avant de fermer.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Tu peux aussi <strong>redimensionner les colonnes</strong> et r\u00e9ordonner le tri par les en-t\u00eates, pour adapter chaque tableau \u00e0 ta fa\u00e7on de travailler.</div></div>'}
 ];
 var _aideCurrent=null;
@@ -5626,6 +5627,7 @@ function openLinkModal(tab,id){
   document.getElementById("mt").textContent="Lier "+current.prenom+" "+current.nom+" avec\u2026";
   document.getElementById("mb").innerHTML='<div style="margin-bottom:12px;color:#6B7280;font-size:12px">Choisis la fiche \u00e0 lier (ex: conjoint sur la m\u00eame propri\u00e9t\u00e9) :</div>'+rows;
   var btnSave=document.getElementById("btns");if(btnSave)btnSave.style.display="none";
+  _ovSnap=null; // mode sélecteur : aucune saisie à protéger
   document.getElementById("ov").style.display="block";
 }
 
@@ -10009,12 +10011,13 @@ function _tacheAdd(){
   var inp=document.getElementById('todo-input');if(!inp)return;
   var txt=(inp.value||'').trim();if(!txt)return;
   var dEl=document.getElementById('todo-date');
-  var ech=dEl?dEl.value:'';
-  if(!ech){alert('Choisis une échéance (date) pour cette tâche.');if(dEl)dEl.focus();return;}
+  // E2 — échéance par défaut = aujourd'hui. Une tâche sans date pensée vaut mieux qu'une tâche jamais
+  // créée : on ne jette plus la saisie derrière une alerte bloquante. La date reste modifiable (_tacheEdit).
+  var ech=(dEl?dEl.value:'')||_todayStr();
   pushUndo('Ajout tâche');
   if(!db.taches)db.taches=[];
   db.taches.unshift({id:newId(),texte:txt,echeance:ech,done:false,dateAjout:_todayStr()});
-  inp.value='';if(dEl)dEl.value='';
+  inp.value='';if(dEl)dEl.value=_todayStr();
   sdb();_renderTaches();
   _syncTacheCalDay(ech); // si ce jour est déjà au calendrier, mettre l'événement à jour
   inp.focus();
@@ -10151,6 +10154,8 @@ function _tacheCalToggle(id){
 }
 function _renderTaches(){
   var list=document.getElementById('dash-todo-list');if(!list)return;
+  // E2 — le champ d'échéance s'ouvre déjà rempli à aujourd'hui (progrès déjà entamé, aucune interruption).
+  var _dIn=document.getElementById('todo-date');if(_dIn&&!_dIn.value)_dIn.value=_todayStr();
   var arr=(db.taches||[]).slice();
   // Tri : non-complétées d'abord, puis par échéance (les sans échéance à la fin), puis ordre d'ajout
   arr.sort(function(a,b){
@@ -10418,9 +10423,53 @@ function ie(td){
 
 // ─── Modal ───────────────────────────────────────────────────
 document.getElementById("badd").addEventListener("click",function(){openAdd();});
-document.getElementById("btnc").addEventListener("click",function(){closeModal();});
+document.getElementById("btnc").addEventListener("click",function(){_ovAnnuler();});
 document.getElementById("btns").addEventListener("click",function(){saveEntry();});
-document.getElementById("ov").addEventListener("click",function(e){if(e.target===this)closeModal();});
+document.getElementById("ov").addEventListener("click",function(e){if(e.target===this)_ovAnnuler();});
+
+// Les raccourcis s'annoncent au survol : zéro pixel pris aux libellés des boutons.
+(function(){
+  var _mac=/Mac/i.test(navigator.platform||"");
+  var _bs=document.getElementById("btns");if(_bs)_bs.title="Enregistrer ("+(_mac?"\u2318":"Ctrl")+"+Entr\u00e9e)";
+  var _bc=document.getElementById("btnc");if(_bc)_bc.title="Annuler (\u00c9chap)";
+})();
+
+// ── Clavier sur le modal principal (E2) ──
+// #ov était le seul modal de l'app sans raccourci : 11 autres écoutent déjà Escape.
+// Échap = Annuler · Ctrl+Entrée (Cmd sur Mac) = Enregistrer, depuis n'importe quel champ.
+// Pas Entrée seule : les Notes sont un <textarea> où Entrée doit rester un saut de ligne.
+function _ovOuvert(){var o=document.getElementById("ov");return !!o&&o.style.display==="block";}
+// Un modal empilé par-dessus (pickers courtier/notaire/gabarits, PJ, intérêts, transfert PA, menu
+// Actions…) garde la priorité sur Échap : c'est lui qui se ferme, jamais les deux à la fois.
+function _ovModalAuDessus(){return !!document.querySelector(".tpl-modal-ov.on,#gcalPreOverlay.show,#renewOverlay.show,.actions-menu");}
+// Empreinte de la saisie : sert à distinguer un formulaire intact d'un formulaire commencé.
+function _ovEmpreinte(){
+  var v=[];
+  document.querySelectorAll("#mb input,#mb select,#mb textarea").forEach(function(el){
+    v.push(el.type==="checkbox"?(el.checked?"1":"0"):(el.value||""));
+  });
+  return v.join(String.fromCharCode(1));
+}
+var _ovSnap=null;
+function _ovAnnuler(){
+  // Seul emploi légitime du bloquant (P11) : un vrai risque de perte de données. Rien n'est encore
+  // passé par pushUndo à ce stade — Ctrl+Z ne récupérerait rien. Formulaire intact = fermeture muette.
+  if(_ovSnap!==null&&_ovEmpreinte()!==_ovSnap){
+    var _q=eid?"Abandonner les modifications ?":"Abandonner cette fiche ?";
+    if(!confirm(_q+String.fromCharCode(10,10)+"Ce qui vient d'être saisi ne sera pas enregistré."))return;
+  }
+  closeModal();
+}
+document.addEventListener("keydown",function(e){
+  if(!_ovOuvert()||_ovModalAuDessus())return;
+  if(e.key==="Escape"){e.preventDefault();e.stopPropagation();_ovAnnuler();return;}
+  if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){
+    // #ov sert aussi de simple sélecteur (openLinkModal) : le bouton Enregistrer y est masqué et
+    // il n'y a aucun formulaire — Ctrl+Entrée n'y a rien à valider.
+    var _b=document.getElementById("btns");if(!_b||_b.style.display==="none")return;
+    e.preventDefault();e.stopPropagation();saveEntry();
+  }
+},true); // capture : décider AVANT les écouteurs (en bulle) des modals empilés, qui retirent leur .on
 
 function selOpts(arr,sel){return arr.map(function(o){return"<option"+(o===sel?" selected":"")+">"+esc(o)+"</option>";}).join("");}
 
@@ -10542,9 +10591,9 @@ function _refCalcSophie(){
 }
 
 var TAB_LABELS={cp:"Prospect acheteur",a:"Acheteur",pa:"Promesse en cours",vp:"Prospect vendeur",v:"Inscription",ac:"Achat conclu",vc:"Vente conclue",ca:"Autre contact","pa-en-vente":"Promesse reçue",rea:"Référence courtier",rec:"Référence conclue",reh:"Référence hypothécaire"};
-function openAdd(){eid=null;document.getElementById("mt").textContent="Nouveau "+TAB_LABELS[ctab];document.getElementById("mb").innerHTML=formForTab(ctab,null);document.getElementById("ov").style.display="block";setTimeout(function(){var fi=document.getElementById("fprenom");if(fi)fi.focus();},50);}
-function doEdit(tab,id){var _st=_storeTab(tab);var entry=null;for(var i=0;i<db[_st].length;i++){if(db[_st][i].id===id){entry=db[_st][i];break;}}if(!entry)return;eid=id;ctab=tab;document.querySelectorAll(".tbtn").forEach(function(b){b.classList.remove("on");});document.querySelectorAll(".pane").forEach(function(p){p.classList.remove("on");});var btn=document.querySelector('[data-tab="'+tab+'"]');if(btn)btn.classList.add("on");var pn=document.getElementById("pane-"+tab);if(pn)pn.classList.add("on");setCardTitle(tab);document.querySelector(".card").classList.remove("settings-mode","accueil-mode","pancartes-mode");document.getElementById("mt").textContent="Modifier "+(TAB_LABELS[tab]||TAB_LABELS[_st]||"fiche");document.getElementById("mb").innerHTML=formForTab(tab,entry);document.getElementById("ov").style.display="block";}
-function closeModal(){document.getElementById("ov").style.display="none";eid=null;var btnSave=document.getElementById("btns");if(btnSave)btnSave.style.display="";}
+function openAdd(){eid=null;document.getElementById("mt").textContent="Nouveau "+TAB_LABELS[ctab];document.getElementById("mb").innerHTML=formForTab(ctab,null);document.getElementById("ov").style.display="block";_ovSnap=_ovEmpreinte();setTimeout(function(){var fi=document.getElementById("fprenom");if(fi)fi.focus();},50);}
+function doEdit(tab,id){var _st=_storeTab(tab);var entry=null;for(var i=0;i<db[_st].length;i++){if(db[_st][i].id===id){entry=db[_st][i];break;}}if(!entry)return;eid=id;ctab=tab;document.querySelectorAll(".tbtn").forEach(function(b){b.classList.remove("on");});document.querySelectorAll(".pane").forEach(function(p){p.classList.remove("on");});var btn=document.querySelector('[data-tab="'+tab+'"]');if(btn)btn.classList.add("on");var pn=document.getElementById("pane-"+tab);if(pn)pn.classList.add("on");setCardTitle(tab);document.querySelector(".card").classList.remove("settings-mode","accueil-mode","pancartes-mode");document.getElementById("mt").textContent="Modifier "+(TAB_LABELS[tab]||TAB_LABELS[_st]||"fiche");document.getElementById("mb").innerHTML=formForTab(tab,entry);document.getElementById("ov").style.display="block";_ovSnap=_ovEmpreinte();}
+function closeModal(){document.getElementById("ov").style.display="none";eid=null;_ovSnap=null;var btnSave=document.getElementById("btns");if(btnSave)btnSave.style.display="";}
 function gv(id){var el=document.getElementById(id);return el?el.value.trim():"";}
 function gc(id){var el=document.getElementById(id);return el?el.checked:false;}
 
@@ -10568,10 +10617,12 @@ function _toastSave(tab,entry,isEdit,oldRec){
   }
   else if((tab==='rea'||tab==='reh')&&entry.dateRelance)relance=' — relance prévue le '+_fdCourt(entry.dateRelance);
   if(isEdit){
-    // À l'édition, le tableau montre déjà la nouvelle valeur : on n'ajoute l'échéance que si elle a
-    // bougé (la seule conséquence invisible dans le tableau). Sinon, accusé sobre.
+    // À l'édition, le tableau montre déjà la nouvelle valeur : un accusé générique serait un signal
+    // creux qui dévaluerait celui de la création. On ne parle que si l'échéance de relance a bougé,
+    // c'est-à-dire quand la conséquence est invisible dans le tableau.
     var bouge=((tab==='cp'||tab==='vp')&&oldRec&&String(oldRec.dateContact||'')!==String(entry.dateContact||''));
-    toast('✓ Fiche mise à jour : '+nom+(bouge?relance:''));return;
+    if(bouge)toast('✓ Fiche mise à jour : '+nom+relance);
+    return;
   }
   toast('✓ Fiche créée : '+nom+relance);
 }
