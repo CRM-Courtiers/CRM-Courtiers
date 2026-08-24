@@ -81,7 +81,7 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .stat-purple{border-top-color:#F43F5E}
 /* En Vente (data-tab v) : vert lime (style Architecture Pluralsight) */
 .stat-teal{border-top-color:#84CC16}
-/* Visites cédulées : état "planifié" (bleu charte, variante fond sombre) */
+/* Aujourd’hui (RDV + visites du jour) : état "planifié" (bleu charte, variante fond sombre) */
 .stat-blue{border-top-color:#60A5FA}
 .stat-amber{border-top-color:#F59E0B}
 /* En relance INACTIVE (count = 0) : cyan néon */
@@ -1441,7 +1441,7 @@ body.app-readonly th .rz{pointer-events:none}
 <div class="hero-dark">
   <div class="stats">
     <div class="stat stat-pale" id="rel-card"><div class="slbl">En relance</div><div class="sval" id="s-rel">0</div></div>
-    <div class="stat stat-blue" id="visites-card"><div class="slbl">Visites c&eacute;dul&eacute;es</div><div class="sval" id="s-visites">0</div></div>
+    <div class="stat stat-blue" id="visites-card"><div class="slbl">Aujourd&rsquo;hui</div><div class="sval" id="s-visites">0</div></div>
     <div class="stat stat-amber" id="dem-traiter-card">
       <div class="slbl">Demandes &agrave; traiter</div>
       <div style="display:flex;gap:18px;align-items:flex-start;margin-top:4px">
@@ -4606,8 +4606,8 @@ var TUTORIELS=[
   {sec:'D\u00e9marrage', num:3, titre:'La page d\u2019Accueil et les cartes du haut', html:
     '<p>La page <strong>Accueil</strong> est ton tableau de bord du jour. Tout en haut, quatre cartes te donnent l\u2019essentiel en un coup d\u2019\u0153il :</p>'
     +'<ul>'
-    +'<li><strong>En relance</strong> \u2014 les prospects et acheteurs qu\u2019il faut recontacter (inactifs depuis trop longtemps).</li>'
-    +'<li><strong>Visites c\u00e9dul\u00e9es</strong> \u2014 le nombre de visites planifi\u00e9es \u00e0 venir.</li>'
+    +'<li><strong>En relance</strong> \u2014 les prospects et acheteurs qu\u2019il faut recontacter (inactifs depuis trop longtemps). M\u00eame nombre que la liste \u00ab \u00c0 relancer \u00bb plus bas.</li>'
+    +'<li><strong>Aujourd\u2019hui</strong> \u2014 ce qui est c\u00e9dul\u00e9 <em>aujourd\u2019hui seulement</em> : tes rendez-vous de dossiers et les visites de tes acheteurs. Elle repart \u00e0 z\u00e9ro chaque matin.</li>'
     +'<li><strong>Demandes \u00e0 traiter</strong> \u2014 s\u00e9par\u00e9 en deux : c\u00f4t\u00e9 <strong>Acheteurs</strong> (int\u00e9r\u00eats \u00e0 traiter) et c\u00f4t\u00e9 <strong>Inscriptions</strong> (demandes re\u00e7ues sur tes propri\u00e9t\u00e9s).</li>'
     +'<li>Une quatri\u00e8me carte, r\u00e9serv\u00e9e pour un usage \u00e0 venir.</li>'
     +'</ul>'
@@ -4654,8 +4654,9 @@ var TUTORIELS=[
     +'<p>Chaque prospect a une <strong>date de dernier contact</strong>. Quand le nombre de jours d\u00e9passe un seuil, la fiche devient \u00ab \u00e0 relancer \u00bb. Les acheteurs actifs, eux, sont signal\u00e9s selon leur derni\u00e8re activit\u00e9 (inactivit\u00e9).</p>'
     +'<h2>O\u00f9 voir les relances</h2>'
     +'<ul>'
-    +'<li>La carte <strong>En relance</strong> en haut de l\u2019app (et de l\u2019Accueil) affiche le total.</li>'
+    +'<li>La carte <strong>En relance</strong> en haut de l\u2019app affiche le total \u2014 c\u2019est exactement le nombre de lignes de la liste ci-dessous (un seul calcul pour les deux).</li>'
     +'<li>La liste <strong>\u00c0 relancer</strong> sur l\u2019Accueil d\u00e9taille chaque cas avec la raison (\u00ab sans contact depuis X jours \u00bb).</li>'
+    +'<li>Les <strong>int\u00e9r\u00eats acheteurs \u00ab \u00e0 traiter \u00bb</strong> ne sont pas des relances : ce sont des demandes de tes propres clients. Ils vivent dans la carte <strong>Demandes \u00e0 traiter</strong> du bandeau et dans la carte <strong>Int\u00e9r\u00eats acheteurs</strong> de l\u2019Accueil.</li>'
     +'<li>Une <strong>pastille</strong> appara\u00eet sur les lignes concern\u00e9es dans chaque section.</li>'
     +'</ul>'
     +'<h2>R\u00e9gler les seuils</h2>'
@@ -4710,7 +4711,7 @@ var TUTORIELS=[
     +'<h2>L\u2019\u00e9v\u00e9nement calendrier</h2>'
     +'<p>Si ton calendrier (Google ou Outlook) est connect\u00e9, un \u00e9v\u00e9nement est cr\u00e9\u00e9 automatiquement avec l\u2019acheteur, l\u2019adresse, le n\u00b0 Centris, le courtier inscripteur et tes notes. Sinon, la date est quand m\u00eame enregistr\u00e9e dans TRI-ANGLE.</p>'
     +'<h2>Voir et annuler</h2>'
-    +'<p>La date de visite s\u2019affiche sous la pastille de l\u2019acheteur et compte dans la carte <strong>Visites c\u00e9dul\u00e9es</strong>. Pour l\u2019annuler, rouvre l\u2019int\u00e9r\u00eat, d\u00e9plie la propri\u00e9t\u00e9 et clique <strong>Annuler</strong> dans le bandeau de visite : l\u2019\u00e9v\u00e9nement est aussi retir\u00e9 du calendrier.</p>'
+    +'<p>La date de visite s\u2019affiche sous la pastille de l\u2019acheteur et compte dans la carte <strong>Aujourd\u2019hui</strong> du bandeau et dans <strong>Rendez-vous du jour</strong> sur l\u2019Accueil, le jour venu. Pour l\u2019annuler, rouvre l\u2019int\u00e9r\u00eat, d\u00e9plie la propri\u00e9t\u00e9 et clique <strong>Annuler</strong> dans le bandeau de visite : l\u2019\u00e9v\u00e9nement est aussi retir\u00e9 du calendrier.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Connecte ton calendrier une fois (voir le tuto Calendrier) et toutes tes visites s\u2019y retrouvent sans effort.</div></div>'},
   {sec:'Achats', num:11, titre:'Les promesses en cours (c\u00f4t\u00e9 acheteur)', html:
     '<p>La section <strong>Promesses en cours</strong> suit les promesses d\u2019achat de tes clients acheteurs, du d\u00e9p\u00f4t de l\u2019offre jusqu\u2019\u00e0 la lev\u00e9e des conditions.</p>'
@@ -5082,18 +5083,15 @@ function renderAide(){
 
 function ust(){
   // \u2500\u2500\u2500 Cartes stats du haut (\u00c9tape 27, refonte) \u2500\u2500\u2500
-  // Carte 1 \u2014 En relance : prospects cp/vp inactifs + acheteurs inactifs (relance pure, sans int\u00e9r\u00eats)
-  var relCount=db.cp.filter(function(x){return x.dateContact&&dsince(x.dateContact)>THR.cp;}).length
-    + db.vp.filter(function(x){return x.dateContact&&dsince(x.dateContact)>THR.vp;}).length
-    + db.a.filter(function(x){return x.lastModified&&dsince(x.lastModified)>THR.a;}).length;
-  // Carte 2 \u2014 Visites c\u00e9dul\u00e9es : int\u00e9r\u00eats acheteurs avec une visite planifi\u00e9e aujourd'hui ou \u00e0 venir
-  var today=_todayStr();
-  var visitesCount=0;
-  (db.a||[]).forEach(function(rec){
-    (rec.interets||[]).forEach(function(it){
-      if(it.visiteDate&&String(it.visiteDate).substring(0,10)>=today)visitesCount++;
-    });
-  });
+  // Carte 1 — En relance : SOURCE DE VÉRITÉ UNIQUE (#20). Le compteur du bandeau et la liste
+  // « À relancer » de l'Accueil lisent désormais la MÊME fonction. Deux calculs parallèles qui
+  // comptent la même chose finissent toujours par diverger — c'était le cas en production.
+  var relCount=getRelancesList().length;
+  // Carte 2 — Aujourd'hui (#22) : ce qui est cédulé LE JOUR MÊME — rendez-vous de dossiers ET
+  // visites d'acheteurs. Même fonction que la liste « Rendez-vous du jour » de l'Accueil (#20
+  // appliqué ici aussi). Borné au jour même : un compteur qui inclut tout le futur ne redescend
+  // jamais à zéro et cesse d'être un signal.
+  var visitesCount=getTodayEvents().length;
   // Carte 3 \u2014 Demandes \u00e0 traiter : (acheteurs = int\u00e9r\u00eats "\u00e0 traiter") | (inscriptions = demandes re\u00e7ues new/qualified sur propri\u00e9t\u00e9s existantes)
   var demAch=0;(db.a||[]).forEach(function(rec){demAch+=_countInteretsATraiter(rec);});
   var vIds={};(db.v||[]).forEach(function(v){vIds[v.id]=true;});
@@ -5175,6 +5173,18 @@ function getTodayEvents(){
       });
     });
   });
+  // E7/#20 — une visite d'acheteur cédulée AUJOURD'HUI est un rendez-vous comme les autres : elle
+  // entre ici, donc le compteur « Aujourd'hui » du bandeau et cette liste lisent la MÊME source.
+  // Un intérêt écarté peut garder une vieille date de visite — il ne compte pas.
+  (db.a||[]).forEach(function(rec){
+    (rec.interets||[]).forEach(function(it){
+      if(!it.visiteDate||it.statut==='ecartee')return;
+      if(String(it.visiteDate).substring(0,10)!==today)return;
+      var vt=String(it.visiteDate).length>=16&&String(it.visiteDate).charAt(10)==="T"?String(it.visiteDate).substring(11,16):null;
+      events.push({tab:"a",id:rec.id,kind:"visite",name:((rec.prenom||"")+" "+(rec.nom||"")).trim()||"(sans nom)",
+        cond:"Visite"+(it.adresse?" · "+it.adresse:""),time:vt,adresse:it.adresse||""});
+    });
+  });
   events.sort(function(a,b){return (a.time||"99:99").localeCompare(b.time||"99:99");});
   return events;
 }
@@ -5203,14 +5213,6 @@ function getRelancesList(){
           kind:"inactif",reason:"Acheteur · inactif depuis "+days+" j"});
       }
     }
-    // Étape 27 — chaque intérêt "à traiter" est aussi une relance à faire (avec l'adresse précise)
-    (r.interets||[]).forEach(function(it){
-      if(it.statut==='a-traiter'){
-        var adr=it.adresse||"propriété à préciser";
-        out.push({tab:"a",id:r.id,name:((r.prenom||"")+" "+(r.nom||"")).trim()||"(sans nom)",days:dsince(it.dateAjout||_todayStr()),thr:0,
-          kind:"interet",intId:it.id,reason:"Intérêt à traiter · "+adr});
-      }
-    });
   });
   out.sort(function(a,b){return b.days-a.days;});
   return out;
@@ -5240,7 +5242,7 @@ function getConditionsDue(){
 }
 
 function _accRowHtml(opts){
-  var clickAttr=opts.tab&&opts.id?' onclick="doEdit(\''+opts.tab+'\',\''+opts.id+'\')"':"";
+  var clickAttr=opts.click?' onclick="'+opts.click+'"':(opts.tab&&opts.id?' onclick="doEdit(\''+opts.tab+'\',\''+opts.id+'\')"':"");
   return '<div class="acc-row'+(opts.urgent?' urgent':'')+'"'+clickAttr+'>'
     +'<div class="acc-row-icon">'+(opts.icon||"&#8226;")+'</div>'
     +'<div class="acc-row-main">'+esc(opts.main)+'</div>'
@@ -5278,11 +5280,12 @@ function renderAccueil(){
       rdvList.innerHTML=events.slice(0,8).map(function(e){
         return _accRowHtml({
           tab:e.tab,id:e.id,
-          icon:e.time?"&#128337;":"&#128197;",
+          click:e.kind==="visite"?("openInteretsModal('"+e.id+"')"):"",
+          icon:e.kind==="visite"?"&#128142;":(e.time?"&#128337;":"&#128197;"),
           main:e.name+" — "+e.cond,
           meta:e.time||"",
-          badge:e.tab==="pa"?"Promesse":"Inscription",
-          badgeCls:e.tab==="pa"?"acc-badge-urgent":"acc-badge-info"
+          badge:e.kind==="visite"?"Visite":(e.tab==="pa"?"Promesse":"Inscription"),
+          badgeCls:e.kind==="visite"?"acc-badge-purple":(e.tab==="pa"?"acc-badge-urgent":"acc-badge-info")
         });
       }).join("");
       if(events.length>8)rdvList.innerHTML+='<div class="acc-empty">+ '+(events.length-8)+' autres</div>';
@@ -5303,21 +5306,19 @@ function renderAccueil(){
     if(rels.length===0){
       relList.innerHTML='<div class="acc-empty">Aucune relance en attente &#127881;</div>';
     } else {
+      // E7/#21 — cette liste ne porte QUE de l'inactivité (cp/vp/a). Un intérêt « à traiter » est une
+      // demande entrante, pas une relance : il vit dans la carte 3 du bandeau et dans la carte
+      // « Intérêts acheteurs » de l'Accueil. Un seul endroit par chose.
       relList.innerHTML=rels.slice(0,8).map(function(r){
-        var badge=r.kind==="interet"?"Intérêt":r.tab==="cp"?"Prospect ach.":r.tab==="vp"?"Prospect vend.":r.tab==="a"?"Acheteur":r.tab;
-        var badgeCls=r.kind==="interet"?"acc-badge-purple":"acc-badge-late";
-        var icon=r.kind==="interet"?"&#128142;":"&#9888;";
-        // Clic : intérêt → ouvre le modal intérêts de l'acheteur ; sinon → fiche
-        var click=r.kind==="interet"?("openInteretsModal('"+r.id+"')"):("doEdit('"+r.tab+"','"+r.id+"')");
+        var badge=r.tab==="cp"?"Prospect ach.":r.tab==="vp"?"Prospect vend.":r.tab==="a"?"Acheteur":r.tab;
+        var click="doEdit('"+r.tab+"','"+r.id+"')";
         // E6 — le geste se fait SUR PLACE, sans quitter le rituel du matin : 1 clic au lieu d'ouvrir
         // la fiche complète. Réutilise markContacted() d'E4 tel quel (toast, badge, Ctrl+Z inclus).
-        // Pas sur les intérêts : un intérêt ne se règle pas en notant un contact.
-        var geste=r.kind==="interet"?''
-          :'<button class="acc-row-act" title="Marquer contacté — inscrit la date du jour et retire cette ligne" onclick="event.stopPropagation();markContacted(\''+r.tab+'\',\''+r.id+'\')">&#128222;</button>';
+        var geste='<button class="acc-row-act" title="Marquer contacté — inscrit la date du jour et retire cette ligne" onclick="event.stopPropagation();markContacted(\''+r.tab+'\',\''+r.id+'\')">&#128222;</button>';
         return '<div class="acc-row urgent" onclick="'+click+'" style="cursor:pointer">'
-          +'<div class="acc-row-icon">'+icon+'</div>'
+          +'<div class="acc-row-icon">&#9888;</div>'
           +'<div class="acc-row-main">'+esc(r.name)+'<div class="acc-row-sub">'+esc(r.reason)+'</div></div>'
-          +'<div class="acc-row-badge '+badgeCls+'">'+badge+'</div>'
+          +'<div class="acc-row-badge acc-badge-late">'+badge+'</div>'
           +geste
           +'</div>';
       }).join("");
