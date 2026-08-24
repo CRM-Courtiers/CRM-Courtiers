@@ -692,6 +692,11 @@ tr.v-paext td:first-child{box-shadow:inset 5px 0 0 #F43F5E}
 tr.v-paext:hover td{background:#FECDD3!important}
 tbody tr.v-paext .c-0,tbody tr.v-paext .c-1,tbody tr.v-paext .c-2{background:#FFE4E6!important}
 tbody tr.v-paext:hover .c-0,tbody tr.v-paext:hover .c-1,tbody tr.v-paext:hover .c-2{background:#FECDD3!important}
+/* E9 — PA externe ÉCHUE : même famille rose (on ne change pas de code couleur en cours de route),
+   liseré assombri + fond plus soutenu pour la retrouver à l'œil dans une longue liste. */
+tr.v-paext-late td{background:#FECDD3!important}
+tr.v-paext-late td:first-child{box-shadow:inset 5px 0 0 #9F1239}
+tbody tr.v-paext-late .c-0,tbody tr.v-paext-late .c-1,tbody tr.v-paext-late .c-2{background:#FECDD3!important}
 tbody tr.rl .c-0,tbody tr.rl .c-1,tbody tr.rl .c-2{background:#F8FAFC!important}
 
 /* 4e colonne sticky (onglets Acheteurs, PA en cours et Vendeurs) */
@@ -4451,7 +4456,9 @@ function renderTab(tab){
     // Étape 33 — marqueurs collaboration : dossier que JE partage / dossier REÇU d'un collègue
     if((tab==="a"||tab==="pa"||tab==="v")&&rec._collab)clsArr.push("collab-out");
     if(rec._ownerDev&&rec._ownerDev!==_syncDeviceId())clsArr.push("collab-in");
-    if(tab==="v"&&_isFutureDateTime(rec.paExterneEcheance))clsArr.push("v-paext");
+    // E9 — la teinte s'effaçait dès l'échéance passée : la ligne redevenait ordinaire au moment où
+    // il fallait la retrouver. Elle reste, en variante assombrie quand l'échéance est dépassée.
+    if(tab==="v"&&_paExterneEnCours(rec))clsArr.push(_paExterneEchue(rec)?"v-paext v-paext-late":"v-paext");
     var trCls=clsArr.join(" ");
     h+='<tr data-rid="'+esc(rec.id)+'"'+(trCls?' class="'+trCls+'"':'')+'>';
     for(var j=0;j<cols.length;j++){
@@ -4774,6 +4781,8 @@ var TUTORIELS=[
     +'<li><strong>\u2630 Actions &rarr; Retour Acheteurs</strong> : si la promesse tombe, le client revient dans tes acheteurs actifs.</li>'
     +'<li><strong>\u2630 Actions &rarr; + R\u00e9f\u00e9rence hypoth\u00e9caire</strong> : si tu r\u00e9f\u00e8res ton client \u00e0 un courtier hypoth\u00e9caire, cr\u00e9e la r\u00e9f\u00e9rence en 2 clics (voir le tuto \u00ab R\u00e9f\u00e9rences hypoth\u00e9caires \u00bb).</li>'
     +'</ul>'
+    +'<h2>Une \u00e9ch\u00e9ance d\u00e9pass\u00e9e ne dispara\u00eet pas</h2>'
+    +'<p>Si l\u2019<strong>\u00e9ch\u00e9ance</strong> d\u2019une promesse d\u00e9pos\u00e9e sur une de tes inscriptions par un autre courtier passe sans \u00eatre r\u00e9gl\u00e9e, la ligne <strong>reste</strong> dans \u00ab Promesses \u00e0 suivre \u00bb, marqu\u00e9e <strong>\u00c9chue</strong> et remont\u00e9e en t\u00eate de liste. Elle compte aussi comme un retard : tant qu\u2019elle est l\u00e0, la bande \u00ab Rien en retard aujourd\u2019hui \u00bb ne s\u2019affiche pas. Coche <strong>Fait</strong> sur l\u2019\u00e9ch\u00e9ance quand la promesse est accept\u00e9e : la ligne quitte \u00ab Promesses \u00e0 suivre \u00bb et passe dans \u00ab PA Accept\u00e9e \u2014 Conditions \u00e0 finaliser \u00bb. Et si la promesse <strong>tombe</strong> au lieu d\u2019\u00eatre accept\u00e9e, ouvre la cellule <strong>\u00c9ch\u00e9ance PA</strong> de l\u2019inscription et clique <strong>\u2715 Vider</strong> : l\u2019\u00e9ch\u00e9ance s\u2019efface et la ligne dispara\u00eet avec elle.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Surveille la carte \u00ab Promesses \u00e0 suivre \u00bb et les conditions \u00e0 \u00e9ch\u00e9ance sur l\u2019Accueil : ce sont tes dates critiques \u00e0 ne pas manquer.</div></div>'},
   {sec:'En vente', num:12, titre:'Cr\u00e9er et g\u00e9rer une inscription', html:
     '<p>Une <strong>inscription</strong>, c\u2019est une propri\u00e9t\u00e9 que tu as en mandat de vente. La section <strong>Mes inscriptions</strong> centralise tout le suivi du mandat.</p>'
@@ -5265,7 +5274,9 @@ function getRelancesList(){
 // Conditions arrivant à échéance dans les 7 prochains jours (PA + V) — inclut aussi les en retard
 function getConditionsDue(){
   var out=[];
-  // paExterneEcheance affiché dans "Promesses à suivre" — exclu pour éviter doublon
+  // paExterneEcheance affiché dans "Promesses à suivre" — exclu pour éviter doublon.
+  // ⚠ E9 — cette exclusion rend la carte « Conditions à surveiller » aveugle aux PA externes : les
+  //   échues sont donc comptées à part par _paExternesEchues(), sans quoi rien ne les signalerait.
   ["pa","v"].forEach(function(tab){
     var fields=COND_FIELDS_BY_TAB[tab]||[];
     (db[tab]||[]).forEach(function(r){
@@ -5283,6 +5294,38 @@ function getConditionsDue(){
   });
   out.sort(function(a,b){return a.daysDiff-b.daysDiff;});
   return out;
+}
+
+// ─── E9 — PA externe échue : visible, et comptée comme retard ────────────────────────────────
+// `paExterneEcheance` = l'échéance d'une promesse déposée sur MON inscription par un autre courtier.
+// Elle est volontairement exclue de getConditionsDue() (elle est rendue dans « Promesses à suivre »),
+// mais cette liste la jetait dès que la date passait : le dossier en retard devenait alors invisible
+// PARTOUT, et la bande « Rien en retard aujourd'hui » pouvait s'afficher par-dessus. Une seule
+// définition de « échue », lue par les deux surfaces (leçon #20).
+// Granularité JOUR, comme getConditionsDue()/_daysBetween : une échéance datée d'AUJOURD'HUI n'est
+// pas en retard. 'done' = réglée : on ne ressuscite pas un dossier clos.
+// « En cours » = une échéance existe et n'est pas réglée — À VENIR ou DÉPASSÉE. Les trois surfaces
+// (ligne de l'Accueil, teinte du tableau, badge de la sidebar) lisent cette seule définition : avec
+// _isFutureDateTime() seul, la teinte s'effaçait et le badge DÉCRÉMENTAIT à l'instant où le dossier
+// devenait problématique — un compteur qui baisse quand ça se dégrade.
+function _paExterneEnCours(v){
+  var val=v&&v.paExterneEcheance;
+  if(!val||val==='done')return false;
+  return /^\d{4}-\d{2}-\d{2}/.test(String(val));
+}
+function _paExterneEchue(v){
+  var val=v&&v.paExterneEcheance;
+  if(!val||val==='done')return false;
+  var ds=_dateOnly(val);
+  return /^\d{4}-\d{2}-\d{2}$/.test(ds)&&ds<_todayStr();
+}
+function _paExternesEchues(){
+  return (db.v||[]).filter(function(v){
+    if(!_paExterneEchue(v))return false;
+    // Dédoublon identique à « Promesses à suivre » : si une double rep porte déjà cette propriété,
+    // c'est ELLE qui porte l'échéance (v.paExterneEcheance n'en est qu'une copie de synchro).
+    return !(db.pa||[]).some(function(p){return p.propertyId===v.id;});
+  });
 }
 
 // ─── E8/#18 — « Tout est à jour » : le zéro atteint, à l'échelle de la journée ────────────────
@@ -5308,7 +5351,7 @@ function _accEtatDuJour(){
   var today=_todayStr(), dem=_countDemandesATraiter();
   var r={
     relances:getRelancesList().length,
-    conditions:getConditionsDue().filter(function(c){return c.daysDiff<0;}).length,
+    conditions:getConditionsDue().filter(function(c){return c.daysDiff<0;}).length+_paExternesEchues().length, // E9 — la PA externe échue est exclue de getConditionsDue (rendue ailleurs) : à compter ici, sinon la bande ment
     demandes:dem.ach+dem.inscNew, // 'new' seulement : un 'qualified' est un lead qu'on cultive, pas un retard
     taches:(db.taches||[]).filter(function(t){return !t.done&&t.echeance&&t.echeance<today;}).length
   };
@@ -5436,22 +5479,28 @@ function renderAccueil(){
     paAllItems.push({type:type,rec:p,urgency:_paUrgency(p),accepted:_paIsAccepted(p,type)});
   });
   (db.v||[]).forEach(function(v){
-    var isFut=_isFutureDateTime(v.paExterneEcheance);
     var isDone=v.paExterneEcheance==='done';
-    if(!isFut&&!isDone)return;
+    var isEchue=_paExterneEchue(v);
+    // E9 — on ne jette QUE ce qui n'est pas exploitable. Avant, le test portait sur _isFutureDateTime()
+    // (comparaison à l'INSTANT) : une échéance datée d'aujourd'hui disparaissait dès son heure passée,
+    // et une date passée disparaissait pour toujours. Une date, c'est une ligne à l'écran — point.
+    var aUneDate=/^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(String(v.paExterneEcheance||''));
+    if(!isDone&&!aUneDate)return;
     // Dédoublon : si une double rep (db.pa avec propertyId) existe pour cette propriété, on skip le v
     // (la double rep sera déjà affichée comme "Double rep.", la valeur v.paExterneEcheance est juste un sync)
     var hasDoubleRep=(db.pa||[]).some(function(p){return p.propertyId===v.id;});
     if(hasDoubleRep)return;
     var urg=Infinity;
-    if(isFut){
+    if(isDone){
+      urg=_paUrgency(v); // acceptée → urgence selon conditions restantes
+    } else {
+      // Échue comme à venir : l'instant de l'échéance. Une date passée donne un plus petit nombre,
+      // donc les échues remontent naturellement en tête — aucun cas particulier de tri à maintenir.
       var s=String(v.paExterneEcheance);
       var d=new Date(s.length===10?s+'T12:00':s.substring(0,16));
       urg=isNaN(d.getTime())?Infinity:d.getTime();
-    } else {
-      urg=_paUrgency(v); // acceptée → urgence selon conditions restantes
     }
-    paAllItems.push({type:'externe',rec:v,urgency:urg,accepted:isDone});
+    paAllItems.push({type:'externe',rec:v,urgency:urg,accepted:isDone,echue:isEchue});
   });
   // Split en 2 listes : en négo (non acceptées) + acceptées avec conditions pending
   var paNegoItems=paAllItems.filter(function(it){return !it.accepted;});
@@ -5463,6 +5512,16 @@ function renderAccueil(){
     if(item.type==='externe'){
       var v=item.rec;
       var addr=v.adresse||'(adresse à compléter)';
+      // E9 — échue : même grammaire que les rangées « En retard » de « Conditions à surveiller »
+      // (rangée urgent, ❗, badge « Nj retard » quantifié). Constat daté, sans injonction : le badge
+      // dit une magnitude vérifiable plutôt qu'un verdict.
+      if(item.echue){
+        return '<div class="acc-row urgent" onclick="doEdit(\'v\',\''+v.id+'\')">'
+          +'<div class="acc-row-icon">&#10071;</div>'
+          +'<div class="acc-row-main">'+esc(addr)+'<div class="acc-row-sub">'+esc('PA externe — échéance du '+fd(v.paExterneEcheance))+'</div></div>'
+          +'<div class="acc-row-badge acc-badge-late">'+Math.abs(_daysBetween(_dateOnly(v.paExterneEcheance)))+'j retard</div>'
+          +'</div>';
+      }
       return '<div class="acc-row" onclick="doEdit(\'v\',\''+v.id+'\')">'
         +'<div class="acc-row-icon">&#128196;</div>'
         +'<div class="acc-row-main">'+esc(addr)+'</div>'
@@ -7115,7 +7174,9 @@ function updateDemandesBadges(){
     }).length;
     var nPaev=(db.pa||[]).filter(function(p){return p.propertyId&&vIds[p.propertyId];}).length;
     var nPa=(db.pa||[]).filter(function(p){return !p.propertyId;}).length;
-    var nVPaext=(db.v||[]).filter(function(v){return _isFutureDateTime(v.paExterneEcheance);}).length;
+    // E9 — comptait _isFutureDateTime : le badge BAISSAIT au moment précis où l'échéance passait,
+    // c'est-à-dire quand le dossier devenait problématique. À venir OU échue = même badge.
+    var nVPaext=(db.v||[]).filter(function(v){return _paExterneEnCours(v);}).length;
     var setBadge=function(id,n){var b=document.getElementById(id);if(b){b.textContent=n;b.classList.toggle("zero",n===0);}};
     setBadge('sb-demandes-badge',nDem);
     setBadge('sb-paev-badge',nPaev);
