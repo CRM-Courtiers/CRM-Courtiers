@@ -86,6 +86,12 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .stat-amber{border-top-color:#F59E0B}
 /* En relance INACTIVE (count = 0) : cyan néon */
 .stat-pale{border-top-color:#00B4E6}
+/* E8/C — 4e emplacement encore vide (deviendra « Commissions à venir » au lot C). Il ne doit PAS
+   ressembler à un compteur tombé à zéro : sinon une journée bouclée affiche 3 cartes grises
+   identiques dont une morte, et le « tout est à jour » devient illisible. Contour pointillé, aucune
+   barre de couleur : ça se lit comme un emplacement, pas comme un chiffre. */
+.stat-dead{background:transparent;border:1px dashed #334155;border-top:3px dashed #334155;opacity:.4}
+.stat-dead:hover{background:transparent}
 
 .slbl{font-size:10px;color:#94A3B8;margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
 .sval{font-size:30px;font-weight:800;line-height:1;color:#F1F5F9}
@@ -497,6 +503,18 @@ td:hover .centris-tooltip{display:inline;color:#0EA5E9;font-style:italic;font-si
 .acc-card-count{font-size:18px;font-weight:800;color:#0F172A;line-height:1}
 .acc-card-count.dim{color:#94A3B8}
 .acc-empty{font-size:12px;color:#94A3B8;font-style:italic;padding:14px 0;text-align:center}
+/* E8/#18 — bande « Tout est à jour ». Calme et discrète : c'est un ÉTAT, pas une célébration
+   (P12 — ni confetti, ni score, ni « X jours d'affilée »). Cyan néon = la couleur que la charte
+   utilise déjà pour « rien à faire ici » (cartes du bandeau à zéro).
+   ⚠ P8 — `display:none` n'est PAS un détail d'implémentation : c'est le mécanisme qui empêche la
+   bande de devenir son inverse. Repliée à zéro hauteur, elle ne laisse aucun emplacement vide à lire
+   chaque matin comme un verdict. Passer à visibility:hidden, à un cadre vide ou à un placeholder
+   remettrait le reproche au milieu de l'écran. */
+.acc-alljour{display:none;align-items:flex-start;gap:12px;background:#ECFEFF;border:1px solid #A5F3FC;border-left:4px solid #00B4E6;border-radius:10px;padding:13px 18px;margin-bottom:18px}
+.acc-alljour.on{display:flex}
+.acc-alljour-ico{font-size:16px;line-height:1.3;color:#0891B2;font-weight:700}
+.acc-alljour-txt{font-size:14px;font-weight:700;color:#0F172A;letter-spacing:-.01em}
+.acc-alljour-sub{font-size:12px;color:#64748B;margin-top:2px}
 .acc-list{display:flex;flex-direction:column;gap:2px}
 .acc-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;cursor:pointer;transition:background .12s;text-decoration:none;color:inherit}
 .acc-row:hover{background:#F1F5F9}
@@ -771,6 +789,10 @@ td.emc:hover .cpb{opacity:1}
 
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0F172A,#1E293B);color:#fff;padding:12px 24px;border-radius:12px;font-size:12px;font-weight:700;z-index:9999;box-shadow:0 8px 30px rgba(15,23,42,.3);transition:opacity .4s;border-left:4px solid #10B981;letter-spacing:.03em}
+/* E8/B — toast « jalon » : plus longtemps à l'écran et capable de porter deux lignes. Volontairement
+   la MÊME peau que les autres (aucune couleur de fête, aucune animation) — P12 : la récompense est
+   le contenu, pas l'emballage. */
+.toast-jalon{padding:14px 26px;line-height:1.5;white-space:pre-line;max-width:min(520px,90vw);text-align:center}
 
 /* Modal */
 .ov{display:none;position:fixed;inset:0;background:rgba(15,23,42,.4);backdrop-filter:blur(4px);z-index:999;overflow-y:auto;padding:40px 16px 30px}
@@ -1456,7 +1478,7 @@ body.app-readonly th .rz{pointer-events:none}
         </div>
       </div>
     </div>
-    <div class="stat stat-pale" id="stat-vide-card"><div class="slbl">&mdash;</div><div class="sval" style="color:#475569">&nbsp;</div></div>
+    <div class="stat stat-dead" id="stat-vide-card"><div class="slbl">&nbsp;</div><div class="sval" style="color:#475569">&nbsp;</div></div>
   </div>
 </div><!-- /.hero-dark -->
 <div class="main">
@@ -1478,6 +1500,14 @@ body.app-readonly th .rz{pointer-events:none}
       <div class="accueil-wrap">
         <div class="accueil-greet">Bonjour <span id="acc-name"></span>&#128075;</div>
         <div class="accueil-sub" id="acc-date-line"></div>
+        <!-- E8/#18 — « Tout est à jour » : apparaît seulement quand les 4 compteurs du jour sont à zéro. -->
+        <div class="acc-alljour" id="acc-alljour">
+          <div class="acc-alljour-ico">&#10003;</div>
+          <div>
+            <div class="acc-alljour-txt">Rien en retard aujourd&rsquo;hui</div>
+            <div class="acc-alljour-sub">Relances, conditions, demandes et t&acirc;ches&nbsp;: tout est &agrave; jour.</div>
+          </div>
+        </div>
         <!-- Étape 29 — Carte « Tâches à faire » (To-Do), en priorité tout en haut -->
         <div class="dash-todo" id="dash-todo-card" style="margin-bottom:16px">
           <div class="dash-todo-head"><span class="dash-todo-title">✅ Tâches à faire</span><span class="dash-todo-count" id="dash-todo-count"></span></div>
@@ -4280,7 +4310,21 @@ function abtns(tab,id,phone){
   return h+'</td>';
 }
 
-function toast(msg){var t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.style.opacity="0";setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},400);},2800);}
+// E8/B — variante « jalon » : même toast, durée allongée pour les moments qui portent un chiffre
+// (un montant + un total ne se lisent pas en 2,8 s). MÉCANISME seulement — prérequis du toast de
+// revenu (#16, lot C). Les 200+ appels existants ne passent qu'un argument : comportement inchangé.
+// Usage : toast('…',{jalon:true}). Pas de son, pas d'animation, pas de bouton : un toast qui dure.
+// ⚠ Lot C : toast() n'empile pas — deux toasts vivants se superposent exactement (position fixe).
+//   Le toast de revenu devra donc REMPLACER celui du jalon (markNotaried, transferToConclus en
+//   émettent déjà un), jamais s'y ajouter.
+function toast(msg,opts){
+  var jalon=!!(opts&&opts.jalon);
+  var t=document.createElement("div");
+  t.className=jalon?"toast toast-jalon":"toast";
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity="0";setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},400);},jalon?6500:2800);
+}
 function showSaveStatus(msg){var el=document.getElementById("saveStatus");if(!el)return;el.textContent=msg;setTimeout(function(){el.textContent="";},6000);}
 
 // ─── Sticky offsets ──────────────────────────────────────────
@@ -4618,7 +4662,10 @@ var TUTORIELS=[
     +'<h2>Les listes de l\u2019Accueil</h2>'
     +'<p>Sous les cartes, tu trouves tes rendez-vous du jour, les promesses \u00e0 suivre, les conditions qui arrivent \u00e0 \u00e9ch\u00e9ance, et les \u00e9l\u00e9ments \u00e0 relancer \u2014 chacun cliquable pour aller directement \u00e0 la fiche concern\u00e9e.</p>'
     +'<p>Dans <strong>\u00c0 relancer</strong>, pas besoin d\u2019ouvrir la fiche : clique le <strong>\ud83d\udcde</strong> au bout de la ligne d\u00e8s que tu as parl\u00e9 \u00e0 la personne. La date du jour est inscrite, la ligne dispara\u00eet de ta liste du matin, et <span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Z</span> annule si tu t\u2019es tromp\u00e9 de ligne.</p>'
-    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Prends l\u2019habitude d\u2019ouvrir l\u2019Accueil en d\u00e9but de journ\u00e9e : si tout est \u00e0 z\u00e9ro, tu es \u00e0 jour\u00a0!</div></div>'},
+    +'<h2>&laquo;&nbsp;Rien en retard aujourd&rsquo;hui&nbsp;&raquo;</h2>'
+    +'<p>Quand tes <strong>relances</strong>, tes <strong>conditions en retard</strong>, tes <strong>nouvelles demandes</strong> et tes <strong>t\u00e2ches \u00e9chues</strong> sont toutes \u00e0 z\u00e9ro en m\u00eame temps, une bande calme appara\u00eet en haut de l\u2019Accueil : <strong>Rien en retard aujourd\u2019hui</strong>. C\u2019est le signal que ta journ\u00e9e est boucl\u00e9e.</p>'
+    +'<p>Elle dispara\u00eet d\u2019elle-m\u00eame d\u00e8s qu\u2019un \u00e9l\u00e9ment revient. Et tant qu\u2019il reste du travail, elle ne s\u2019affiche tout simplement pas : ce sont les cartes qui te montrent quoi faire, jamais un reproche. Deux pr\u00e9cisions : avoir des rendez-vous aujourd\u2019hui n\u2019emp\u00eache pas d\u2019\u00eatre \u00e0 jour (un rendez-vous c\u00e9dul\u00e9 n\u2019est pas un retard), et une t\u00e2che <strong>sans \u00e9ch\u00e9ance</strong> ne bloque jamais la bande \u2014 tu as choisi de ne pas lui en donner, ce n\u2019est donc jamais du retard.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Prends l\u2019habitude d\u2019ouvrir l\u2019Accueil en d\u00e9but de journ\u00e9e. Quand la bande s\u2019affiche, tu n\u2019as rien en retard : ce qui reste \u00e0 l\u2019\u00e9cran est du travail en cours, pas du rattrapage.</div></div>'},
   {sec:'D\u00e9marrage', num:4, titre:'Importer / migrer tes contacts', html:
     '<p>Tu arrives d\u2019un autre outil (Excel, un autre CRM) ? Tu peux r\u00e9cup\u00e9rer tes donn\u00e9es dans TRI-ANGLE plut\u00f4t que de tout retaper.</p>'
     +'<h2>Restaurer une sauvegarde TRI-ANGLE</h2>'
@@ -5093,11 +5140,8 @@ function ust(){
   // jamais à zéro et cesse d'être un signal.
   var visitesCount=getTodayEvents().length;
   // Carte 3 \u2014 Demandes \u00e0 traiter : (acheteurs = int\u00e9r\u00eats "\u00e0 traiter") | (inscriptions = demandes re\u00e7ues new/qualified sur propri\u00e9t\u00e9s existantes)
-  var demAch=0;(db.a||[]).forEach(function(rec){demAch+=_countInteretsATraiter(rec);});
-  var vIds={};(db.v||[]).forEach(function(v){vIds[v.id]=true;});
-  var demInsc=(db.demandes||[]).filter(function(d){
-    return (d.status==='new'||d.status==='qualified')&&d.propertyId&&vIds[d.propertyId];
-  }).length;
+  var _dem=_countDemandesATraiter(); // #20 — même fonction que l'état « tout est à jour »
+  var demAch=_dem.ach, demInsc=_dem.insc;
 
   // Rendu
   var relEl=document.getElementById("s-rel");
@@ -5239,6 +5283,47 @@ function getConditionsDue(){
   });
   out.sort(function(a,b){return a.daysDiff-b.daysDiff;});
   return out;
+}
+
+// ─── E8/#18 — « Tout est à jour » : le zéro atteint, à l'échelle de la journée ────────────────
+// Spec audit §6.3 (validée par LP) — les 4 compteurs qui doivent être à zéro EN MÊME TEMPS :
+// relances dues · conditions EN RETARD · demandes non traitées · tâches ÉCHUES.
+// Le sens strict de « en retard » est la condition de viabilité de la mécanique : une condition due
+// dans 5 jours ou une tâche datée d'aujourd'hui ne sont PAS du retard et ne doivent donc jamais
+// bloquer l'état — un zéro inatteignable serait démoralisant, et il faudrait alors le retirer.
+// Les rendez-vous du jour n'en font PAS partie non plus : avoir un RDV cédulé n'est pas un retard.
+function _countDemandesATraiter(){
+  var vIds={};(db.v||[]).forEach(function(v){vIds[v.id]=true;});
+  var ach=0;(db.a||[]).forEach(function(rec){ach+=_countInteretsATraiter(rec);});
+  var inscNew=0,inscQual=0;
+  (db.demandes||[]).forEach(function(d){
+    if(!d.propertyId||!vIds[d.propertyId])return;
+    if(d.status==='new')inscNew++;
+    else if(d.status==='qualified')inscQual++;
+  });
+  // insc = ce qu'affiche la carte 3 du bandeau (inchangée) ; inscNew = ce qui compte comme RETARD.
+  return {ach:ach,inscNew:inscNew,inscQual:inscQual,insc:inscNew+inscQual,total:ach+inscNew+inscQual};
+}
+function _accEtatDuJour(){
+  var today=_todayStr(), dem=_countDemandesATraiter();
+  var r={
+    relances:getRelancesList().length,
+    conditions:getConditionsDue().filter(function(c){return c.daysDiff<0;}).length,
+    demandes:dem.ach+dem.inscNew, // 'new' seulement : un 'qualified' est un lead qu'on cultive, pas un retard
+    taches:(db.taches||[]).filter(function(t){return !t.done&&t.echeance&&t.echeance<today;}).length
+  };
+  r.tout=(r.relances+r.conditions+r.demandes+r.taches)===0;
+  return r;
+}
+// La bande n'a que deux états : présente, ou absente. Jamais de version « il te reste X » — quand
+// il reste du travail, ce sont les cartes qui le portent (P8 : rien ne punit, rien ne reproche).
+function _renderTousAJour(){
+  var el=document.getElementById('acc-alljour');if(!el)return;
+  var e=_accEtatDuJour();
+  el.classList.toggle('on',e.tout);
+  // Le détail est dans l'infobulle, jamais à l'écran en permanence : quatre zéros affichés en
+  // continu seraient un tableau de score (P12). Là, c'est simplement vérifiable si on le demande.
+  el.title='Relances '+e.relances+' \u00b7 Conditions en retard '+e.conditions+' \u00b7 Demandes '+e.demandes+' \u00b7 T\u00e2ches \u00e9chues '+e.taches;
 }
 
 function _accRowHtml(opts){
@@ -10294,6 +10379,7 @@ function _renderTaches(){
   }
   var foot=document.getElementById('dash-todo-foot');
   if(foot)foot.innerHTML=nbDone>0?('<button class="todo-clear" onclick="_tacheClearDone()">Effacer les '+nbDone+' complétée(s)</button>'):'';
+  _renderTousAJour(); // E8/#18 — seul point de passage commun aux deux chemins (Accueil + cases à cocher)
 }
 
 function calPrev(){if(!_calCurrent)return;_calCurrent.month--;if(_calCurrent.month<0){_calCurrent.month=11;_calCurrent.year--;}renderCalendar();}
