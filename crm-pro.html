@@ -526,6 +526,15 @@ td:hover .centris-tooltip{display:inline;color:#0EA5E9;font-style:italic;font-si
 /* E6 — le geste sur la ligne de l'Accueil : la liste ne se contente plus de nommer le problème. */
 .acc-row-act{flex-shrink:0;border:1px solid #E2E8F0;background:#fff;border-radius:6px;padding:7px 10px;font-size:12px;line-height:1;cursor:pointer;font-family:inherit;opacity:.65;transition:all .12s}
 .acc-row-act:hover{opacity:1;border-color:#0EA5E9;background:#F0F9FF}
+/* E10 — zone de choix sur une ligne déjà filtrée par son état (clause « listes filtrées ») : les
+   boutons portent le GESTE, pas l'état — donc NEUTRES, jamais tricolores. Ce n'est pas trois boutons
+   d'action concurrents, c'est UNE question à trois sorties exhaustives, et chacune fait sortir la
+   ligne. flex-basis:100% = la zone prend sa propre ligne sous la rangée, sur TOUTE la largeur de la
+   carte : sans ça elle hérite des ~140 px de .acc-row-main (nowrap + ellipsis) et s'empile. */
+.acc-row.has-choix{flex-wrap:wrap}
+.acc-choix{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:8px}
+.acc-choix-btn{border:1px solid #E2E8F0;background:#fff;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:600;line-height:1;color:#334155;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .12s}
+.acc-choix-btn:hover{border-color:#0EA5E9;background:#F0F9FF;color:#0F172A}
 .acc-row-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
 .acc-badge-urgent{background:#FEE2E2;color:#B91C1C}
 .acc-badge-soon{background:#FEF3C7;color:#92400E}
@@ -4782,7 +4791,13 @@ var TUTORIELS=[
     +'<li><strong>\u2630 Actions &rarr; + R\u00e9f\u00e9rence hypoth\u00e9caire</strong> : si tu r\u00e9f\u00e8res ton client \u00e0 un courtier hypoth\u00e9caire, cr\u00e9e la r\u00e9f\u00e9rence en 2 clics (voir le tuto \u00ab R\u00e9f\u00e9rences hypoth\u00e9caires \u00bb).</li>'
     +'</ul>'
     +'<h2>Une \u00e9ch\u00e9ance d\u00e9pass\u00e9e ne dispara\u00eet pas</h2>'
-    +'<p>Si l\u2019<strong>\u00e9ch\u00e9ance</strong> d\u2019une promesse d\u00e9pos\u00e9e sur une de tes inscriptions par un autre courtier passe sans \u00eatre r\u00e9gl\u00e9e, la ligne <strong>reste</strong> dans \u00ab Promesses \u00e0 suivre \u00bb, marqu\u00e9e <strong>\u00c9chue</strong> et remont\u00e9e en t\u00eate de liste. Elle compte aussi comme un retard : tant qu\u2019elle est l\u00e0, la bande \u00ab Rien en retard aujourd\u2019hui \u00bb ne s\u2019affiche pas. Coche <strong>Fait</strong> sur l\u2019\u00e9ch\u00e9ance quand la promesse est accept\u00e9e : la ligne quitte \u00ab Promesses \u00e0 suivre \u00bb et passe dans \u00ab PA Accept\u00e9e \u2014 Conditions \u00e0 finaliser \u00bb. Et si la promesse <strong>tombe</strong> au lieu d\u2019\u00eatre accept\u00e9e, ouvre la cellule <strong>\u00c9ch\u00e9ance PA</strong> de l\u2019inscription et clique <strong>\u2715 Vider</strong> : l\u2019\u00e9ch\u00e9ance s\u2019efface et la ligne dispara\u00eet avec elle.</p>'
+    +'<p>Si l\u2019<strong>\u00e9ch\u00e9ance</strong> d\u2019une promesse d\u00e9pos\u00e9e sur une de tes inscriptions par un autre courtier passe sans \u00eatre r\u00e9gl\u00e9e, la ligne <strong>reste</strong> dans \u00ab Promesses \u00e0 suivre \u00bb, marqu\u00e9e <strong>\u00c9chue</strong> et remont\u00e9e en t\u00eate de liste. Elle compte aussi comme un retard : tant qu\u2019elle est l\u00e0, la bande \u00ab Rien en retard aujourd\u2019hui \u00bb ne s\u2019affiche pas. La ligne te pose directement la question \u2014 <strong>O\u00f9 en est-elle ?</strong> \u2014 avec les trois r\u00e9ponses possibles, sans quitter l\u2019Accueil :</p>'
+    +'<ul>'
+    +'<li><strong>\u2713 Accept\u00e9e</strong> \u2014 la promesse a \u00e9t\u00e9 accept\u00e9e : elle passe dans \u00ab PA Accept\u00e9e \u2014 Conditions \u00e0 finaliser \u00bb, o\u00f9 tu suis l\u2019inspection, le financement et le notaire.</li>'
+    +'<li><strong>\u2717 Tomb\u00e9e</strong> \u2014 la promesse n\u2019a pas abouti : l\u2019\u00e9ch\u00e9ance est retir\u00e9e, l\u2019inscription redevient simplement \u00ab en vente \u00bb, et une trace dat\u00e9e est ajout\u00e9e \u00e0 ses <strong>notes</strong> \u2014 avec la date de l\u2019\u00e9ch\u00e9ance manqu\u00e9e, que l\u2019effacement ferait autrement dispara\u00eetre. Tes notes existantes ne sont jamais \u00e9cras\u00e9es.</li>'
+    +'<li><strong>\ud83d\udcc5 Prolong\u00e9e</strong> \u2014 le d\u00e9lai a \u00e9t\u00e9 prolong\u00e9, ou une contre-offre est en cours : TRI-ANGLE t\u2019am\u00e8ne sur la case <strong>\u00c9ch\u00e9ance PA</strong> de l\u2019inscription pour inscrire la nouvelle date. La ligne redevient alors une promesse \u00e0 suivre normale.</li>'
+    +'</ul>'
+    +'<p>Les trois gestes sont annulables avec <span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Z</span>, la trace des notes comprise. Tu retrouves aussi \u00ab Tomb\u00e9e \u00bb dans le menu de la case <strong>\u00c9ch\u00e9ance PA</strong>, dans Mes inscriptions.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Surveille la carte \u00ab Promesses \u00e0 suivre \u00bb et les conditions \u00e0 \u00e9ch\u00e9ance sur l\u2019Accueil : ce sont tes dates critiques \u00e0 ne pas manquer.</div></div>'},
   {sec:'En vente', num:12, titre:'Cr\u00e9er et g\u00e9rer une inscription', html:
     '<p>Une <strong>inscription</strong>, c\u2019est une propri\u00e9t\u00e9 que tu as en mandat de vente. La section <strong>Mes inscriptions</strong> centralise tout le suivi du mandat.</p>'
@@ -5468,11 +5483,9 @@ function renderAccueil(){
     if(type==='externe')return rec.paExterneEcheance==='done';
     return rec.paEcheance==='done'||rec.statutPa==='Acceptée';
   };
-  var _paHasPendingConditions=function(rec){
-    var fields=['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'];
-    // Vide = condition à planifier (donc pending). Seul 'done' = complétée.
-    return fields.some(function(f){return rec[f]!=='done';});
-  };
+  // #20 — un seul test, partagé avec le toast d'acceptation (_paCondPending) : pas deux listes de
+  // champs qui finiront par diverger. Vide = condition à planifier (en attente) ; seul 'done' = levée.
+  var _paHasPendingConditions=_paCondPending;
   var paAllItems=[];
   (db.pa||[]).forEach(function(p){
     var type=p.propertyId?'double':'acheteur';
@@ -5515,11 +5528,28 @@ function renderAccueil(){
       // E9 — échue : même grammaire que les rangées « En retard » de « Conditions à surveiller »
       // (rangée urgent, ❗, badge « Nj retard » quantifié). Constat daté, sans injonction : le badge
       // dit une magnitude vérifiable plutôt qu'un verdict.
+      // E10 — et la ligne porte le CHOIX, pas un verdict : les 3 issues réelles d'une promesse
+      // externe, à 1 clic, dans le rituel du matin. Pattern de la zone inline d'E3 : la question est
+      // posée là où elle se pose, sans modal bloquant. Chaque issue fait SORTIR la ligne de la liste.
       if(item.echue){
-        return '<div class="acc-row urgent" onclick="doEdit(\'v\',\''+v.id+'\')">'
+        var _j=Math.abs(_daysBetween(_dateOnly(v.paExterneEcheance)));
+        var _q="'"+v.id+"'";
+        return '<div class="acc-row urgent has-choix" onclick="doEdit(\'v\',\''+v.id+'\')">'
           +'<div class="acc-row-icon">&#10071;</div>'
-          +'<div class="acc-row-main">'+esc(addr)+'<div class="acc-row-sub">'+esc('PA externe — échéance du '+fd(v.paExterneEcheance))+'</div></div>'
-          +'<div class="acc-row-badge acc-badge-late">'+Math.abs(_daysBetween(_dateOnly(v.paExterneEcheance)))+'j retard</div>'
+          +'<div class="acc-row-main">'+esc(addr)
+            +'<div class="acc-row-sub">'+esc('PA externe — échéance du '+fd(v.paExterneEcheance))+'</div>'
+          +'</div>'
+          +'<div class="acc-row-badge acc-badge-late">'+_j+'j retard</div>'
+          // La zone est SŒUR de .acc-row-main, pas son enfant : .acc-row-main est en nowrap+ellipsis
+          // et large de ~140 px dans une carte de grille — les boutons y auraient été empilés un par
+          // ligne, voire rognés. En flex-basis:100% sur la rangée, ils tiennent sur une seule ligne.
+          +'<div class="acc-choix" onclick="event.stopPropagation()">'
+            +'<button class="acc-choix-btn" title="La promesse a été acceptée — elle passe au suivi des conditions" onclick="_paExterneRealisee('+_q+')">&#10003; Accept&eacute;e</button>'
+            +'<button class="acc-choix-btn" title="La promesse est tombée — l&rsquo;échéance est retirée et la trace datée notée au dossier" onclick="_paExterneNonRealisee('+_q+')">&#10007; Tomb&eacute;e</button>'
+            +'<button class="acc-choix-btn" title="Délai prolongé ou contre-offre en cours — ouvre la date dans Mes inscriptions" onclick="_paExterneProlonger('+_q+')">&#128197; Prolong&eacute;e</button>'
+          +'</div>'
+          +'</div>';
+          +'<div class="acc-row-badge acc-badge-late">'+_j+'j retard</div>'
           +'</div>';
       }
       return '<div class="acc-row" onclick="doEdit(\'v\',\''+v.id+'\')">'
@@ -10545,6 +10575,80 @@ function filterData(data,tab){
 }
 
 // ─── Inline edit ─────────────────────────────────────────────
+// ─── E10 — Cœur partagé d'écriture sur un champ de condition ─────────────────────────────────
+// Undo, sauvegarde, re-rendu, synchro calendrier : c'est mot pour mot ce que faisaient « Fait » et
+// « Vider » du menu cond. Ils l'appellent maintenant, au lieu de le réécrire — et les issues de la
+// promesse externe (Accueil comme colonne) passent par le même chemin.
+// `extra` s'exécute APRÈS pushUndo : les écritures qu'il fait partagent donc le MÊME point d'annulation
+// que le champ lui-même (indispensable pour « non réalisée », qui écrit aussi dans les notes).
+function _condSetValue(tab,id,field,newVal,undoLabel,extra){
+  tab=_storeTab(tab);
+  var rec=null,arr=db[tab]||[];
+  for(var i=0;i<arr.length;i++){if(arr[i].id===id){rec=arr[i];break;}}
+  if(!rec)return null;
+  pushUndo(undoLabel);
+  if(typeof extra==='function')extra(rec);
+  var ov=rec[field];
+  rec[field]=newVal;
+  if(field==='notaire'&&!newVal)rec.notaireId='';
+  if(tab==='a')rec.lastModified=_todayStr();
+  sdb();rall();
+  try{syncCalendarField(rec,tab,field,ov,newVal);}catch(e){}
+  return rec;
+}
+
+// ─── E10 — Les 3 issues d'une promesse externe échue ──────────────────────────────────────────
+// L'app ne connaissait qu'une seule fin : « done ». Or une promesse déposée par un autre courtier
+// se termine de trois façons — elle aboutit, elle tombe, ou elle est prolongée. La non-réalisation
+// n'avait aucun mécanisme : il fallait effacer le champ à la main, sans trace, et le dossier perdait
+// l'information. Une fin de promesse est un fait du dossier, pas un champ à blanchir.
+// Une condition VIDE = à planifier (donc en attente) ; seul 'done' est levée. Même règle pour la
+// carte « PA Acceptée » de l'Accueil et pour le toast d'acceptation — un seul test, deux lectures.
+var PA_COND_FIELDS=['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'];
+function _paCondPending(rec){return PA_COND_FIELDS.some(function(f){return rec[f]!=='done';});}
+function _paExterneRealisee(vid){
+  var rec=_condSetValue('v',vid,'paExterneEcheance','done','Promesse externe r\u00e9alis\u00e9e');
+  if(!rec)return;
+  // La destination n'est annoncée que si elle est vraie : une promesse dont toutes les conditions
+  // sont déjà levées n'apparaîtra dans aucune carte (P7 — ne jamais promettre un écran vide).
+  toast(_paCondPending(rec)
+    ? '\u2713 Promesse accept\u00e9e \u2014 '+(rec.adresse||'inscription')+' passe dans \u00ab PA Accept\u00e9e \u2014 Conditions \u00e0 finaliser \u00bb'
+    : '\u2713 Promesse accept\u00e9e \u2014 '+(rec.adresse||'inscription')+' : toutes les conditions sont d\u00e9j\u00e0 lev\u00e9es');
+}
+function _paExterneNonRealisee(vid){
+  var rec=_condSetValue('v',vid,'paExterneEcheance','','Promesse externe tomb\u00e9e',function(r){
+    // extra() tourne AVANT l'écriture : r.paExterneEcheance contient encore la date manquée, et
+    // c'est la seule information que l'opération va détruire. Passé la fenêtre d'undo, elle
+    // n'existerait plus nulle part.
+    var trace='PA externe tomb\u00e9e \u2014 \u00e9ch\u00e9ance du '+fd(_dateOnly(r.paExterneEcheance))+', retir\u00e9e le '+fd(_todayStr());
+    // Append, jamais d'écrasement : les notes du courtier lui appartiennent.
+    var n=(r.notes||'').replace(/\s+$/,'');
+    r.notes=n?(n+'\n'+trace):trace;
+  });
+  if(!rec)return;
+  toast('\u2717 Promesse tomb\u00e9e \u2014 '+(rec.adresse||'inscription')+' redevient \u00ab en vente \u00bb. Trace dat\u00e9e ajout\u00e9e aux notes.');
+}
+// Prolongation : on ouvre l'éditeur de date EXISTANT du champ, là où il vit (colonne Échéance PA
+// de Mes inscriptions). Pas de second sélecteur de date à maintenir en parallèle.
+function _paExterneProlonger(vid){
+  var rec=null;for(var i=0;i<(db.v||[]).length;i++){if(db.v[i].id===vid){rec=db.v[i];break;}}
+  var adr=(rec&&rec.adresse)||'inscription';
+  var btn=document.querySelector('.tbtn[data-tab="v"]');if(btn)btn.click();
+  setTimeout(function(){
+    var tr=document.querySelector('#tb-v tr[data-rid="'+vid+'"]');
+    if(!tr){toast('Inscription introuvable \u2014 un filtre ou une recherche est peut-\u00eatre actif sur Mes inscriptions');return;}
+    // Pas de scroll animé : ie() ouvre un menu en position:fixed calé sur la position de la cellule
+    // à cet instant — la rangée continuerait de défiler dessous et le menu resterait en l'air.
+    tr.scrollIntoView({block:'center'});
+    var td=tr.querySelector('td[data-f="paExterneEcheance"]');
+    if(!td){toast('La colonne \u00ab \u00c9ch\u00e9ance PA \u00bb est masqu\u00e9e \u2014 r\u00e9affiche-la pour changer la date');return;}
+    td.style.boxShadow='inset 0 0 0 2px #0EA5E9';
+    setTimeout(function(){td.style.boxShadow='';},1400);
+    ie(td);
+    toast('\ud83d\udcc5 '+adr+' \u2014 choisis la nouvelle \u00e9ch\u00e9ance');
+  },160);
+}
+
 function ie(td){
   if(td.querySelector("input,select"))return;
   var tab=td.getAttribute("data-tab"),id=td.getAttribute("data-id");
@@ -10623,11 +10727,20 @@ function ie(td){
     }
     menu.appendChild(Object.assign(document.createElement('div'),{className:'cond-menu-sep'}));
     var markDone=document.createElement('button');markDone.className='cond-menu-item cm-done';markDone.innerHTML='&#10003; Fait';
-    markDone.onclick=function(ev){ev.stopPropagation();pushUndo('Fait '+field);var ov=val;rec[field]='done';_touchAch();sdb();rall();try{syncCalendarField(rec,tab,field,ov,'done');}catch(e){}};
+    markDone.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);_condSetValue(tab,id,field,'done','Fait '+field);};
     menu.appendChild(markDone);
+    // E10 — l'échéance d'une promesse externe a TROIS issues, pas deux. « Non réalisée » existe donc
+    // ici aussi : même fonction que la ligne de l'Accueil, pour ne pas avoir deux comportements
+    // pour le même champ selon l'endroit où on clique.
+    if(field==='paExterneEcheance'&&tab==='v'){
+      var nonReal=document.createElement('button');nonReal.className='cond-menu-item';nonReal.innerHTML='&#10007; Non r\u00e9alis\u00e9e';
+      nonReal.title='La promesse est tomb\u00e9e : retire l\u2019\u00e9ch\u00e9ance et note la trace au dossier';
+      nonReal.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);_paExterneNonRealisee(id);};
+      menu.appendChild(nonReal);
+    }
     menu.appendChild(Object.assign(document.createElement('div'),{className:'cond-menu-sep'}));
     var clearBtn=document.createElement('button');clearBtn.className='cond-menu-item cm-clear';clearBtn.innerHTML='&#10005; Vider';
-    clearBtn.onclick=function(ev){ev.stopPropagation();pushUndo('Vider '+field);var ov=val;rec[field]='';if(field==='notaire')rec.notaireId='';_touchAch();sdb();rall();try{syncCalendarField(rec,tab,field,ov,'');}catch(e){}};
+    clearBtn.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);_condSetValue(tab,id,field,'','Vider '+field);};
     menu.appendChild(clearBtn);
     var rect=td.getBoundingClientRect();
     // Position initiale sous la cellule (÷ zoom UI), puis recadrage général (évite les débords droite/bas/gauche)
