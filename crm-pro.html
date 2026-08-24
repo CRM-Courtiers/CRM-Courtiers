@@ -72,7 +72,10 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 
 /* Stats — cartes dark sur fond slate-900 (style Pluralsight : top border coloré) */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.stat{position:relative;background:#1E293B;border:1px solid #334155;border-top:3px solid #475569;border-radius:8px;padding:14px 18px 16px;transition:border-color .15s,background .15s}
+/* cursor:pointer PERMANENT (#19) : les 4 cartes mènent quelque part même à zéro. Une affordance
+   qui apparaît et disparaît selon le compteur est pire qu'une affordance absente — et l'état vide
+   d'arrivée (« Aucune relance 🎉 ») est justement la récompense qu'on veut pouvoir aller voir. */
+.stat{position:relative;background:#1E293B;border:1px solid #334155;border-top:3px solid #475569;border-radius:8px;padding:14px 18px 16px;transition:border-color .15s,background .15s;cursor:pointer}
 .stat:hover{background:#243248}
 /* En relance ACTIF : carte ENTIÈREMENT rouge (état urgence #DC2626, distinct du rosé promesses) */
 .stat-rose{border-top-color:#DC2626;background:#DC2626;border-color:#B91C1C}
@@ -86,12 +89,23 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .stat-amber{border-top-color:#F59E0B}
 /* En relance INACTIVE (count = 0) : cyan néon */
 .stat-pale{border-top-color:#00B4E6}
-/* E8/C — 4e emplacement encore vide (deviendra « Commissions à venir » au lot C). Il ne doit PAS
-   ressembler à un compteur tombé à zéro : sinon une journée bouclée affiche 3 cartes grises
-   identiques dont une morte, et le « tout est à jour » devient illisible. Contour pointillé, aucune
-   barre de couleur : ça se lit comme un emplacement, pas comme un chiffre. */
-.stat-dead{background:transparent;border:1px dashed #334155;border-top:3px dashed #334155;opacity:.4}
-.stat-dead:hover{background:transparent}
+/* Commissions à venir (carte 4, lot C) : vert lime de la charte — le vert des VENTES, celui que le
+   courtier associe déjà à l'argent. Volontairement le #9BE61A de la charte et PAS le #84CC16 de
+   .stat-teal : un 3e vert dans l'app diluerait le signal au lieu de le porter. */
+.stat-lime{border-top-color:#9BE61A}
+.stat-lime .sval{color:#9BE61A}
+/* Le montant tient sur une ligne ; « 3 dossiers · à chiffrer » non — même carte, corps réduit. */
+.sval-sm{font-size:16px;line-height:1.2}
+/* « estimé » sous le montant : la carte annonce elle-même qu'elle projette, sans survol à découvrir. */
+.ssub{font-size:10px;color:#64748B;font-weight:600;margin-top:7px;letter-spacing:.04em;min-height:12px}
+/* Œil de confidentialité : le bandeau est visible sur TOUS les onglets, écran tourné vers un client
+   compris. Le montant du pipeline est la donnée la plus privée qui s'y trouve — masquable en 1 clic. */
+.stat-eye{float:right;cursor:pointer;opacity:.4;font-size:12px;line-height:1;transition:opacity .15s}
+.stat-eye:hover{opacity:1}
+/* Moitié « Acheteurs » de la carte 3 : elle surcharge le clic de la carte, son survol doit donc se
+   distinguer. Marges négatives compensées par le padding = aucun décalage de mise en page. */
+#s-dem-ach-zone{border-radius:6px;margin:-2px -4px;padding:2px 4px;transition:background .15s}
+#s-dem-ach-zone:hover{background:rgba(255,255,255,.07)}
 
 .slbl{font-size:10px;color:#94A3B8;margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
 .sval{font-size:30px;font-weight:800;line-height:1;color:#F1F5F9}
@@ -1481,7 +1495,7 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="stat stat-amber" id="dem-traiter-card">
       <div class="slbl">Demandes &agrave; traiter</div>
       <div style="display:flex;gap:18px;align-items:flex-start;margin-top:4px">
-        <div style="flex:1">
+        <div style="flex:1" id="s-dem-ach-zone" title="Voir les int&eacute;r&ecirc;ts de mes acheteurs">
           <div style="font-size:9px;color:#64748B;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Acheteurs</div>
           <div class="sval" id="s-dem-ach" style="font-size:24px">0</div>
         </div>
@@ -1492,7 +1506,11 @@ body.app-readonly th .rz{pointer-events:none}
         </div>
       </div>
     </div>
-    <div class="stat stat-dead" id="stat-vide-card"><div class="slbl">&nbsp;</div><div class="sval" style="color:#475569">&nbsp;</div></div>
+    <div class="stat stat-pale" id="comm-card" title="Commissions estim&eacute;es sur les dossiers en cours &mdash; voir le tableau de bord">
+      <div class="slbl">Commissions &agrave; venir<span class="stat-eye" id="comm-eye" title="Masquer / afficher le montant">&#128065;</span></div>
+      <div class="sval" id="s-comm">0 $</div>
+      <div class="ssub" id="s-comm-sub">estim&eacute;</div>
+    </div>
   </div>
 </div><!-- /.hero-dark -->
 <div class="main">
@@ -5202,9 +5220,71 @@ function ust(){
   var demCard=document.getElementById("dem-traiter-card");
   if(demCard)demCard.className=(demAch+demInsc)>0?"stat stat-amber":"stat stat-pale";
 
+  // Carte 4 — Commissions à venir. Le 4e emplacement était mort (« — ») ; il porte maintenant le
+  // seul chiffre qui répond à « pourquoi je fais tout ça ». Même fonction que le KPI « En cours »
+  // du dashboard : les deux surfaces ne PEUVENT pas diverger.
+  var _pl=_pipelineParts();
+  var commEl=document.getElementById("s-comm"),commSub=document.getElementById("s-comm-sub"),commCard=document.getElementById("comm-card");
+  if(commEl&&commCard){
+    var masque=_heroCommMasque();
+    // Anti-« 0 $ menteur » : des dossiers en cours dont aucun montant n'est saisi donnent un estimé
+    // de 0. Afficher « 0 $ » au pixel le plus vu de l'app dirait au courtier que son pipeline est
+    // vide alors qu'il ne l'est pas — c'est le tableau de bord menteur qui tue les CRM. On dit
+    // exactement ce qui se passe : il y a des dossiers, il manque les chiffres.
+    var degrade=(_pl.nbDossiers>0&&_pl.comm<=0);
+    commEl.className=(degrade&&!masque)?"sval sval-sm":"sval";
+    commEl.textContent=masque?"•••":(degrade?(_pl.nbDossiers+" dossier"+(_pl.nbDossiers!==1?"s":"")+" · à chiffrer"):_dashFmtMny(_pl.comm));
+    // « estimé » qualifie un montant : sous « à chiffrer » il ne qualifierait rien.
+    if(commSub)commSub.textContent=(degrade&&!masque)?"":"estimé";
+    // Lime = il y a quelque chose dans le pipeline, chiffré ou non. « 0 $ » en stat-pale est réservé
+    // au pipeline RÉELLEMENT vide, seul cas où l'extinction de la carte dit la vérité.
+    commCard.className=(_pl.comm>0||degrade)?"stat stat-lime":"stat stat-pale";
+  }
+
   var hd=document.getElementById("hdate");
   if(hd)hd.textContent=new Date().toLocaleDateString("fr-CA",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
 }
+
+// Confidentialité de la carte 4 (amendement de révision) : le bandeau héros vit HORS de .card, donc
+// il est affiché sur TOUS les onglets — y compris quand l'écran est tourné vers un client. Le montant
+// du pipeline est la donnée la plus privée qui s'y trouve. Masquage refusable, réversible en 1 clic,
+// persisté : le courtier décide, l'app n'impose ni la transparence ni le secret.
+function _heroCommMasque(){try{return localStorage.getItem('crmpro-hero-comm-masque')==='1';}catch(e){return false;}}
+function _heroCommToggle(){try{localStorage.setItem('crmpro-hero-comm-masque',_heroCommMasque()?'0':'1');}catch(e){}ust();}
+
+// ─── Bandeau héros : les 4 cartes deviennent cliquables (#19) ────────────────
+// La surface la plus vue de l'app nommait des problèmes sans offrir le moindre geste — et
+// .stat:hover promettait un clic depuis toujours. Chaque carte mène à la surface qui porte DÉJÀ sa
+// liste : AUCUN filtre nouveau n'est créé, donc aucun filtre nouveau à maintenir en cohérence.
+function _heroJump(tab,cibleId,couleur){
+  var btn=document.querySelector('.tbtn[data-tab="'+tab+'"]');
+  if(btn)btn.click(); // on déclenche le handler réel (panes, titre, rendu) — patron E12, rien n'est recopié
+  if(!cibleId)return;
+  // Scroll + surbrillance obligatoires : l'Accueil est l'onglet par défaut, donc « j'y suis déjà »
+  // est le cas le plus fréquent. Sans le halo, le clic ne produirait alors AUCUN changement visible
+  // — un bouton qui ne répond pas est pire qu'un bouton absent. Même mécanique que jumpToDemandes().
+  setTimeout(function(){
+    var el=document.getElementById(cibleId);if(!el)return;
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.style.boxShadow='0 0 0 3px '+couleur;
+    setTimeout(function(){el.style.boxShadow='';},1400);
+  },80);
+}
+// Le halo prend la barre de couleur de la carte cliquée : départ et arrivée portent la même teinte,
+// y compris quand la carte est éteinte (stat-pale). Zéro table de correspondance à tenir à jour.
+function _heroAccent(el){try{return (el&&getComputedStyle(el).borderTopColor)||'#00B4E6';}catch(e){return '#00B4E6';}}
+(function(){
+  var _on=function(id,fn){var el=document.getElementById(id);if(el)el.addEventListener('click',fn);};
+  _on('rel-card',function(){_heroJump('accueil','acc-rel-card',_heroAccent(this));});
+  _on('visites-card',function(){_heroJump('accueil','acc-rdv-card',_heroAccent(this));});
+  // Carte 3 : la carte ENTIÈRE mène aux demandes reçues — libellé, séparateur et marges compris,
+  // aucune zone morte. La moitié « Acheteurs » surcharge ce clic vers la carte « Intérêts
+  // acheteurs » de l'Accueil, dont elle est le compteur (le compteur ici, les noms là-bas).
+  _on('dem-traiter-card',function(){_heroJump('demandes',null,null);});
+  _on('s-dem-ach-zone',function(e){e.stopPropagation();_heroJump('accueil','acc-int-card',_heroAccent(document.getElementById('dem-traiter-card')));});
+  _on('comm-card',function(){_heroJump('dashboard',null,null);});
+  _on('comm-eye',function(e){e.stopPropagation();_heroCommToggle();});
+})();
 
 // Sync auto : pa-en-vente.paEcheance → v.paExterneEcheance (one-way, ne touche pas si vide)
 function _syncDoubleRepPaToV(){
@@ -10011,6 +10091,34 @@ function _dashFilterByPeriod(arr,year,month){
 
 // Étape 31 — Commission d'une référence hypothécaire : montant direct
 function _dashCommRefh(rec){return parseFloat(rec.montant)||0;}
+
+// ─── Pipeline « Commissions à venir » — SOURCE DE VÉRITÉ UNIQUE (lot C) ──────
+// La carte 4 du bandeau héros et le KPI « En cours » du dashboard affichent le MÊME chiffre : il est
+// donc calculé ICI, une seule fois. Deux calculs parallèles de la même chose finissent toujours par
+// diverger — c'est exactement ce qui était déjà en production entre « En relance » et « À relancer »
+// (#20). Les gardes de collaboration (Étape 33 : dossier reçu d'un collègue, part cédée à un
+// collaborateur) vivent dans _dashCommAch/_dashCommVend : on les réutilise telles quelles.
+// Composition (Étapes 24 et 31, inchangée — seulement déplacée depuis renderDashboard) :
+//  - PA côté acheteur (pa SANS propertyId) : pa.montant × pa.commission% (négociée avec son client)
+//  - Inscriptions : SEULEMENT celles qui portent une PA reçue (un mandat sans offre n'est pas une
+//    commission à venir, juste une opportunité) → v.montant × (commTot − commAutre)%
+//  - Références courtiers non conclues et références hypothécaires non payées : montant direct
+// _dashDedup fait qu'une paire d'acheteurs liés (linkId) compte UNE promesse, pas deux.
+function _pipelineParts(){
+  var paUniq=_dashDedup(db.pa||[]);
+  var vUniq=_dashDedup(db.v||[]);
+  var paAch=paUniq.filter(function(p){return !p.propertyId;});
+  var vWithPa=vUniq.filter(function(v){return paUniq.some(function(p){return p.propertyId===v.id;});});
+  var refsActives=(db.refs||[]).filter(function(r){return r.statut!=='concluded';});
+  var refshActives=(db.refsh||[]).filter(function(r){return r.statut!=='paid';});
+  var comm=paAch.reduce(function(s,r){return s+_dashCommAch(r);},0)
+          +vWithPa.reduce(function(s,r){return s+_dashCommVend(r);},0)
+          +refsActives.reduce(function(s,r){return s+_dashCommRef(r);},0)
+          +refshActives.reduce(function(s,r){return s+_dashCommRefh(r);},0);
+  return {paUniq:paUniq,vUniq:vUniq,paAch:paAch,vWithPa:vWithPa,refsActives:refsActives,refshActives:refshActives,
+          comm:comm,nbDossiers:paAch.length+vWithPa.length+refsActives.length+refshActives.length};
+}
+function _pipelineCommEst(){return _pipelineParts().comm;}
 // Étape 31 — Références hypothécaires payées dans la période (filtre par dateRecue)
 function _dashRefshPaid(year,month){
   return (db.refsh||[]).filter(function(r){
@@ -10066,22 +10174,13 @@ function renderDashboard(){
   var deltaAnnDeals=_dashFmtPct(yearData.count,prevYearData.count);
   var deltaAnnComm=_dashFmtPct(yearData.comm,prevYearData.comm);
 
-  // Pipeline value (montants en cours)
-  var paUniq=_dashDedup(db.pa);
-  var vUniq=_dashDedup(db.v);
-  // Étape 24 — Références actives dans le pipeline (commission Sophie estimée si saisie)
-  var refsActives=(db.refs||[]).filter(function(r){return r.statut!=='concluded';});
-  // Étape 24 — Refonte calcul "Commissions à venir" :
-  //  - PA côté acheteur (pa SANS propertyId) : commission Sophie = pa.montant × pa.commission% (négociée avec son client)
-  //  - V inscriptions : SEULEMENT celles qui ont une PA active dessus (pa avec propertyId=v.id) → utilise v.montant × (commTot-commAutre)%
-  //    Rationale : un mandat de vente sans offre n'est pas une commission à venir, juste une opportunité
-  //  - Refs actives : commissionSophie direct
-  var paAch=paUniq.filter(function(p){return !p.propertyId;}); // PA côté achat (négo avec acheteur de Sophie)
-  var vWithPa=vUniq.filter(function(v){return paUniq.some(function(p){return p.propertyId===v.id;});}); // Inscriptions avec PA reçue
-  // Étape 31 — Références hypothécaires actives dans le pipeline
-  var refshActives=(db.refsh||[]).filter(function(r){return r.statut!=='paid';});
+  // Pipeline value (montants en cours) — le découpage ET la somme viennent de _pipelineParts(),
+  // la source unique que partage la carte « Commissions à venir » du bandeau héros.
+  var _pl=_pipelineParts();
+  var paUniq=_pl.paUniq,vUniq=_pl.vUniq,paAch=_pl.paAch,vWithPa=_pl.vWithPa;
+  var refsActives=_pl.refsActives,refshActives=_pl.refshActives;
   var pipelineVal=paUniq.reduce(function(s,r){return s+(parseFloat(r.montant)||0);},0)+vWithPa.reduce(function(s,r){return s+(parseFloat(r.montant)||parseFloat(r.prix)||0);},0);
-  var pipelineCommEst=paAch.reduce(function(s,r){return s+_dashCommAch(r);},0)+vWithPa.reduce(function(s,r){return s+_dashCommVend(r);},0)+refsActives.reduce(function(s,r){return s+_dashCommRef(r);},0)+refshActives.reduce(function(s,r){return s+_dashCommRefh(r);},0);
+  var pipelineCommEst=_pl.comm;
 
   // Funnel
   var nbProspects=db.cp.length+db.vp.length+db.a.length;
@@ -10141,7 +10240,7 @@ function renderDashboard(){
     +'<div class="dash-section-head"><div class="dash-section-title">Vue d\'ensemble &mdash; '+curYear+'</div><div class="dash-section-period">'+ytdLabel+'</div></div>'
     +'<div class="dash-kpis-3">'
     +'<div class="dash-kpi accent-lime"><div class="dash-kpi-label">&#128176; Encaiss&eacute; '+curYear+'</div><div class="dash-kpi-value">'+_dashFmtMny(yearData.comm)+'</div><div class="dash-kpi-sub">'+yearData.count+' transaction'+(yearData.count!==1?'s':'')+(prevYearData.comm?' &middot; Vs '+(curYear-1)+' m&ecirc;me p&eacute;riode : '+_dashFmtMny(prevYearData.comm):' &middot; Aucune r&eacute;f&eacute;rence '+(curYear-1))+'</div><div class="dash-kpi-delta '+deltaAnnComm.cls+'">'+deltaAnnComm.label+'</div></div>'
-    +'<div class="dash-kpi accent-amber"><div class="dash-kpi-label">&#128202; En cours</div><div class="dash-kpi-value">'+_dashFmtMny(pipelineCommEst)+'</div><div class="dash-kpi-sub">'+paAch.length+' PA achats &middot; '+vWithPa.length+' PA re&ccedil;ues &middot; '+(refsActives.length+refshActives.length)+' r&eacute;f.</div></div>'
+    +'<div class="dash-kpi accent-amber"><div class="dash-kpi-label">&#128202; En cours &mdash; commissions &agrave; venir</div><div class="dash-kpi-value">'+_dashFmtMny(pipelineCommEst)+'</div><div class="dash-kpi-sub">'+paAch.length+' PA achats &middot; '+vWithPa.length+' PA re&ccedil;ues &middot; '+(refsActives.length+refshActives.length)+' r&eacute;f.</div></div>'
     +'<div class="dash-kpi accent-cyan"><div class="dash-kpi-label">⏳ En attente notaire</div><div class="dash-kpi-value">'+_dashFmtMny(attentNotaireData.comm)+'</div><div class="dash-kpi-sub">'+attentNotaireData.count+' dossier'+(attentNotaireData.count!==1?'s':'')+'</div></div>'
     +'</div></div>';
 
