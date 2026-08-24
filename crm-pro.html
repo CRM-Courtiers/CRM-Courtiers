@@ -4790,6 +4790,14 @@ var TUTORIELS=[
     +'<li><strong>\u2630 Actions &rarr; Retour Acheteurs</strong> : si la promesse tombe, le client revient dans tes acheteurs actifs.</li>'
     +'<li><strong>\u2630 Actions &rarr; + R\u00e9f\u00e9rence hypoth\u00e9caire</strong> : si tu r\u00e9f\u00e8res ton client \u00e0 un courtier hypoth\u00e9caire, cr\u00e9e la r\u00e9f\u00e9rence en 2 clics (voir le tuto \u00ab R\u00e9f\u00e9rences hypoth\u00e9caires \u00bb).</li>'
     +'</ul>'
+    +'<h2>Quand l\u2019\u00e9ch\u00e9ance de la promesse est d\u00e9pass\u00e9e</h2>'
+    +'<p>L\u2019<strong>\u00c9ch\u00e9ance PA</strong> est la date limite pour que ton offre soit accept\u00e9e. Si elle passe, la promesse appara\u00eet en t\u00eate de <strong>Promesses \u00e0 suivre</strong> sur l\u2019Accueil, marqu\u00e9e <strong>Nj retard</strong>, et elle compte comme un retard : tant qu\u2019elle est l\u00e0, la bande \u00ab Rien en retard aujourd\u2019hui \u00bb ne s\u2019affiche pas. La ligne te pose la question, avec les trois r\u00e9ponses possibles :</p>'
+    +'<ul>'
+    +'<li><strong>\u2713 Accept\u00e9e</strong> \u2014 l\u2019offre a \u00e9t\u00e9 accept\u00e9e : le statut passe \u00e0 \u00ab Accept\u00e9e \u00bb et l\u2019\u00e9ch\u00e9ance est r\u00e9gl\u00e9e d\u2019un coup. La promesse continue son chemin vers ses conditions (inspection, financement, notaire) \u2014 elle n\u2019est pas conclue pour autant : \u00e7a, c\u2019est chez le notaire.</li>'
+    +'<li><strong>\u2717 Tomb\u00e9e</strong> \u2014 l\u2019offre n\u2019a pas abouti : c\u2019est le <strong>Retour Acheteurs</strong> habituel (ou <strong>Retour Demandes</strong> pour une promesse re\u00e7ue sur ton inscription), avec sa confirmation \u2014 les conditions et les montants sont bel et bien perdus. La fiche recr\u00e9\u00e9e porte une trace dat\u00e9e qui rappelle l\u2019\u00e9ch\u00e9ance manqu\u00e9e.</li>'
+    +'<li><strong>\ud83d\udcc5 Prolong\u00e9e</strong> \u2014 le d\u00e9lai a \u00e9t\u00e9 prolong\u00e9, ou une contre-offre est en cours : TRI-ANGLE t\u2019am\u00e8ne sur la case <strong>\u00c9ch\u00e9ance PA</strong> pour inscrire la nouvelle date.</li>'
+    +'</ul>'
+    +'<p>Les trois gestes s\u2019annulent avec <span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Z</span>. Tu retrouves \u00ab Accept\u00e9e \u00bb et \u00ab Tomb\u00e9e \u00bb dans le menu de la case <strong>\u00c9ch\u00e9ance PA</strong>, directement au tableau.</p>'
     +'<h2>Une \u00e9ch\u00e9ance d\u00e9pass\u00e9e ne dispara\u00eet pas</h2>'
     +'<p>Si l\u2019<strong>\u00e9ch\u00e9ance</strong> d\u2019une promesse d\u00e9pos\u00e9e sur une de tes inscriptions par un autre courtier passe sans \u00eatre r\u00e9gl\u00e9e, la ligne <strong>reste</strong> dans \u00ab Promesses \u00e0 suivre \u00bb, marqu\u00e9e <strong>\u00c9chue</strong> et remont\u00e9e en t\u00eate de liste. Elle compte aussi comme un retard : tant qu\u2019elle est l\u00e0, la bande \u00ab Rien en retard aujourd\u2019hui \u00bb ne s\u2019affiche pas. La ligne te pose directement la question \u2014 <strong>O\u00f9 en est-elle ?</strong> \u2014 avec les trois r\u00e9ponses possibles, sans quitter l\u2019Accueil :</p>'
     +'<ul>'
@@ -4833,6 +4841,7 @@ var TUTORIELS=[
     +'</ul>'
     +'<h2>Le suivi</h2>'
     +'<p>Comme pour les promesses en cours : conditions, \u00e9ch\u00e9ances, notaire. Quand tout est lev\u00e9, <strong>Marquer conclu</strong> sur l\u2019inscription envoie la transaction dans Ventes conclues.</p>'
+    +'<p>Si l\u2019<strong>\u00e9ch\u00e9ance</strong> d\u2019une de ces promesses passe sans \u00eatre r\u00e9gl\u00e9e, elle est signal\u00e9e exactement comme les autres \u2014 et le choix \u00ab Tomb\u00e9e \u00bb renvoie l\u2019acheteur dans tes <strong>Demandes re\u00e7ues</strong> (en suivi), pas dans tes acheteurs : c\u2019est de l\u00e0 qu\u2019il venait.</p>'
     +'<h2>Que devient la promesse re\u00e7ue \u00e0 la conclusion ?</h2>'
     +'<p>Quand tu conclus la vente, la promesse re\u00e7ue de l\u2019acheteur ne dispara\u00eet pas dans le vide : elle descend automatiquement dans la section repliable <strong>Archiv\u00e9es</strong>, au bas de la page Promesses re\u00e7ues. Tu y retrouves le contact de l\u2019acheteur, le statut, et surtout l\u2019<strong>Acte conclus</strong> (le vendeur \u00e0 qui la transaction est rattach\u00e9e) \u2014 tout reste tra\u00e7able.</p>'
     +'<p>Et dans <strong>Ventes conclues</strong> (sections Conclus et Notari\u00e9es), une colonne <strong>Acheteur</strong> affiche un badge \ud83d\udc64 : clique-le pour sauter directement \u00e0 la promesse archiv\u00e9e correspondante (elle se surligne en jaune).</p>'
@@ -5297,6 +5306,11 @@ function getConditionsDue(){
     (db[tab]||[]).forEach(function(r){
       fields.forEach(function(f){
         if(f==='paExterneEcheance')return;
+        // E11 — même règle que _paEchue (une seule définition) : si le courtier a posé le statut
+        // « Acceptée » à la main dans le modal sans toucher à la date, celle-ci resterait comptée
+        // « en retard » À VIE — et la ligne, n'étant plus échue, aurait perdu les boutons qui
+        // l'auraient réglée. Le seul retard du produit qu'aucun geste ne pouvait effacer.
+        if(f==='paEcheance'&&r.statutPa==='Accept\u00e9e')return;
         var v=r[f];if(!v||v==="done")return;
         var ds=String(v).substring(0,10);
         if(!/^\d{4}-\d{2}-\d{2}$/.test(ds))return;
@@ -5489,7 +5503,7 @@ function renderAccueil(){
   var paAllItems=[];
   (db.pa||[]).forEach(function(p){
     var type=p.propertyId?'double':'acheteur';
-    paAllItems.push({type:type,rec:p,urgency:_paUrgency(p),accepted:_paIsAccepted(p,type)});
+    paAllItems.push({type:type,rec:p,urgency:_paUrgency(p),accepted:_paIsAccepted(p,type),echue:_paEchue(p)});
   });
   (db.v||[]).forEach(function(v){
     var isDone=v.paExterneEcheance==='done';
@@ -5549,8 +5563,6 @@ function renderAccueil(){
             +'<button class="acc-choix-btn" title="Délai prolongé ou contre-offre en cours — ouvre la date dans Mes inscriptions" onclick="_paExterneProlonger('+_q+')">&#128197; Prolong&eacute;e</button>'
           +'</div>'
           +'</div>';
-          +'<div class="acc-row-badge acc-badge-late">'+_j+'j retard</div>'
-          +'</div>';
       }
       return '<div class="acc-row" onclick="doEdit(\'v\',\''+v.id+'\')">'
         +'<div class="acc-row-icon">&#128196;</div>'
@@ -5564,6 +5576,24 @@ function renderAccueil(){
     var addr2='';
     if(isDouble){var vp=_vById(p.propertyId);addr2=vp?(vp.adresse||'(adresse à compléter)'):'(propriété supprimée)';}
     else addr2=p.adresse||'(adresse à compléter)';
+    // E11 — échue : même grammaire et mêmes 3 issues qu'E10, pour la promesse en cours.
+    if(item.echue){
+      var _jp=Math.abs(_daysBetween(_dateOnly(p.paEcheance)));
+      var _qp="'"+p.id+"'";
+      var _ret=isDouble?'aux Demandes':'aux Acheteurs';
+      return '<div class="acc-row urgent has-choix" onclick="doEdit(\''+(isDouble?'pa-en-vente':'pa')+'\',\''+p.id+'\')">'
+        +'<div class="acc-row-icon">&#10071;</div>'
+        +'<div class="acc-row-main">'+esc(who+' — '+addr2)
+          +'<div class="acc-row-sub">'+esc((isDouble?'Double rep.':'Acheteur')+' — échéance du '+fd(p.paEcheance))+'</div>'
+        +'</div>'
+        +'<div class="acc-row-badge acc-badge-late">'+_jp+'j retard</div>'
+        +'<div class="acc-choix" onclick="event.stopPropagation()">'
+          +'<button class="acc-choix-btn" title="La promesse a été acceptée — statut « Acceptée » et suivi des conditions" onclick="_paAcceptee('+_qp+')">&#10003; Accept&eacute;e</button>'
+          +'<button class="acc-choix-btn" title="La promesse n&rsquo;a pas abouti — retour '+_ret+', avec la trace datée au dossier" onclick="_paTombee('+_qp+')">&#10007; Tomb&eacute;e</button>'
+          +'<button class="acc-choix-btn" title="Délai prolongé ou contre-offre en cours — ouvre la date dans l&rsquo;onglet" onclick="_paProlonger('+_qp+')">&#128197; Prolong&eacute;e</button>'
+        +'</div>'
+        +'</div>';
+    }
     return _accRowHtml({
       tab:isDouble?'pa-en-vente':'pa',id:p.id,
       icon:'&#128196;',
@@ -5754,9 +5784,13 @@ function transferCpToA(id){
 
 
 // Retour PA en cours → Acheteurs (PA refusée ou autre raison)
-function transferPaToA(id){
+function transferPaToA(id,opts){
   var rec=null;for(var i=0;i<db.pa.length;i++){if(db.pa[i].id===id){rec=db.pa[i];break;}}if(!rec)return;
-  if(!confirm('Retourner cette PA dans les Acheteurs ? Les conditions et montants seront perdus.'))return;
+  // Le dialogue parle le mot cliqué, nomme QUI part (le partenaire lié suit la fiche) et rappelle
+  // l'annulation — sur le modèle de doDel. C'est le seul geste destructeur des six issues.
+  var _noms=[rec].concat(rec.linkId?db.pa.filter(function(x){return x.linkId===rec.linkId&&x.id!==rec.id;}):[])
+    .map(function(r){return ((r.prenom||'')+' '+(r.nom||'')).trim()||'(sans nom)';});
+  if(!confirm('Marquer cette promesse TOMB\u00c9E ?\n\n'+_noms.join(' + ')+' revient dans tes Acheteurs, avec une trace dat\u00e9e. Les conditions, les montants et les rendez-vous au calendrier seront perdus.\n\nCtrl+Z / Cmd+Z pour annuler.'))return;
   pushUndo('Retour Acheteurs');
   var toTransfer=[rec];
   if(rec.linkId){toTransfer=db.pa.filter(function(x){return x.linkId===rec.linkId;});}
@@ -5773,7 +5807,10 @@ function transferPaToA(id){
       }
     });
     // Recréer la fiche dans Acheteurs avec les données de qualif préservées
-    var aEntry={id:newId(),prenom:r.prenom,nom:r.nom,etat:'En attente',telephone:r.telephone,courriel:r.courriel,adresse:r.adresse||'',notes:r.notes||'',cca:r.cca||false,loi25:r.loi25||false,consSec:r.consSec||false,canafe:r.canafe||false,prequal2:r.prequal2||false,linkId:r.linkId||''};
+    // E11 — la trace suit le client : la fiche acheteur recréée dit pourquoi elle est revenue.
+    var _n=(r.notes||'').replace(/\s+$/,'');
+    if(opts&&opts.trace)_n=_n?(_n+'\n'+opts.trace):opts.trace;
+    var aEntry={id:newId(),prenom:r.prenom,nom:r.nom,etat:'En attente',telephone:r.telephone,courriel:r.courriel,adresse:r.adresse||'',notes:_n,cca:r.cca||false,loi25:r.loi25||false,consSec:r.consSec||false,canafe:r.canafe||false,prequal2:r.prequal2||false,linkId:r.linkId||''};
     db.a.push(aEntry);
     noms.push(r.prenom+' '+r.nom);
   });
@@ -7170,10 +7207,10 @@ function convertDemandeToCp(id){
 }
 
 // Retour scénario B → Demandes (PA refusée). Garde la trace côté demande comme "qualified"
-function transferPaevToDemande(id){
+function transferPaevToDemande(id,opts){
   var rec=null;for(var i=0;i<db.pa.length;i++){if(db.pa[i].id===id){rec=db.pa[i];break;}}
   if(!rec||!rec.propertyId)return;
-  if(!confirm('Retourner cette PA vers Demandes ? Les conditions et données de PA seront perdues.\n\nLa demande sera créée en statut "En suivi".'))return;
+  if(!confirm('Marquer cette promesse TOMB\u00c9E ?\n\nL\u2019acheteur revient dans tes Demandes re\u00e7ues (en suivi), avec une trace dat\u00e9e. Les conditions, les montants et les rendez-vous au calendrier seront perdus.\n\nCtrl+Z / Cmd+Z pour annuler.'))return;
   pushUndo('Retour PA → Demandes');
   // Cleanup events gcal (best-effort)
   ['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'].forEach(function(f){
@@ -7186,9 +7223,10 @@ function transferPaevToDemande(id){
     telephone:rec.telephone||'',courriel:rec.courriel||'',
     source:'Autre',
     date:_todayStr(),
-    notes:(rec.notes||'')+(rec.notes?'\n\n':'')+'(Retour depuis Promesse)',
+    notes:(rec.notes||'')+(rec.notes?'\n\n':'')+'(Retour depuis Promesse)'+((opts&&opts.trace)?'\n'+opts.trace:''),
     status:'qualified',statusDate:_todayStr(),lastModified:_todayStr()
   });
+  _paDetacherInscription(rec);
   db.pa=db.pa.filter(function(x){return x.id!==id;});
   sdb();rall();
   toast('↩ PA → Demandes (En suivi)');
@@ -10628,6 +10666,75 @@ function _paExterneNonRealisee(vid){
   if(!rec)return;
   toast('\u2717 Promesse tomb\u00e9e \u2014 '+(rec.adresse||'inscription')+' redevient \u00ab en vente \u00bb. Trace dat\u00e9e ajout\u00e9e aux notes.');
 }
+// ─── E11 — Les 3 mêmes issues, pour une promesse EN COURS (db.pa) ────────────────────────────
+// Généralisation d'E10. Différence importante : contrairement à `paExterneEcheance`, `paEcheance`
+// est DÉJÀ dans COND_FIELDS_BY_TAB.pa — l'échue est donc déjà comptée par getConditionsDue() et par
+// la bande d'E8. Il n'y a pas de trou de visibilité à combler ici : il manquait le MARQUAGE dans
+// « Promesses à suivre » et, surtout, les issues. ⚠ Ne jamais la recompter ailleurs : ce serait un
+// doublon dans le compteur de retards.
+function _paRecById(id){for(var i=0;i<(db.pa||[]).length;i++){if(db.pa[i].id===id)return db.pa[i];}return null;}
+// Une promesse reçue qui disparaît (retour aux Demandes, suppression) doit emmener la copie de son
+// échéance : _syncDoubleRepPaToV est à sens unique et ne nettoie jamais. Sans ça, l'inscription
+// affiche une « PA externe » fantôme — échue avec ses trois boutons, ou acceptée — pour une
+// promesse qui n'existe plus.
+function _paDetacherInscription(rec){
+  if(!rec||!rec.propertyId)return;
+  var v=_vById(rec.propertyId);
+  if(v&&v.paExterneEcheance)v.paExterneEcheance='';
+}
+function _paEchue(p){
+  var val=p&&p.paEcheance;
+  if(!val||val==='done')return false;
+  if(p.statutPa==='Accept\u00e9e')return false; // déjà acceptée : la date n'est plus une question
+  var ds=_dateOnly(val);
+  return /^\d{4}-\d{2}-\d{2}$/.test(ds)&&ds<_todayStr();
+}
+// ✓ Acceptée — les DEUX écritures, dans le même undo. Poser le seul statut laisserait `paEcheance`
+// sur une date passée : getConditionsDue() la compterait « en retard » pour toujours, et la bande
+// « Rien en retard aujourd'hui » ne pourrait plus jamais s'afficher.
+function _paAcceptee(id){
+  var rec=_condSetValue('pa',id,'paEcheance','done','Promesse accept\u00e9e',function(r){r.statutPa='Accept\u00e9e';});
+  if(!rec)return;
+  var qui=((rec.prenom||'')+' '+(rec.nom||'')).trim()||'la promesse';
+  toast(_paCondPending(rec)
+    ? '\u2713 '+qui+' \u2014 statut \u00ab Accept\u00e9e \u00bb, passe au suivi des conditions'
+    : '\u2713 '+qui+' \u2014 statut \u00ab Accept\u00e9e \u00bb : toutes les conditions sont d\u00e9j\u00e0 lev\u00e9es');
+}
+// ✗ Tombée — on réutilise les retours EXISTANTS (transferPaToA / transferPaevToDemande), avec leur
+// confirm() : ils détruisent les conditions et les montants, c'est le seul cas où P11 admet un
+// dialogue bloquant. On leur passe la trace, qu'ils déposent dans la fiche recréée.
+function _paTombee(id){
+  var rec=_paRecById(id);if(!rec)return;
+  // La trace doit porter ce que l'opération DÉTRUIT : une fiche acheteur peut accumuler plusieurs
+  // offres tombées sur plusieurs propriétés — sans l'adresse ni le montant, les lignes deviennent
+  // indistinguables au bout de six mois.
+  var _adr=rec.adresse||(rec.propertyId&&_vById(rec.propertyId)?_vById(rec.propertyId).adresse:'')||'';
+  var trace='PA tomb\u00e9e'+(_adr?' \u2014 '+_adr:'')
+    +(rec.montant?' \u2014 offre '+rec.montant+' $':'')
+    +' \u2014 \u00e9ch\u00e9ance du '+fd(_dateOnly(rec.paEcheance))
+    +' \u00b7 fiche revenue le '+fd(_todayStr());
+  if(rec.propertyId)transferPaevToDemande(id,{trace:trace});
+  else transferPaToA(id,{trace:trace});
+}
+// 🗓 Prolongée — l'éditeur de date existant, dans l'onglet où la promesse vit.
+function _paProlonger(id){
+  var rec=_paRecById(id);if(!rec)return;
+  var tab=rec.propertyId?'pa-en-vente':'pa';
+  var qui=((rec.prenom||'')+' '+(rec.nom||'')).trim()||'la promesse';
+  var btn=document.querySelector('.tbtn[data-tab="'+tab+'"]');if(btn)btn.click();
+  setTimeout(function(){
+    var tr=document.querySelector('#tb-'+tab+' tr[data-rid="'+id+'"]');
+    if(!tr){toast('Promesse introuvable \u2014 un filtre ou une recherche est peut-\u00eatre actif');return;}
+    tr.scrollIntoView({block:'center'}); // pas d'animation : ie() cale un menu en position:fixed
+    var td=tr.querySelector('td[data-f="paEcheance"]');
+    if(!td){toast('La colonne \u00ab \u00c9ch\u00e9ance PA \u00bb est masqu\u00e9e \u2014 r\u00e9affiche-la pour changer la date');return;}
+    td.style.boxShadow='inset 0 0 0 2px #0EA5E9';
+    setTimeout(function(){td.style.boxShadow='';},1400);
+    ie(td);
+    toast('\ud83d\udcc5 '+qui+' \u2014 choisis la nouvelle \u00e9ch\u00e9ance');
+  },160);
+}
+
 // Prolongation : on ouvre l'éditeur de date EXISTANT du champ, là où il vit (colonne Échéance PA
 // de Mes inscriptions). Pas de second sélecteur de date à maintenir en parallèle.
 function _paExterneProlonger(vid){
@@ -10729,11 +10836,28 @@ function ie(td){
     var markDone=document.createElement('button');markDone.className='cond-menu-item cm-done';markDone.innerHTML='&#10003; Fait';
     markDone.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);_condSetValue(tab,id,field,'done','Fait '+field);};
     menu.appendChild(markDone);
+    // E11 — pour l'échéance d'une promesse en cours, « Fait » ne suffit pas : accepter une promesse,
+    // c'est aussi poser son statut. Et une promesse peut tomber. Mêmes fonctions que la ligne de
+    // l'Accueil — un seul comportement par champ, quel que soit l'endroit où on clique.
+    if(field==='paEcheance'){
+      markDone.innerHTML='&#10003; Accept\u00e9e';
+      markDone.title='La promesse est accept\u00e9e : statut \u00ab Accept\u00e9e \u00bb et \u00e9ch\u00e9ance r\u00e9gl\u00e9e';
+      markDone.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);_paAcceptee(id);};
+      var paTomb=document.createElement('button');paTomb.className='cond-menu-item';paTomb.innerHTML='&#10007; Tomb\u00e9e';
+      paTomb.title='La promesse n\u2019a pas abouti : retour '+(_paRecById(id)&&_paRecById(id).propertyId?'aux Demandes':'aux Acheteurs')+', avec la trace au dossier';
+      paTomb.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);_paTombee(id);};
+      menu.appendChild(paTomb);
+    }
     // E10 — l'échéance d'une promesse externe a TROIS issues, pas deux. « Non réalisée » existe donc
     // ici aussi : même fonction que la ligne de l'Accueil, pour ne pas avoir deux comportements
     // pour le même champ selon l'endroit où on clique.
     if(field==='paExterneEcheance'&&tab==='v'){
-      var nonReal=document.createElement('button');nonReal.className='cond-menu-item';nonReal.innerHTML='&#10007; Non r\u00e9alis\u00e9e';
+      // Même mot que la ligne de l'Accueil et que la colonne paEcheance : « Fait » ne dit pas ce
+      // qui se passe (la promesse est ACCEPTÉE), et trois mots pour un concept, c'est #20 au lexique.
+      markDone.innerHTML='&#10003; Accept\u00e9e';
+      markDone.title='La promesse est accept\u00e9e : elle passe au suivi des conditions';
+      markDone.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);_paExterneRealisee(id);};
+      var nonReal=document.createElement('button');nonReal.className='cond-menu-item';nonReal.innerHTML='&#10007; Tomb\u00e9e';
       nonReal.title='La promesse est tomb\u00e9e : retire l\u2019\u00e9ch\u00e9ance et note la trace au dossier';
       nonReal.onclick=function(ev){ev.stopPropagation();if(menu.parentNode)menu.parentNode.removeChild(menu);_paExterneNonRealisee(id);};
       menu.appendChild(nonReal);
@@ -11127,6 +11251,9 @@ function doDel(tab,id){
     if(window.electronAPI&&window.electronAPI.attachmentDeleteProperty){try{window.electronAPI.attachmentDeleteProperty(rec.id).catch(function(){});}catch(e){}}
   }
   // \u2500\u2500 Suppression de la fiche elle-m\u00EAme \u2500\u2500
+  // E11 — promesse reçue supprimée : l'inscription gardait la copie de son échéance (voir
+  // _paDetacherInscription). Même nettoyage que sur le retour aux Demandes.
+  if(_st==='pa')_paDetacherInscription(rec);
   db[_st]=db[_st].filter(function(x){return x.id!==id;});
   sdb();rall();
   toast("\uD83D\uDDD1 Supprim\u00e9 \u2014 Ctrl+Z / Cmd+Z pour annuler");
