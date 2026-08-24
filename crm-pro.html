@@ -3865,7 +3865,15 @@ function submitAToPA_Modal(){
   db.a=db.a.filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
   sdb();rall();
   closeAToPA_Modal();
-  toast('✓ '+noms.join(' + ')+' → Promesse en cours');
+  // E12 — les 5 exigences du dossier acheteur sont bien COPIÉES dans la fiche pa, mais elles n'y sont
+  // visibles nulle part (ni colonne, ni champ) : sans ce rappel, une case non cochée disparaît en
+  // silence. Constat, pas consigne — le courtier ne peut plus les cocher depuis pa. Union sur le lot
+  // quand des acheteurs liés partent ensemble : un seul toast.
+  var _exigA=[['cca','CCA'],['loi25','Loi 25'],['consSec','Cons. sec.'],['canafe','CANAFE'],['prequal2','Préqualif.']];
+  var _manq=_exigA.filter(function(x){return toTransfer.some(function(r){return !r[x[0]];});}).map(function(x){return x[1];});
+  var _msg='✓ '+noms.join(' + ')+' → Promesse en cours';
+  if(_manq.length)toast(_msg+'\nManquants au dossier : '+_manq.join(', '),{jalon:true});
+  else toast(_msg);
 }
 
 // ─── Seed examples (premier lancement seulement) ───────────────
@@ -10920,7 +10928,19 @@ function ie(td){
 }
 
 // ─── Modal ───────────────────────────────────────────────────
-document.getElementById("badd").addEventListener("click",function(){openAdd();});
+// E12 — « + Ajouter » depuis « Promesses en cours » : une promesse créée là n'a aucune fiche acheteur
+// derrière (tout est ressaisi, le lien client→promesse n'existe pas). Le bon chemin métier passe par
+// la fiche acheteur en « PA Actif », qui ouvre toute seule le modal de promesse (saveEntry→transferAToPa).
+document.getElementById("badd").addEventListener("click",function(){
+  var _tbA=(ctab==='pa')?document.querySelector('.tbtn[data-tab="a"]'):null;
+  if(!_tbA){openAdd();return;}
+  _tbA.click(); // on DÉCLENCHE la bascule réelle (panes, titre, purge des recherches) au lieu de la recopier
+  openAdd();
+  // Sine qua non : sans cet état, enregistrer la fiche ne créerait AUCUNE promesse — le bouton mentirait.
+  var _et=document.getElementById("fetat");if(_et)_et.value="PA Actif";
+  _ovSnap=_ovEmpreinte(); // l'empreinte doit inclure l'état pré-réglé, sinon Échap croirait à une saisie
+  toast("Infos client d'abord — la promesse suivra automatiquement");
+});
 document.getElementById("btnc").addEventListener("click",function(){_ovAnnuler();});
 document.getElementById("btns").addEventListener("click",function(){saveEntry();});
 document.getElementById("ov").addEventListener("click",function(e){if(e.target===this)_ovAnnuler();});
