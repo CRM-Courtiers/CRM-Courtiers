@@ -4797,7 +4797,7 @@ var TUTORIELS=[
     +'<li><strong>\u2717 Tomb\u00e9e</strong> \u2014 l\u2019offre n\u2019a pas abouti : c\u2019est le <strong>Retour Acheteurs</strong> habituel (ou <strong>Retour Demandes</strong> pour une promesse re\u00e7ue sur ton inscription), avec sa confirmation \u2014 les conditions et les montants sont bel et bien perdus. La fiche recr\u00e9\u00e9e porte une trace dat\u00e9e qui rappelle l\u2019\u00e9ch\u00e9ance manqu\u00e9e.</li>'
     +'<li><strong>\ud83d\udcc5 Prolong\u00e9e</strong> \u2014 le d\u00e9lai a \u00e9t\u00e9 prolong\u00e9, ou une contre-offre est en cours : TRI-ANGLE t\u2019am\u00e8ne sur la case <strong>\u00c9ch\u00e9ance PA</strong> pour inscrire la nouvelle date.</li>'
     +'</ul>'
-    +'<p>Les trois gestes s\u2019annulent avec <span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Z</span>. Tu retrouves \u00ab Accept\u00e9e \u00bb et \u00ab Tomb\u00e9e \u00bb dans le menu de la case <strong>\u00c9ch\u00e9ance PA</strong>, directement au tableau.</p>'
+    +'<p><span class="aide-kbd">Ctrl</span> + <span class="aide-kbd">Z</span> r\u00e9tablit les donn\u00e9es des trois gestes. Une exception : les rendez-vous que \u00ab Accept\u00e9e \u00bb et \u00ab Tomb\u00e9e \u00bb retirent de ton <strong>calendrier</strong> n\u2019y reviennent pas \u2014 s\u2019il y en avait, recr\u00e9e-les. Tu retrouves \u00ab Accept\u00e9e \u00bb et \u00ab Tomb\u00e9e \u00bb dans le menu de la case <strong>\u00c9ch\u00e9ance PA</strong>, directement au tableau.</p>'
     +'<h2>Une \u00e9ch\u00e9ance d\u00e9pass\u00e9e ne dispara\u00eet pas</h2>'
     +'<p>Si l\u2019<strong>\u00e9ch\u00e9ance</strong> d\u2019une promesse d\u00e9pos\u00e9e sur une de tes inscriptions par un autre courtier passe sans \u00eatre r\u00e9gl\u00e9e, la ligne <strong>reste</strong> dans \u00ab Promesses \u00e0 suivre \u00bb, marqu\u00e9e <strong>\u00c9chue</strong> et remont\u00e9e en t\u00eate de liste. Elle compte aussi comme un retard : tant qu\u2019elle est l\u00e0, la bande \u00ab Rien en retard aujourd\u2019hui \u00bb ne s\u2019affiche pas. La ligne te pose directement la question \u2014 <strong>O\u00f9 en est-elle ?</strong> \u2014 avec les trois r\u00e9ponses possibles, sans quitter l\u2019Accueil :</p>'
     +'<ul>'
@@ -5298,19 +5298,20 @@ function getRelancesList(){
 // Conditions arrivant à échéance dans les 7 prochains jours (PA + V) — inclut aussi les en retard
 function getConditionsDue(){
   var out=[];
-  // paExterneEcheance affiché dans "Promesses à suivre" — exclu pour éviter doublon.
-  // ⚠ E9 — cette exclusion rend la carte « Conditions à surveiller » aveugle aux PA externes : les
-  //   échues sont donc comptées à part par _paExternesEchues(), sans quoi rien ne les signalerait.
+  // ⚠ Les deux ÉCHÉANCES DE PROMESSE (paExterneEcheance, paEcheance) sont exclues d'ici.
+  //   Décision LP [M5] : une échéance de promesse n'est pas une condition que le courtier exécute
+  //   (inspection, financement, notaire…) — c'est un DÉLAI que quelqu'un d'autre tient. Sa maison
+  //   est « Promesses à suivre », la seule surface qui porte ses trois issues ; l'afficher aussi ici
+  //   donnait une deuxième ligne sans geste, dont le clic menait à un modal qui n'a même pas le
+  //   champ. Une échéance, une maison.
+  //   ⚠ En contrepartie, la carte « Conditions à surveiller » est aveugle aux échéances de promesse :
+  //   leurs retards sont comptés à part par _paExternesEchues() et _paEchues() dans _accEtatDuJour().
+  //   Retirer l'un sans l'autre ferait mentir la bande « Rien en retard aujourd'hui ».
   ["pa","v"].forEach(function(tab){
     var fields=COND_FIELDS_BY_TAB[tab]||[];
     (db[tab]||[]).forEach(function(r){
       fields.forEach(function(f){
-        if(f==='paExterneEcheance')return;
-        // E11 — même règle que _paEchue (une seule définition) : si le courtier a posé le statut
-        // « Acceptée » à la main dans le modal sans toucher à la date, celle-ci resterait comptée
-        // « en retard » À VIE — et la ligne, n'étant plus échue, aurait perdu les boutons qui
-        // l'auraient réglée. Le seul retard du produit qu'aucun geste ne pouvait effacer.
-        if(f==='paEcheance'&&r.statutPa==='Accept\u00e9e')return;
+        if(f==='paExterneEcheance'||f==='paEcheance')return;
         var v=r[f];if(!v||v==="done")return;
         var ds=String(v).substring(0,10);
         if(!/^\d{4}-\d{2}-\d{2}$/.test(ds))return;
@@ -5380,7 +5381,11 @@ function _accEtatDuJour(){
   var today=_todayStr(), dem=_countDemandesATraiter();
   var r={
     relances:getRelancesList().length,
-    conditions:getConditionsDue().filter(function(c){return c.daysDiff<0;}).length+_paExternesEchues().length, // E9 — la PA externe échue est exclue de getConditionsDue (rendue ailleurs) : à compter ici, sinon la bande ment
+    // Les DEUX échéances de promesse sont hors de getConditionsDue() (leur maison est « Promesses à
+    // suivre », qui porte leurs issues) : elles sont donc comptées ici, chacune par sa définition
+    // unique. Une échéance = une unité de retard, jamais deux.
+    conditions:getConditionsDue().filter(function(c){return c.daysDiff<0;}).length
+              +_paExternesEchues().length+_paEchues().length,
     demandes:dem.ach+dem.inscNew, // 'new' seulement : un 'qualified' est un lead qu'on cultive, pas un retard
     taches:(db.taches||[]).filter(function(t){return !t.done&&t.echeance&&t.echeance<today;}).length
   };
@@ -5402,7 +5407,7 @@ function _accRowHtml(opts){
   var clickAttr=opts.click?' onclick="'+opts.click+'"':(opts.tab&&opts.id?' onclick="doEdit(\''+opts.tab+'\',\''+opts.id+'\')"':"");
   return '<div class="acc-row'+(opts.urgent?' urgent':'')+'"'+clickAttr+'>'
     +'<div class="acc-row-icon">'+(opts.icon||"&#8226;")+'</div>'
-    +'<div class="acc-row-main">'+esc(opts.main)+'</div>'
+    +'<div class="acc-row-main">'+esc(opts.main)+(opts.sub?'<div class="acc-row-sub">'+esc(opts.sub)+'</div>':'')+'</div>'
     +(opts.meta?'<div class="acc-row-meta">'+esc(opts.meta)+'</div>':'')
     +(opts.badge?'<div class="acc-row-badge '+(opts.badgeCls||"acc-badge-info")+'">'+esc(opts.badge)+'</div>':'')
     +'</div>';
@@ -5564,10 +5569,12 @@ function renderAccueil(){
           +'</div>'
           +'</div>';
       }
+      var _eche=(!item.accepted&&v.paExterneEcheance&&v.paExterneEcheance!=='done')?_dateOnly(v.paExterneEcheance):'';
+      var _jje=(_eche&&/^\d{4}-\d{2}-\d{2}$/.test(_eche))?_daysBetween(_eche):null;
       return '<div class="acc-row" onclick="doEdit(\'v\',\''+v.id+'\')">'
         +'<div class="acc-row-icon">&#128196;</div>'
-        +'<div class="acc-row-main">'+esc(addr)+'</div>'
-        +'<div class="acc-row-badge acc-badge-orange">PA externe</div>'
+        +'<div class="acc-row-main">'+esc(addr)+(_eche?'<div class="acc-row-sub">'+esc('PA externe — échéance du '+fd(_eche))+'</div>':'')+'</div>'
+        +'<div class="acc-row-badge '+(_jje===0?'acc-badge-urgent':'acc-badge-orange')+'">'+(_jje===0?"Aujourd'hui":'PA externe')+'</div>'
         +'</div>';
     }
     var p=item.rec;
@@ -5594,12 +5601,18 @@ function renderAccueil(){
         +'</div>'
         +'</div>';
     }
+    // M5 — la maison doit afficher ce qu'elle héberge : depuis que l'échéance a quitté « Conditions
+    // à surveiller », c'est ici, et nulle part ailleurs, qu'on lit sa date. Le jour J, le badge le dit
+    // — sans compter comme retard (la promesse expire souvent à 23h59 : elle n'est pas en retard).
+    var _ech=(!item.accepted&&p.paEcheance&&p.paEcheance!=='done')?_dateOnly(p.paEcheance):'';
+    var _jj=(_ech&&/^\d{4}-\d{2}-\d{2}$/.test(_ech))?_daysBetween(_ech):null;
     return _accRowHtml({
       tab:isDouble?'pa-en-vente':'pa',id:p.id,
       icon:'&#128196;',
       main:who+' — '+addr2,
-      badge:isDouble?'Double rep.':'Acheteur',
-      badgeCls:isDouble?'acc-badge-warn':'acc-badge-urgent'
+      sub:_ech?((isDouble?'Double rep.':'Acheteur')+' — échéance du '+fd(_ech)):'',
+      badge:_jj===0?"Aujourd'hui":(isDouble?'Double rep.':'Acheteur'),
+      badgeCls:_jj===0?'acc-badge-urgent':(isDouble?'acc-badge-warn':'acc-badge-urgent')
     });
   };
   // Widget "Promesses à suivre" (en négo)
@@ -5797,7 +5810,7 @@ function transferPaToA(id,opts){
   var noms=[];
   toTransfer.forEach(function(r){
     // Retirer les events Google Calendar des conditions PA (best-effort, fire-and-forget)
-    ['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'].forEach(function(f){
+    ['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire','paEcheance'].forEach(function(f){
       var k='_evt_'+f;
       if(r[k]){
         if(window.electronAPI){
@@ -7213,7 +7226,7 @@ function transferPaevToDemande(id,opts){
   if(!confirm('Marquer cette promesse TOMB\u00c9E ?\n\nL\u2019acheteur revient dans tes Demandes re\u00e7ues (en suivi), avec une trace dat\u00e9e. Les conditions, les montants et les rendez-vous au calendrier seront perdus.\n\nCtrl+Z / Cmd+Z pour annuler.'))return;
   pushUndo('Retour PA → Demandes');
   // Cleanup events gcal (best-effort)
-  ['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire'].forEach(function(f){
+  ['inspection','financement','r21','r22','assurImm','fosseSept','testEau','notaire','paEcheance'].forEach(function(f){
     var k='_evt_'+f;if(rec[k]&&window.electronAPI){_calDeleteEvent({eventId:rec[k]}).catch(function(){});}
   });
   // Recrée une demande qualified
@@ -10689,8 +10702,9 @@ function _paEchue(p){
   var ds=_dateOnly(val);
   return /^\d{4}-\d{2}-\d{2}$/.test(ds)&&ds<_todayStr();
 }
+function _paEchues(){return (db.pa||[]).filter(function(p){return _paEchue(p);});}
 // ✓ Acceptée — les DEUX écritures, dans le même undo. Poser le seul statut laisserait `paEcheance`
-// sur une date passée : getConditionsDue() la compterait « en retard » pour toujours, et la bande
+// sur une date passée : _paEchues() la compterait « en retard » pour toujours, et la bande
 // « Rien en retard aujourd'hui » ne pourrait plus jamais s'afficher.
 function _paAcceptee(id){
   var rec=_condSetValue('pa',id,'paEcheance','done','Promesse accept\u00e9e',function(r){r.statutPa='Accept\u00e9e';});
