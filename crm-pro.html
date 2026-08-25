@@ -738,6 +738,10 @@ td.c-2,th.c-2{box-shadow:3px 0 8px rgba(15,23,42,.1)}
 
 /* Copy email button */
 td.emc{position:relative}
+/* Cellule No. Centris — symétrique de emc : sans position:relative le bouton absolu s'échappait de
+   la cellule, et sans règle de survol il restait à opacity:0. Il n'a donc jamais été cliquable. */
+td.cen{position:relative}
+td.cen:hover .cpb{opacity:1}
 .cpb{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:20px;height:20px;border:none;border-radius:3px;background:#E2E8F0;color:#1E293B;cursor:pointer;font-size:11px;padding:0;opacity:0;transition:opacity .15s;z-index:3;box-shadow:0 0 4px rgba(255,255,255,.9)}
 td.emc:hover .cpb{opacity:1}
 .cpb:hover{background:#0F172A;color:#fff}
@@ -4804,7 +4808,11 @@ function renderTab(tab){
       } else if(col.f==="courriel"){
         h+=etd(col,tab,rec.id,fmEmail(rec[col.f]),' emc');
       } else if(col.t==="centris"){
-        h+=etd(col,tab,rec.id,fmCentris(rec[col.f]));
+        // La classe `cen` rend le 🔗 atteignable : .cpb naît en opacity:0 et n'était révélé que par
+        // td.emc:hover, une classe réservée à la colonne Courriel. Le bouton Centris existait dans
+        // le DOM depuis toujours, invisible et hors de sa cellule (position:absolute sans ancre).
+        // Posée ici plutôt que dans les 8 définitions de colonnes : une seule maison pour la règle.
+        h+=etd(col,tab,rec.id,fmCentris(rec[col.f]),' cen');
       } else if(col.t==="acheteur"){
         var acheteurNom=rec[col.f];
         if(!acheteurNom){
