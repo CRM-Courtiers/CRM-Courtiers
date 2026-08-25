@@ -4128,6 +4128,19 @@ function fmPrequal(rec){
   if(st)return'<span class="badge bbl">'+esc(st)+'</span>';
   return'<span class="chkn">&#10003;</span>';
 }
+// COR-8b — capture du plafond accordé, au moment où le courtier vient de poser « Oui » en ligne.
+// Même popover que le micro-éditeur de C3 : un champ, Entrée pour valider, Échap pour renoncer.
+function _openPrequalMntPop(tab,id,rect){
+  _openMontantPop(_storeTab(tab),id,rect,{
+    champs:[{k:'prequalMnt',lbl:'Préqualifié jusqu\'à ($)'}],
+    undo:'Montant de préqualification',
+    toast:function(r){
+      var m=parseFloat(r.prequalMnt)||0;
+      return m>0?('✓ Préqualifié jusqu\'à '+_fmtN(m)+' $ — '+_jalonNom(r))
+                :('✓ Préqualification : Oui — '+_jalonNom(r));
+    }
+  });
+}
 function fmCentris(v){if(!v)return'\u2014';var safe=esc(String(v).trim());return safe+'<button class="cpb" title="Ouvrir sur centris.ca" onclick="event.stopPropagation();_openCentris(\''+safe+'\')" style="margin-left:4px">\ud83d\udd17</button>';}
 function _openCentris(no){if(!no)return;var url='https://www.centris.ca/fr/propriete~a-vendre/'+encodeURIComponent(no);if(window.electronAPI&&window.electronAPI.openExternal){window.electronAPI.openExternal(url).catch(function(){window.open(url,'_blank');});}else{window.open(url,'_blank');}}
 // \u00c9tape 24 \u2014 Courtier : lookup nom dans db.courtiers, clic ouvre popup info, "(non assign\u00e9)" si vide
@@ -10620,12 +10633,14 @@ function _mnyPopClose(){
   document.removeEventListener('keydown',_mnyPop.onKey,true);
   _mnyPop=null;
 }
-function _openMontantPop(store,id,rect){
+// opts (COR-8b) : {champs, undo, toast} — permet de réutiliser ce popover pour autre chose que le
+// montant/commission d'une transaction, sans en écrire un second qui divergerait du premier.
+function _openMontantPop(store,id,rect,opts){
   _mnyPopClose();
   var rec=null,arr=db[store]||[];
   for(var i=0;i<arr.length;i++){if(arr[i].id===id){rec=arr[i];break;}}
   if(!rec)return;
-  var champs=_jalonChamps(store);
+  var champs=(opts&&opts.champs)||_jalonChamps(store);
   var pop=document.createElement('div');pop.className='cond-menu open mny-pop';
   var ttl=document.createElement('div');ttl.className='mny-pop-title';ttl.textContent=_jalonNom(rec);
   pop.appendChild(ttl);
@@ -10651,9 +10666,10 @@ function _openMontantPop(store,id,rect){
   function _enregistrer(){
     var chg=false;
     inputs.forEach(function(x){if(x.el.value.trim()!==String(rec[x.k]||''))chg=true;});
-    if(chg)pushUndo('Montant/commission');
+    if(chg)pushUndo((opts&&opts.undo)||'Montant/commission');
     inputs.forEach(function(x){rec[x.k]=x.el.value.trim();});
     sdb();rall();_mnyPopClose();
+    if(opts&&opts.toast){toast(opts.toast(rec));return;}
     // A6 — la révision à la BAISSE (contre-offre) passe par ici comme les autres. On énonce le
     // NOUVEAU montant retenu, neutre : jamais « −20 000 $ », jamais l'ancien chiffre en regard.
     // Punir le courtier au moment précis où il met son dossier à jour est le meilleur moyen qu'il
@@ -11582,7 +11598,16 @@ function ie(td){
   function save(){if(done)return;done=true;var nv=el.value,ov=rec[field];if(field==='noCentris'||field==='centris')nv=_extractCentris(nv);if(nv!==String(ov||"")){pushUndo("\u00c9dition "+field);}rec[field]=nv;_touchAch();sdb();setTimeout(rall,15);if(type==="date"){try{syncCalendarField(rec,tab,field,ov,nv);}catch(e){}} if(tab==='a'&&field==='etat'&&nv==='PA Actif'&&ov!=='PA Actif'){setTimeout(function(){transferAToPa(rec.id);},150);}
     // C3/J1 — troisième accroche : le statut se pose aussi en 1 clic dans le tableau. Même jalon.
     // Après le rall() différé, sinon le toast naîtrait avant le re-rendu qu'il commente.
-    if(tab==='pa'&&field==='statutPa'&&nv==='Acceptée'&&ov!=='Acceptée'){setTimeout(function(){_jalonPaAcceptee(rec);},150);}}
+    if(tab==='pa'&&field==='statutPa'&&nv==='Acceptée'&&ov!=='Acceptée'){setTimeout(function(){_jalonPaAcceptee(rec);},150);}
+    // COR-8b — cocher « Oui » en ligne, c'est apprendre à l'instant que la banque a approuvé : le
+    // montant est connu MAINTENANT, et le demander plus tard, c'est le perdre. Le popover s'ouvre
+    // sur la cellule qu'on vient de quitter, pas au centre de l'écran.
+    // Trois gardes : au PASSAGE à Oui seulement (pas à chaque enregistrement d'un Oui déjà posé),
+    // seulement si le montant manque, et Échap ne laisse aucune trace — on ne redemande jamais.
+    if(field==='prequal'&&nv==='Oui'&&ov!=='Oui'&&!rec.prequalMnt){
+      var _r=td.getBoundingClientRect();
+      setTimeout(function(){_openPrequalMntPop(tab,rec.id,_r);},170);
+    }}
   el.addEventListener("blur",save);
   el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();el.blur();}if(e.key==="Escape"){done=true;el.removeEventListener("blur",save);setTimeout(rall,15);}});
 }
