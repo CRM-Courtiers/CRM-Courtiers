@@ -6154,7 +6154,11 @@ function transferCpToA(id){
   if(rec.linkId){toTransfer=db.cp.filter(function(x){return x.linkId===rec.linkId;});}
   var noms=[];
   toTransfer.forEach(function(r){
-    db.a.push({id:newId(),prenom:r.prenom,nom:r.nom,etat:"",telephone:r.telephone,courriel:r.courriel,adresse:"",notes:r.notes||"",cca:false,loi25:false,consSec:false,canafe:false,mls:false,declVend:false,prequal2:false,inspection:"",financement:"",r21:"",r22:"",assurImm:"",fosseSept:"",testEau:"",notaire:"",montant:"",commission:"",linkId:r.linkId||"",lastModified:_todayStr()});
+    // COR-6 — les 6 champs qui DÉFINISSENT un prospect acheteur voyagent avec lui. Ils n'ont aucune
+    // colonne ni aucun champ de formulaire dans « Mes acheteurs » : ce sont des bagages, gardés en
+    // silence pour que le retour aux prospects retrouve la qualification au lieu de la réinventer.
+    db.a.push({id:newId(),prenom:r.prenom,nom:r.nom,etat:"",telephone:r.telephone,courriel:r.courriel,adresse:"",notes:r.notes||"",cca:false,loi25:false,consSec:false,canafe:false,mls:false,declVend:false,prequal2:false,inspection:"",financement:"",r21:"",r22:"",assurImm:"",fosseSept:"",testEau:"",notaire:"",montant:"",commission:"",linkId:r.linkId||"",lastModified:_todayStr(),
+      prequal:r.prequal||"",typeBat:r.typeBat||"",prixMin:r.prixMin||"",prixMax:r.prixMax||"",secteur:r.secteur||"",dateContact:r.dateContact||""});
     noms.push(r.prenom+" "+r.nom);
   });
   var idsToRemove=toTransfer.map(function(r){return r.id;});
@@ -6213,7 +6217,14 @@ function transferAToCp(id){
   var dateNow=_todayStr();
   var noms=[];
   toTransfer.forEach(function(r){
-    db.cp.push({id:newId(),prenom:r.prenom,nom:r.nom,telephone:r.telephone,courriel:r.courriel,prequal:"",typeBat:"",prixMin:"",prixMax:"",secteur:"",dateContact:dateNow,notes:r.notes||"",linkId:r.linkId||""});
+    // COR-6 — la qualification est RESTITUÉE au lieu d'être réécrite vide. Un aller-retour détruisait
+    // jusqu'ici préqualification, type de bâtiment, fourchette de prix et secteur — sans confirmation
+    // ni trace, par un geste qui ne promettait qu'un déplacement de fiche.
+    // ⚠ dateContact fait exception et reste AUJOURD'HUI : le retour EST un contact. Restituer la
+    // vieille date rallumerait une relance immédiate sur un client qu'on vient justement de voir.
+    db.cp.push({id:newId(),prenom:r.prenom,nom:r.nom,telephone:r.telephone,courriel:r.courriel,
+      prequal:r.prequal||"",typeBat:r.typeBat||"",prixMin:r.prixMin||"",prixMax:r.prixMax||"",secteur:r.secteur||"",
+      dateContact:dateNow,notes:r.notes||"",linkId:r.linkId||""});
     noms.push(r.prenom+" "+r.nom);
   });
   var idsToRemove=toTransfer.map(function(r){return r.id;});
@@ -11815,6 +11826,16 @@ function saveEntry(){
     // Pr\u00e9server les eventIds existants
     if(oldRec){
       for(var k in oldRec){if(k.indexOf('_evt_')===0)entry[k]=oldRec[k];}
+      // COR-6 — les bagages de qualification (venus des prospects, invisibles dans « Mes acheteurs »)
+      // survivent au formulaire. Sans ça, ① et ② ne seraient que du théâtre : le save REMPLACE
+      // l'objet entier et le formulaire acheteur ne porte aucun de ces champs — le premier
+      // « Enregistrer » sur la fiche, même pour corriger une note, les effacerait tous. Exactement le
+      // mécanisme du pancarteRet ressuscité, fermé en COR-1.
+      if(ctab==='a'){
+        ['prequal','typeBat','prixMin','prixMax','secteur','dateContact'].forEach(function(_qk){
+          if(oldRec[_qk]!==undefined)entry[_qk]=oldRec[_qk];
+        });
+      }
       // COR-1 — même préservation que vc, et pour la même raison : « pancarte retirée » se pose
       // dans l'onglet Pancartes, jamais dans ce formulaire. La case fpancret a disparu en 0.3.48
       // mais gc("fpancret") était resté : il rendait false, et comme le save REMPLACE l'objet
