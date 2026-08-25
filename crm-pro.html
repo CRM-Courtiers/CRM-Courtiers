@@ -4614,6 +4614,15 @@ function _buildActionsForRecord(tab,recId){
   if(tab==='ac'||tab==='vc'){
     items.push({icon:'&#9989;',label:'✅ Notarié — Archiver',title:'Marque le notaire complété et archive dans les dossiers finalisés',fn:function(){markNotaried(tab,recId);}});
   }
+  // COR-5 — la sortie des archives : miroir de « Notarié — Archiver ». Réparation d'erreur,
+  // rare : le menu suffit, pas de bouton de ligne.
+  if(tab==='archac'||tab==='archvc'){
+    items.push({icon:'&#8617;',label:'Renvoyer dans Conclus (annuler « Notarié »)',title:'Répare un clic malheureux : la fiche revient en attente notaire et sa commission quitte l\'Encaissé',fn:function(){unmarkNotaried(tab,recId);}});
+  }
+  // COR-5 — archpa ne se ROUVRE pas (voir _paArchRelink) : on corrige le lien vers l'acte.
+  if(tab==='archpa'){
+    items.push({icon:'&#128279;',label:'Relier à une autre vente…',title:'La promesse a été liée au mauvais acte : choisir la bonne vente conclue (le badge 👤 suivra)',fn:function(){_paArchRelink(recId);}});
+  }
   // Liaison (sauf cp/vp/ac/vc/ca/archac/archvc)
   if(tab==='a'||tab==='pa'||tab==='pa-en-vente'||tab==='v'){
     if(rec.linkId)items.push({icon:'&#128274;',label:'Délier',fn:function(){unlinkRecord(tab,recId);}});
@@ -5231,6 +5240,8 @@ var TUTORIELS=[
     +'<p>Et dans <strong>Ventes conclues</strong> (sections Conclus et Notari\u00e9es), une colonne <strong>Acheteur</strong> affiche un badge \ud83d\udc64 : clique-le pour sauter directement \u00e0 la promesse archiv\u00e9e correspondante (elle se surligne en jaune).</p>'
     +'<h2>Une promesse rest\u00e9e en haut alors que la vente est conclue ?</h2>'
     +'<p>\u00c7a arrive si la promesse a \u00e9t\u00e9 saisie apr\u00e8s la conclusion (ou conclue avec une ancienne version). Utilise <strong>\u2630 Actions &rarr; \ud83d\uddc4 Vendu</strong> sur la promesse : choisis la vente conclue correspondante, et la promesse descend dans Archiv\u00e9es, li\u00e9e \u00e0 l\u2019acte, avec le badge \ud83d\udc64 pos\u00e9 sur la vente.</p>'
+    +'<h2>Promesse archiv\u00e9e li\u00e9e au mauvais acte ?</h2>'
+    +'<p>Dans la section <strong>Archiv\u00e9es</strong>, <strong>\u2630 Actions &rarr; \ud83d\udd17 Relier \u00e0 une autre vente\u2026</strong> corrige le lien : choisis le bon acte, la colonne <strong>Acte conclus</strong> se met \u00e0 jour et le badge \ud83d\udc64 quitte l\u2019ancienne vente pour la nouvelle.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Les gabarits de courriels \u00ab Courtiers collaborateurs \u00bb te font gagner du temps pour communiquer avec l\u2019autre courtier.</div></div>'},
   {sec:'En vente', num:15, titre:'Suivre les conditions et les \u00e9ch\u00e9ances', html:
     '<p>Les <strong>conditions</strong> (inspection, financement, R2.1/R2.2, assurance, fosse septique, test d\u2019eau, notaire\u2026) sont le c\u0153ur du suivi d\u2019une promesse. TRI-ANGLE t\u2019aide \u00e0 ne jamais manquer une date.</p>'
@@ -5435,6 +5446,7 @@ var TUTORIELS=[
     +'<p>Si une promesse re\u00e7ue \u00e9tait sur la propri\u00e9t\u00e9 (double repr\u00e9sentation), elle est <strong>archiv\u00e9e automatiquement</strong> \u00e0 la conclusion : elle descend dans la section <strong>Archiv\u00e9es</strong> au bas de Promesses re\u00e7ues. Dans <strong>Ventes conclues</strong>, la colonne <strong>Acheteur</strong> montre un badge \ud83d\udc64 \u2014 clique-le pour retrouver instantan\u00e9ment la promesse de l\u2019acheteur (elle se surligne en jaune).</p>'
     +'<h2>Et le notaire ?</h2>'
     +'<p>Tant que le notaire n\u2019a pas sign\u00e9, le dossier reste dans <strong>Conclus</strong> et sa commission appara\u00eet dans le bloc \u00ab \u23f3 En attente notaire \u00bb du Dashboard. Quand c\u2019est notari\u00e9, <strong>\u2630 Actions \u2192 \u2705 Notari\u00e9</strong> le descend dans la section <strong>Notari\u00e9s</strong> et l\u2019ajoute \u00e0 ton \u00ab Encaiss\u00e9 \u00bb.</p>'
+    +'<p>Clic par erreur ? Dans la section <strong>Notari\u00e9s</strong>, <strong>\u2630 Actions \u2192 \u21a9 Renvoyer dans Conclus</strong> annule le geste : le dossier revient en attente notaire et sa commission quitte l\u2019\u00ab Encaiss\u00e9 \u00bb. Rien d\u2019autre ne bouge \u2014 notaire, case Pay\u00e9 et pancartes suivent la fiche, et le prochain \u00ab Notari\u00e9 \u00bb reprendra la bonne date.</p>'
     +'<h2>Ta commission te suit \u00e0 chaque \u00e9tape</h2>'
     +'<p>Trois moments, trois messages en bas d\u2019\u00e9cran \u2014 toujours <strong>ta</strong> part, jamais le prix de la propri\u00e9t\u00e9 :</p>'
     +'<ul><li><strong>Promesse accept\u00e9e</strong> \u2192 ta commission estim\u00e9e, avec le montant et le pourcentage retenus.</li>'
@@ -6759,17 +6771,18 @@ function _paevConclure(paId){
 // Le flux automatique n'archive que les PA présentes AU MOMENT de la conclusion; une
 // promesse restée ouverte (ou saisie après coup) reste dans la section du haut. Le bouton
 // « 🗄 Vendu » (Actions, Promesses reçues) répare : choisir l'acte → archivage + lien + badge 👤.
-function _paArchOrphan(paId){
-  var pa=null;for(var i=0;i<(db.pa||[]).length;i++){if(db.pa[i].id===paId){pa=db.pa[i];break;}}
-  if(!pa)return;
+// COR-5 — sélecteur d'acte conclu (vc + archvc), partagé entre l'archivage d'une promesse
+// orpheline (_paArchOrphan) et le re-lien d'une promesse déjà archivée (_paArchRelink).
+// Même modal qu'avant l'extraction : titre + intro paramétrés, liste et gestes inchangés.
+function _pickActeConclu(titre,introHtml,onPick){
   var actes=[];
   (db.vc||[]).forEach(function(a){actes.push({acte:a,sec:'Conclus — attente notaire'});});
   (db.archvc||[]).forEach(function(a){actes.push({acte:a,sec:'Notariées'});});
   if(!actes.length){alert('Aucune vente conclue à associer — conclus d\'abord la vente correspondante.');return;}
   var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)';
   var box=document.createElement('div');box.style.cssText='background:#fff;border-radius:16px;padding:22px;width:min(560px,92vw);max-height:78vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.3)';
-  var h='<div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:4px">Associer à la vente conclue</div>'
-    +'<div style="font-size:12px;color:#64748B;margin-bottom:14px">La promesse de <strong>'+esc(((pa.prenom||'')+' '+(pa.nom||'')).trim())+'</strong> descendra dans « Archivées » (bas de Promesses reçues), liée à l\'acte choisi — le badge 👤 apparaîtra sur la vente.</div>';
+  var h='<div style="font-size:15px;font-weight:700;color:#0F172A;margin-bottom:4px">'+titre+'</div>'
+    +'<div style="font-size:12px;color:#64748B;margin-bottom:14px">'+introHtml+'</div>';
   actes.forEach(function(it,ix){
     var a=it.acte;
     h+='<button data-ix="'+ix+'" class="pa-orph-pick" style="display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:6px;border:1.5px solid #E2E8F0;border-radius:8px;background:#F8FAFC;cursor:pointer;font-family:inherit">'
@@ -6786,7 +6799,17 @@ function _paArchOrphan(paId){
     btn.onclick=function(){
       var it=actes[parseInt(btn.getAttribute('data-ix'),10)];
       if(!it)return;
-      var acte=it.acte;
+      closeOrph();
+      onPick(it.acte);
+    };
+  });
+}
+function _paArchOrphan(paId){
+  var pa=null;for(var i=0;i<(db.pa||[]).length;i++){if(db.pa[i].id===paId){pa=db.pa[i];break;}}
+  if(!pa)return;
+  _pickActeConclu('Associer à la vente conclue',
+    'La promesse de <strong>'+esc(((pa.prenom||'')+' '+(pa.nom||'')).trim())+'</strong> descendra dans « Archivées » (bas de Promesses reçues), liée à l\'acte choisi — le badge 👤 apparaîtra sur la vente.',
+    function(acte){
       pushUndo('Archiver promesse (vente conclue)');
       // statutPa forcé à « Acceptée » : la vente s'est conclue, la promesse a été acceptée
       var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:"Acceptée",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||acte.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:acte.dateConclusion||_todayStr(),linkedToActeNom:((acte.prenom||"")+" "+(acte.nom||"")).trim()||"(sans nom)"};
@@ -6797,10 +6820,33 @@ function _paArchOrphan(paId){
       // nom existait déjà sans lien — c'était le cas des données historiques de Sophie)
       acte.acheteurNom=((pa.prenom||'')+' '+(pa.nom||'')).trim();
       acte.acheteurId=pa.id;
-      sdb();rall();closeOrph();
+      sdb();rall();
       toast('✓ Promesse archivée et liée à '+archEntry.linkedToActeNom);
-    };
-  });
+    });
+}
+// COR-5 — archpa n'a PAS de « Rouvrir » : archEntry ne conserve pas propertyId et l'onglet pa
+// filtre !propertyId — une réouverture naïve atterrirait dans Mes acheteurs et s'inventerait
+// une commission côté acheteur dans la carte 4. L'erreur réelle sur une promesse archivée est
+// presque toujours « liée au MAUVAIS acte » → on RE-LIE : linkedToActeNom bascule, et le badge
+// 👤 (acheteurNom/acheteurId) passe de l'ancien acte au nouveau.
+function _paArchRelink(paId){
+  var arch=null;for(var i=0;i<(db.archpa||[]).length;i++){if(db.archpa[i].id===paId){arch=db.archpa[i];break;}}
+  if(!arch)return;
+  var nomPa=((arch.prenom||'')+' '+(arch.nom||'')).trim()||'(sans nom)';
+  _pickActeConclu('Relier à une autre vente',
+    'La promesse archivée de <strong>'+esc(nomPa)+'</strong> sera reliée à l\'acte choisi — le badge 👤 quittera l\'ancienne vente et suivra.',
+    function(acte){
+      pushUndo('Relier la promesse à une autre vente');
+      // Nettoyer le badge sur l'ancien acte : tout vc/archvc qui pointe encore cette promesse
+      [db.vc,db.archvc].forEach(function(arr){(arr||[]).forEach(function(a){
+        if(a!==acte&&a.acheteurId===arch.id){a.acheteurNom='';a.acheteurId='';}
+      });});
+      acte.acheteurNom=((arch.prenom||'')+' '+(arch.nom||'')).trim();
+      acte.acheteurId=arch.id;
+      arch.linkedToActeNom=((acte.prenom||'')+' '+(acte.nom||'')).trim()||'(sans nom)';
+      sdb();rall();
+      toast('🔗 '+nomPa+' — reliée à '+arch.linkedToActeNom);
+    });
 }
 
 // Modal de choix pour les demandes restantes apres conclusion d'une vente (decision par lead)
@@ -6993,6 +7039,29 @@ function markNotaried(tab,id){
     toast('🎉 Notarié — '+_qui+'\nMontant ou commission manquants — ajoute-les pour ton encaissé',
       {jalon:true,action:{label:'Ajouter',fn:function(r){_openMontantPop(targetTab,rec.id,r);}}});
   }
+}
+// COR-5 — le miroir de markNotaried : la seule réparation d'un « Notarié » cliqué par erreur
+// une fois les 10 Ctrl+Z épuisés. Déplacement de l'OBJET ENTIER (comme markNotaried) +
+// delete dateNotaire et RIEN d'autre (patron transferRecToRea : le prochain « Notarié »
+// re-tamponnera la bonne date depuis rec.notaire). notaire/notaireId/paye/pancarte* voyagent
+// intacts — les 4 listes de pancartes et le Dashboard sont dérivés et se recalculent seuls.
+function unmarkNotaried(tab,id){
+  var sourceTab=(tab==='archac')?'archac':'archvc';
+  var targetTab=(sourceTab==='archac')?'ac':'vc';
+  var rec=null,idx=-1;
+  for(var i=0;i<(db[sourceTab]||[]).length;i++){if(db[sourceTab][i].id===id){rec=db[sourceTab][i];idx=i;break;}}
+  if(!rec)return;
+  // L'année annoncée = celle que la commission quitte réellement (l'Encaissé se découpe par dateNotaire)
+  var an=(rec.dateNotaire&&/^\d{4}/.test(String(rec.dateNotaire)))?String(rec.dateNotaire).slice(0,4):String(new Date().getFullYear());
+  var dest=(targetTab==='ac')?'Acheteurs':'Vendeurs';
+  if(!confirm('Rouvrir ce dossier ?\n\nIl retourne dans '+dest+' conclus — attente notaire, et sa commission quitte l\'« Encaissé '+an+' » du Dashboard.\n\nCtrl+Z pour annuler.'))return;
+  pushUndo('Retour dans Conclus');
+  delete rec.dateNotaire;
+  db[targetTab].push(rec);
+  db[sourceTab].splice(idx,1);
+  sdb();rall();
+  // Règle A6 : aucun montant dans un toast de décrue — la destination seule.
+  toast('↩ '+((rec.prenom||'')+' '+(rec.nom||'')).trim()+' — de retour dans Conclus (attente notaire)');
 }
 
 // ─── Google Calendar sync ───────────────────────────────────
