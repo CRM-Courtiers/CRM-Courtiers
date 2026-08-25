@@ -736,21 +736,10 @@ tbody tr.rl:hover .c-0,tbody tr.rl:hover .c-1,tbody tr.rl:hover .c-2{background:
 .frow .c-0,.frow .c-1,.frow .c-2{background:#F8FAFC!important;z-index:25!important}
 td.c-2,th.c-2{box-shadow:3px 0 8px rgba(15,23,42,.1)}
 
-/* 5e colonne sticky — Mes acheteurs SEULEMENT (décision LP : l'adresse reste sous les yeux, comme
-   sur les autres onglets où la bande figée s'arrête déjà à elle). Le jeu de règles doit être
-   COMPLET : il suffit d'en oublier une pour qu'une cellule blanche apparaisse au milieu d'une ligne
-   grise ou teintée — une couture bien plus visible que le gain. L'ombre de fin de bande quitte donc
-   .c-3 pour .c-4, ici et ici seulement. */
-#tbl-a .c-4{position:sticky!important;z-index:15}
-#tbl-a thead .c-4{z-index:25!important;background:linear-gradient(135deg,#0F172A,#1E293B)!important}
-#tbl-a tbody .c-4{background:#fff!important}
-#tbl-a tbody tr:nth-child(even) .c-4{background:#F8FAFC!important}
-#tbl-a tbody tr:hover .c-4{background:#E2E8F0!important}
-#tbl-a tbody tr.rl .c-4{background:#F8FAFC!important}
-#tbl-a tbody tr.rl:hover .c-4{background:#F1F5F9!important}
-#tbl-a .frow .c-4{background:#F8FAFC!important;z-index:25!important}
-#tbl-a .c-3,#tbl-a td.c-3,#tbl-a th.c-3{box-shadow:none}
-#tbl-a .c-4,#tbl-a td.c-4,#tbl-a th.c-4{box-shadow:3px 0 6px rgba(0,0,0,.08)}
+/* COR-3b — le bloc « 5e colonne sticky » a été RETIRÉ ici. Adresse avait été figée sur Mes acheteurs,
+   LP a tranché à l'usage : la bande devenait trop longue. Retrait complet et volontaire — la seule
+   remise de STICKY_COUNT.a à 4 n'aurait rien changé, ces règles ne dépendent pas de la constante :
+   la classe .c-4 est posée sur toute 5e colonne, la cellule serait restée collante. */
 
 /* Copy email button */
 td.emc{position:relative}
@@ -2844,10 +2833,10 @@ ST.a = {c1:4, d1:1, c2:3, d2:-1};
 ST.pa = {c1:3, d1:1, c2:2, d2:-1};
 ST['pa-en-vente'] = {c1:3, d1:1, c2:2, d2:-1};
 // Nombre de colonnes sticky par onglet (Pr\u00e9nom, Nom et autres en t\u00eate)
-// COR-3 (décision LP) — a:5 : sur Mes acheteurs, Adresse est la 5e colonne, alors qu'ailleurs la
-// bande figée s'y arrête déjà. Elle reste donc sous les yeux au défilement, et la barre de
-// progression court jusqu'à elle comme sur les autres onglets.
-var STICKY_COUNT = {cp:3, vp:3, a:5, pa:4, v:4, ac:3, vc:3, ca:3, "pa-en-vente":4, rea:3, rec:3, reh:3, archpa:2};
+// COR-3b — a reste à 4. Adresse avait été figée sur Mes acheteurs (COR-3), puis LP a jugé la bande
+// figée trop longue à l'usage et a demandé le retour en arrière : sur cet onglet la 5e colonne est
+// large (180 px) et mangeait la place du contenu qui défile.
+var STICKY_COUNT = {cp:3, vp:3, a:4, pa:4, v:4, ac:3, vc:3, ca:3, "pa-en-vente":4, rea:3, rec:3, reh:3, archpa:2};
 
 // Load saved state (recherche vid\u00e9e au d\u00e9marrage pour \u00e9viter les filtres fant\u00f4mes)
 (function(){
@@ -4646,12 +4635,10 @@ function updateStickyOffsets(tab,liveWs){
   var l1=l0+(hid.indexOf(0)===-1?ws[0]:0);
   var l2=l1+(hid.indexOf(1)===-1?ws[1]:0);
   var l3=l2+(hid.indexOf(2)===-1?ws[2]:0);
-  var l4=l3+(hid.indexOf(3)===-1?ws[3]:0); // COR-3 — 5e colonne figée : une masquée compte 0, comme les autres
   document.querySelectorAll('#tbl-'+tab+' .c-0').forEach(function(el){el.style.left=l0+'px';});
   document.querySelectorAll('#tbl-'+tab+' .c-1').forEach(function(el){el.style.left=l1+'px';});
   document.querySelectorAll('#tbl-'+tab+' .c-2').forEach(function(el){el.style.left=l2+'px';});
   if(sc>=4)document.querySelectorAll('#tbl-'+tab+' .c-3').forEach(function(el){el.style.left=l3+'px';});
-  if(sc>=5)document.querySelectorAll('#tbl-'+tab+' .c-4').forEach(function(el){el.style.left=l4+'px';});
 }
 
 // ─── Build headers ───────────────────────────────────────────
