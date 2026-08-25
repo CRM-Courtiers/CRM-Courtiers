@@ -777,7 +777,13 @@ td.emc:hover .cpb{opacity:1}
    Le .c-0 est en position:sticky, ce qui suffit à ancrer l'absolu — aucun position:relative à ajouter. */
 .rprog{position:absolute;left:0;right:0;bottom:0;height:12px;display:block} /* 12 px = la zone de survol : 3 px seuls sont insurvolables */
 .rprog-rail{position:absolute;left:0;right:0;bottom:0;height:3px;background:#E2E8F0}
-.rprog-fill{position:absolute;left:0;bottom:0;height:3px;background:#64748B} /* neutre : les retards ont déjà leurs surfaces, pas de rouge ici */
+/* Paliers : gris au début · jaune en route (33 %) · jaune soutenu dans la dernière ligne droite
+   (66 %) · vert UNIQUEMENT à 100 %. Réserver le vert au dossier complet est ce qui lui garde sa
+   valeur : un vert à 80 % dirait « fini » à un dossier qui ne l'est pas. Jamais de rouge — les
+   retards ont déjà leurs propres surfaces, cette barre-ci ne juge pas, elle situe. */
+.rprog-fill{position:absolute;left:0;bottom:0;height:3px;background:#64748B}
+.rprog-fill.mid{background:#FBBF24}
+.rprog-fill.warm{background:#F59E0B}
 .rprog-fill.full{background:#059669} /* la teinte du ✓ de .cond-done : la barre pleine et les crochets racontent la même chose */
 
 /* Condition mini-menu */
@@ -4071,12 +4077,26 @@ var BARRE_COND_LBL={
   evalVM:"Éval. VM",photos:"Photos",mesures:"Mesures"
 };
 var BARRE_FIELDS_BY_TAB={
+  a:["cca","loi25","consSec","canafe","prequal2"],
   pa:["inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"],
   "pa-en-vente":["financement","r21","r22","assurImm","fosseSept","testEau","notaire"], // pas d'inspection : elle se gère sur la fiche En Vente
   v:["evalVM","photos","mesures","inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"]
 };
+// Les 5 exigences du dossier acheteur — mêmes libellés et même ordre que le toast de transfert (E12).
+var BARRE_EXIG=[['cca','CCA'],['loi25','Loi 25'],['consSec','Cons. sec.'],['canafe','CANAFE'],['prequal2','Préqualif.']];
 function _barreProg(tab,rec){
   var fields=BARRE_FIELDS_BY_TAB[tab];if(!fields)return null;
+  // Onglet a — exception assumée à la règle « pas de booléens ». Les cases documents de v sont
+  // exclues parce que non-coché y veut dire « pas fait » OU « ne s'applique pas ». Les 5 exigences
+  // du dossier acheteur, elles, s'appliquent à TOUS les acheteurs sans exception (CCA, Loi 25,
+  // conseiller en sécurité, CANAFE, préqualification) : le dénominateur est donc fixe à 5, il n'y a
+  // pas d'ambiguïté à lever, et le 100 % reste atteignable. C'est aussi le seul onglet où le
+  // courtier PEUT cocher ces cases — la barre y désigne un geste, pas seulement un constat.
+  if(tab==='a'){
+    var d=0,r=[];
+    BARRE_EXIG.forEach(function(x){if(rec[x[0]])d++;else r.push(x[1]);});
+    return {done:d,total:BARRE_EXIG.length,reste:r,dossier:true};
+  }
   var done=0,total=0,reste=[];
   fields.forEach(function(f){
     var v=rec[f];
@@ -4088,17 +4108,19 @@ function _barreProg(tab,rec){
 }
 // Nommer ce qui reste, jamais un pourcentage : c'est le fait de nommer qui ferme la boucle mentale.
 function _barreTitre(tab,rec,p){
+  // Sur a ce ne sont pas des conditions de promesse mais les pièces du dossier — le mot change.
+  var quoi=p.dossier?"Dossier":"Conditions";
   var l1;
   if(!p.total)l1="Conditions : aucune engagée — une date ou un ✓ démarre le suivi";
-  else if(p.done===p.total)l1="Conditions : "+p.done+" sur "+p.total+" ✓";
-  else l1="Conditions : "+p.done+" sur "+p.total+" · reste : "+p.reste.join(", ");
+  else if(p.done===p.total)l1=quoi+" : "+p.done+" sur "+p.total+" ✓";
+  else l1=quoi+" : "+p.done+" sur "+p.total+" · reste : "+p.reste.join(", ");
   if(tab!=='pa')return l1;
   // Ligne 2, onglet pa seulement — les 5 exigences du dossier acheteur. Le transfert (E12) les copie
   // dans la fiche pa, mais aucune colonne ni aucun champ ne les y montre : sans ce rappel, une case
   // non cochée disparaît pour de bon. Même chaîne et même ordre que le toast du transfert, pour que
   // le courtier relise exactement ce qu'il a lu en transférant. Elles n'entrent JAMAIS dans la barre :
   // ce sont des pièces au dossier, pas des conditions de la promesse.
-  var exig=[['cca','CCA'],['loi25','Loi 25'],['consSec','Cons. sec.'],['canafe','CANAFE'],['prequal2','Préqualif.']];
+  var exig=BARRE_EXIG;
   var manq=exig.filter(function(x){return !rec[x[0]];});
   if(!manq.length)return l1;
   // Les cinq à false = promesse créée directement dans pa : la donnée n'a jamais été suivie. Annoncer
@@ -4106,11 +4128,56 @@ function _barreTitre(tab,rec,p){
   if(manq.length===exig.length)return l1+"\nDossier acheteur : non suivi";
   return l1+"\nManquants au dossier : "+manq.map(function(x){return x[1];}).join(", ");
 }
-function _barreHtml(tab,rec){
-  var p=_barreProg(tab,rec);if(!p)return'';
-  var plein=(p.total>0&&p.done===p.total);
-  var fill=p.total?'<span class="rprog-fill'+(plein?' full':'')+'" style="width:'+Math.round(p.done/p.total*100)+'%"></span>':'';
-  return'<span class="rprog" title="'+esc(_barreTitre(tab,rec,p))+'"><span class="rprog-rail">'+fill+'</span></span>';
+// Paliers de couleur (demande LP) : la barre ne dit plus seulement « combien », elle dit « où j'en
+// suis ». Le vert est RÉSERVÉ au dossier complet — c'est ce qui lui garde sa valeur de récompense ;
+// un vert à 80 % dirait « fini » à un dossier qui ne l'est pas. Le jaune s'assombrit à 66 % pour que
+// la dernière ligne droite se distingue sans emprunter au vert.
+function _barreClasse(p){
+  if(!p.total)return'';
+  var pct=p.done/p.total*100;
+  if(p.done===p.total)return' full';   // #059669, la teinte du ✓
+  if(pct>=66)return' warm';            // #F59E0B — presque
+  if(pct>=33)return' mid';             // #FBBF24 — en route
+  return'';                            // #64748B — début
+}
+// La barre court sur TOUTE la bande figée de la rangée (les colonnes sticky, jusqu'à l'adresse) et
+// non sur la seule première cellule : plus large, elle se lit d'un coup d'œil et ses paliers
+// deviennent distinguables. Elle ne peut pas être un seul élément pour autant — chaque td est en
+// overflow:hidden, donc rien ne peut déborder d'une cellule. On la découpe : chaque cellule figée
+// reçoit sa tranche de rail, et la portion de remplissage qui lui revient.
+// Les largeurs viennent de getCW()/COL_VIS, la source même du colgroup — surtout PAS d'offsetWidth :
+// rall() rend TOUS les onglets, or un panneau inactif est en display:none et mesurerait 0 partout.
+// Une colonne masquée compte pour 0, exactement comme dans updateStickyOffsets().
+function _barreApply(tab,data){
+  if(!BARRE_FIELDS_BY_TAB[tab])return;
+  var tbEl=document.getElementById('tb-'+tab);if(!tbEl)return;
+  var rows=tbEl.querySelectorAll('tr[data-rid]');if(!rows.length)return;
+  var sc=STICKY_COUNT[tab]||3;
+  var cw=getCW(tab),hid=COL_VIS[tab]||[];
+  var ws=[],bande=0;
+  for(var k=0;k<sc;k++){var w=(hid.indexOf(k)===-1)?(cw[k]||0):0;ws.push(w);bande+=w;}
+  if(!bande)return;
+  // data est fourni par renderTab (déjà filtré et trié) ; sans lui — appel après un redimensionnement
+  // de colonne — on retombe sur la collection, la recherche se faisant de toute façon par data-rid.
+  var parId={};(data||db[_storeTab(tab)]||[]).forEach(function(r){parId[r.id]=r;});
+  [].forEach.call(rows,function(tr){
+    var rec=parId[tr.getAttribute('data-rid')];if(!rec)return;
+    var p=_barreProg(tab,rec);if(!p)return;
+    var titre=_barreTitre(tab,rec,p),cls=_barreClasse(p);
+    var pleinPx=p.total?bande*p.done/p.total:0,gauche=0;
+    for(var k2=0;k2<sc;k2++){
+      var td=tr.querySelector('.c-'+k2);
+      if(td){
+        var vieux=td.querySelector('.rprog');if(vieux)td.removeChild(vieux);
+        var seg=Math.max(0,Math.min(ws[k2],pleinPx-gauche));
+        var sp=document.createElement('span');
+        sp.className='rprog';sp.title=titre;
+        sp.innerHTML='<span class="rprog-rail">'+(p.total?'<span class="rprog-fill'+cls+'" style="width:'+seg+'px"></span>':'')+'</span>';
+        td.appendChild(sp);
+      }
+      gauche+=ws[k2];
+    }
+  });
 }
 // ─── Actions dropdown menu (unifié) ──────────────────────────
 var _activeActionsMenu=null;
@@ -4530,7 +4597,10 @@ function buildHeaders(tab){
         e.preventDefault();var col2=document.querySelector("#cg-"+tab+" col[data-ci='"+idx+"']"),sx=e.clientX,sw=ws[idx];rz.classList.add("act");
         var hid=COL_VIS[tab]||[];
         function mm(ev){var nw=Math.max(30,Math.round(sw+(ev.clientX-sx)));if(col2)col2.style.width=nw+"px";ws[idx]=nw;var tw2=0;for(var k=0;k<ws.length;k++){if(hid.indexOf(k)===-1)tw2+=ws[k];}document.getElementById("tbl-"+tab).style.width=tw2+"px";if(idx<(STICKY_COUNT[tab]||3))updateStickyOffsets(tab,ws);}
-        function mu(){rz.classList.remove("act");saveCW(tab,ws);updateStickyOffsets(tab,ws);document.removeEventListener("mousemove",mm);document.removeEventListener("mouseup",mu);}
+        // La bande figée vient de changer de largeur : on redécoupe les barres. Au relâchement
+        // seulement — le faire à chaque mousemove ferait travailler toutes les rangées pendant le
+        // glissement, pour un résultat qu'on ne verrait qu'à la fin de toute façon.
+        function mu(){rz.classList.remove("act");saveCW(tab,ws);updateStickyOffsets(tab,ws);_barreApply(tab);document.removeEventListener("mousemove",mm);document.removeEventListener("mouseup",mu);}
         document.addEventListener("mousemove",mm);document.addEventListener("mouseup",mu);
       });
     });
@@ -4576,10 +4646,6 @@ function renderTab(tab){
     // il fallait la retrouver. Elle reste, en variante assombrie quand l'échéance est dépassée.
     if(tab==="v"&&_paExterneEnCours(rec))clsArr.push(_paExterneEchue(rec)?"v-paext v-paext-late":"v-paext");
     var trCls=clsArr.join(" ");
-    // C2 — la barre s'injecte dans la cellule d'index 0 (celle qui porte .c-0, donc le sticky).
-    // Selon l'onglet ce n'est pas le même type de cellule : Prénom sur pa et pa-en-vente, la cellule
-    // de pastilles sur v. D'où les deux points d'insertion plus bas, et une seule chaîne calculée ici.
-    var barreH=_barreHtml(tab,rec);
     h+='<tr data-rid="'+esc(rec.id)+'"'+(trCls?' class="'+trCls+'"':'')+'>';
     for(var j=0;j<cols.length;j++){
       var col=cols[j];
@@ -4610,7 +4676,7 @@ function renderTab(tab){
         if(nDem>0)pillsH+='<button class="vpill dem" title="'+nDem+' demande(s) — voir" onclick="event.stopPropagation();jumpToDemandes(\''+rec.id+'\')">📩 '+nDem+'</button>';
         if(nPa>0)pillsH+='<button class="vpill pa" title="'+nPa+' PA active(s) — voir" onclick="event.stopPropagation();jumpToPaEnVente(\''+rec.id+'\')">📄 '+nPa+'</button>';
         if(!pillsH)pillsH='<span style="color:#CBD5E1">—</span>';
-        h+=ctd(pillsH+(j===0?barreH:''),'vpill-cell',j); // v : c'est cette cellule qui est la sticky d'index 0
+        h+=ctd(pillsH,'vpill-cell',j);
       } else if(col.t==="pills-int"){
         // Étape 27 — pastille "intérêts acheteurs". Règle : alerte UNIQUEMENT s'il y a des intérêts
         // "à traiter" (nouveaux). Les intérêts en cours (visite/planifiée/offre) = marqueur discret neutre.
@@ -4700,13 +4766,13 @@ function renderTab(tab){
         if(!rec[col.f]&&col.f==='centrisUrl'){
           display='<span class="centris-tooltip">Entrez l\'url de la propriété</span>';
         }
-        if(j===0)display+=barreH; // pa et pa-en-vente : la sticky d'index 0 est la cellule Prénom
         h+=etd(col,tab,rec.id,display);
       }
     }
     h+="</tr>";
   }
   tbEl.innerHTML=h;
+  _barreApply(tab,data); // la barre se pose après coup : elle a besoin des largeurs réelles des cellules
 }
 
 // \u2500\u2500\u2500 Helper g\u00e9n\u00e9ral : recadre un popup d\u00e9j\u00e0 dans le DOM pour qu'il tienne dans la fen\u00eatre \u2500\u2500\u2500
