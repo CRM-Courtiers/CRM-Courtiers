@@ -11613,7 +11613,7 @@ function formForTab(tab,e){
   var ck=function(id,v){return'<input type="checkbox" id="'+id+'"'+(v?' checked':'')+' style="width:auto">';};
   if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Type b\u00e2timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact <span style="font-size:10px;color:#94A3B8">(la relance se calcule à partir de cette date)</span></label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10)||(e.id?'':_todayStr()))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="a"){
-    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>\u00c9tat</label><select id="fetat"><option value="">\u2014</option>'+selOpts(ETAT_ACH,e.etat)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>CCA</label><br>'+ck("fcca",e.cca)+'</div><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div></div><div class="g4"><div class="fg"><label>Pr\u00e9qualif.</label><br>'+ck("fprequal2",e.prequal2)+'</div><div class="fg"><label>Alerte</label><br>'+ck("falerte",e.alerte)+'</div><div class="fg"></div><div class="fg"></div></div>';
+    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>\u00c9tat</label><select id="fetat"><option value="">\u2014</option>'+selOpts(ETAT_ACH,e.etat)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Recherche du client</div><div class="g2"><div class="fg"><label>Préqualification (statut)</label><select id="fprequal"><option value="">—</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Type bâtiment</label><select id="ftypebat"><option value="">—</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>CCA</label><br>'+ck("fcca",e.cca)+'</div><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div></div><div class="g4"><div class="fg"><label>Pr\u00e9qualif.</label><br>'+ck("fprequal2",e.prequal2)+'</div><div class="fg"><label>Alerte</label><br>'+ck("falerte",e.alerte)+'</div><div class="fg"></div><div class="fg"></div></div>';
   }
   if(tab==="pa-en-vente"){
     // Étape 19 — form clone de pa, sans Montant/Commission. Adresse = lookup readonly depuis fiche En Vente.
@@ -11776,7 +11776,11 @@ function saveEntry(){
   var entry={};
   if(ctab==="cp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),prequal:gv("fprequal"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),dateContact:gv("fdate"),notes:gv("fnotes")};
   else if(ctab==="a"){
-    entry={prenom:prenom,nom:gv("fnom"),etat:gv("fetat"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),alerte:gc("falerte"),cca:gc("fcca"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),prequal2:gc("fprequal2"),lastModified:_todayStr()};
+    // COR-6b — la « Recherche du client » (statut de préqualification, type, fourchette, secteur) est
+    // maintenant ÉDITÉE ici : mêmes champs et mêmes éditeurs que chez les prospects, pour qu'un
+    // aller-retour ne change ni la donnée ni la façon de la saisir.
+    entry={prenom:prenom,nom:gv("fnom"),etat:gv("fetat"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),alerte:gc("falerte"),cca:gc("fcca"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),prequal2:gc("fprequal2"),
+      prequal:gv("fprequal"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),lastModified:_todayStr()};
   }
   else if(ctab==="pa"){
     function gcondPa(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
@@ -11826,16 +11830,15 @@ function saveEntry(){
     // Pr\u00e9server les eventIds existants
     if(oldRec){
       for(var k in oldRec){if(k.indexOf('_evt_')===0)entry[k]=oldRec[k];}
-      // COR-6 — les bagages de qualification (venus des prospects, invisibles dans « Mes acheteurs »)
-      // survivent au formulaire. Sans ça, ① et ② ne seraient que du théâtre : le save REMPLACE
-      // l'objet entier et le formulaire acheteur ne porte aucun de ces champs — le premier
-      // « Enregistrer » sur la fiche, même pour corriger une note, les effacerait tous. Exactement le
-      // mécanisme du pancarteRet ressuscité, fermé en COR-1.
-      if(ctab==='a'){
-        ['prequal','typeBat','prixMin','prixMax','secteur','dateContact'].forEach(function(_qk){
-          if(oldRec[_qk]!==undefined)entry[_qk]=oldRec[_qk];
-        });
-      }
+      // COR-6 — le bagage venu des prospects survit au formulaire : le save REMPLACE l'objet entier,
+      // donc tout champ absent du formulaire serait effacé au premier « Enregistrer », même pour
+      // corriger une note. Même mécanisme que le pancarteRet ressuscité, fermé en COR-1.
+      // ⚠ COR-6b — la liste s'est RÉDUITE à dateContact : les cinq champs de « Recherche du client »
+      // sont désormais éditables dans le modal, et les préserver depuis l'ancien enregistrement
+      // écraserait la saisie — le clobber exact fermé sur l'inspection en COR-3.
+      // dateContact reste hors formulaire : sur cet onglet la relance se calcule sur lastModified,
+      // afficher une seconde date créerait deux vérités concurrentes.
+      if(ctab==='a'&&oldRec.dateContact!==undefined)entry.dateContact=oldRec.dateContact;
       // COR-1 — même préservation que vc, et pour la même raison : « pancarte retirée » se pose
       // dans l'onglet Pancartes, jamais dans ce formulaire. La case fpancret a disparu en 0.3.48
       // mais gc("fpancret") était resté : il rendait false, et comme le save REMPLACE l'objet
