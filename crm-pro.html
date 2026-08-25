@@ -835,8 +835,30 @@ td.emc:hover .cpb{opacity:1}
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0F172A,#1E293B);color:#fff;padding:12px 24px;border-radius:12px;font-size:12px;font-weight:700;z-index:9999;box-shadow:0 8px 30px rgba(15,23,42,.3);transition:opacity .4s;border-left:4px solid #10B981;letter-spacing:.03em}
 /* E8/B — toast « jalon » : plus longtemps à l'écran et capable de porter deux lignes. Volontairement
    la MÊME peau que les autres (aucune couleur de fête, aucune animation) — P12 : la récompense est
-   le contenu, pas l'emballage. */
+   le contenu, pas l'emballage.
+   ⚠ Amendé par C3 : le jalon peut désormais porter UN bouton (opts.action), et un seul. E8 l'avait
+   exclu ; au jalon, ce qui manque parfois est un chiffre, et l'aller chercher ailleurs coûte le
+   geste. La minuterie se met en pause au survol tant que le bouton est là. */
 .toast-jalon{padding:14px 26px;line-height:1.5;white-space:pre-line;max-width:min(520px,90vw);text-align:center}
+.toast-hasact{display:flex;align-items:center;justify-content:center;text-align:left}
+.toast-hasact .toast-txt{white-space:pre-line}
+.toast-act{margin-left:16px;flex:0 0 auto;padding:6px 14px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.03em;cursor:pointer;white-space:nowrap;transition:background .15s}
+.toast-act:hover{background:rgba(255,255,255,.24)}
+.toast-act:focus-visible{outline:2px solid #fff;outline-offset:1px}
+
+/* Micro-éditeur montant/commission (C3) — popover, jamais le formulaire complet : une inscription
+   compte une trentaine de contrôles, l'ouvrir pour saisir deux chiffres au pic émotionnel du métier
+   est le meilleur moyen de perdre le geste. Il réutilise la peau du cond-menu. */
+.mny-pop{min-width:250px;padding:12px 14px}
+.mny-pop-title{font-size:12px;font-weight:700;color:#0F172A;margin-bottom:10px}
+.mny-pop-row{display:block;margin-bottom:9px}
+.mny-pop-lbl{display:block;font-size:10px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+.mny-pop-inp{width:100%;border:1.5px solid #CBD5E1;border-radius:7px;padding:6px 9px;font-family:inherit;font-size:13px;outline:none}
+.mny-pop-inp:focus{border-color:#10B981}
+.mny-pop-bar{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.mny-pop-bar button{padding:6px 14px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700}
+.mny-pop-ok{background:linear-gradient(135deg,#0F172A,#1E293B);border:none;color:#fff}
+.mny-pop-no{background:none;border:1.5px solid #CBD5E1;color:#6B7280}
 
 /* Modal */
 .ov{display:none;position:fixed;inset:0;background:rgba(15,23,42,.4);backdrop-filter:blur(4px);z-index:999;overflow-y:auto;padding:40px 16px 30px}
@@ -4505,13 +4527,56 @@ function abtns(tab,id,phone){
 // ⚠ Lot C : toast() n'empile pas — deux toasts vivants se superposent exactement (position fixe).
 //   Le toast de revenu devra donc REMPLACER celui du jalon (markNotaried, transferToConclus en
 //   émettent déjà un), jamais s'y ajouter.
+// C3/A1 — REMPLACEMENT PUR. Les toasts sont en position fixe au même endroit : deux vivants se
+// superposaient exactement, illisibles tous les deux. Tout nouvel appel retire le précédent SUR LE
+// CHAMP (sans fondu) et annule sa minuterie — normal→jalon comme jalon→jalon. Corollaire de
+// discipline : un geste = UN SEUL appel à toast(), les messages se fusionnent en multi-lignes.
+var _toastCourant=null,_toastTimer=null,_toastFade=null;
+function _toastRetire(){
+  if(_toastTimer){clearTimeout(_toastTimer);_toastTimer=null;}
+  if(_toastFade){clearTimeout(_toastFade);_toastFade=null;}
+  if(_toastCourant&&_toastCourant.parentNode)_toastCourant.parentNode.removeChild(_toastCourant);
+  _toastCourant=null;
+}
+// opts.jalon : reste 6,5 s au lieu de 2,8 s et accepte les retours de ligne.
+// opts.action={label,fn} : UN bouton, jamais deux. fn reçoit le rect du toast (pour ancrer un popover
+// là où l'œil se trouve déjà). E8 posait « aucun bouton » : amendement délibéré de C3 — au jalon, la
+// seule chose qui manque est parfois un chiffre, et l'aller chercher ailleurs coûte le geste.
 function toast(msg,opts){
   var jalon=!!(opts&&opts.jalon);
+  var action=(opts&&opts.action&&opts.action.label&&typeof opts.action.fn==='function')?opts.action:null;
+  _toastRetire();
   var t=document.createElement("div");
-  t.className=jalon?"toast toast-jalon":"toast";
-  t.textContent=msg;
+  t.className=(jalon?"toast toast-jalon":"toast")+(action?" toast-hasact":"");
+  var btn=null;
+  if(action){
+    var txt=document.createElement("span");txt.className="toast-txt";txt.textContent=msg;t.appendChild(txt);
+    btn=document.createElement("button");btn.className="toast-act";btn.textContent=action.label;
+    btn.onclick=function(e){e.stopPropagation();var r=t.getBoundingClientRect(),fn=action.fn;_toastRetire();fn(r);};
+    t.appendChild(btn);
+  } else t.textContent=msg;
   document.body.appendChild(t);
-  setTimeout(function(){t.style.opacity="0";setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},400);},jalon?6500:2800);
+  _toastCourant=t;
+  var duree=jalon?6500:2800;
+  function _armer(){
+    if(_toastTimer)clearTimeout(_toastTimer);
+    _toastTimer=setTimeout(function(){
+      if(_toastCourant!==t)return;
+      t.style.opacity="0";
+      _toastFade=setTimeout(function(){if(_toastCourant===t)_toastRetire();},400);
+    },duree);
+  }
+  _armer();
+  if(action){
+    // Minuterie EN PAUSE au survol et au focus clavier : un toast qui propose un geste doit rester
+    // le temps qu'on décide de le faire. Sinon le bouton se dérobe pendant qu'on tend la souris.
+    function _pause(){if(_toastTimer){clearTimeout(_toastTimer);_toastTimer=null;}if(_toastFade){clearTimeout(_toastFade);_toastFade=null;}t.style.opacity="";}
+    function _reprend(){if(_toastCourant===t)_armer();}
+    t.addEventListener('mouseenter',_pause);
+    t.addEventListener('mouseleave',_reprend);
+    btn.addEventListener('focus',_pause);
+    btn.addEventListener('blur',_reprend);
+  }
 }
 function showSaveStatus(msg){var el=document.getElementById("saveStatus");if(!el)return;el.textContent=msg;setTimeout(function(){el.textContent="";},6000);}
 
@@ -5229,6 +5294,13 @@ var TUTORIELS=[
     +'<p>Si une promesse re\u00e7ue \u00e9tait sur la propri\u00e9t\u00e9 (double repr\u00e9sentation), elle est <strong>archiv\u00e9e automatiquement</strong> \u00e0 la conclusion : elle descend dans la section <strong>Archiv\u00e9es</strong> au bas de Promesses re\u00e7ues. Dans <strong>Ventes conclues</strong>, la colonne <strong>Acheteur</strong> montre un badge \ud83d\udc64 \u2014 clique-le pour retrouver instantan\u00e9ment la promesse de l\u2019acheteur (elle se surligne en jaune).</p>'
     +'<h2>Et le notaire ?</h2>'
     +'<p>Tant que le notaire n\u2019a pas sign\u00e9, le dossier reste dans <strong>Conclus</strong> et sa commission appara\u00eet dans le bloc \u00ab \u23f3 En attente notaire \u00bb du Dashboard. Quand c\u2019est notari\u00e9, <strong>\u2630 Actions \u2192 \u2705 Notari\u00e9</strong> le descend dans la section <strong>Notari\u00e9s</strong> et l\u2019ajoute \u00e0 ton \u00ab Encaiss\u00e9 \u00bb.</p>'
+    +'<h2>Ta commission te suit \u00e0 chaque \u00e9tape</h2>'
+    +'<p>Trois moments, trois messages en bas d\u2019\u00e9cran \u2014 toujours <strong>ta</strong> part, jamais le prix de la propri\u00e9t\u00e9 :</p>'
+    +'<ul><li><strong>Promesse accept\u00e9e</strong> \u2192 ta commission estim\u00e9e, avec le montant et le pourcentage retenus.</li>'
+    +'<li><strong>Marquer conclu</strong> \u2192 la somme qui passe de \u00ab \u00e0 venir \u00bb \u00e0 \u00ab en attente notaire \u00bb.</li>'
+    +'<li><strong>Notari\u00e9</strong> \u2192 ce que tu viens d\u2019encaisser, et ton total de l\u2019ann\u00e9e.</li></ul>'
+    +'<p>Si le montant ou le pourcentage manque, le message te le dit et t\u2019offre un bouton <strong>Ajouter</strong> : deux ou trois cases \u00e0 remplir sur place, sans ouvrir la fiche. Si tu ne veux pas le faire tout de suite, ignore-le \u2014 l\u2019app ne te le redemandera pas.</p>'
+    +'<p>Le petit \u0153il \ud83d\udc41 sur la carte \u00ab Commissions \u00e0 venir \u00bb masque aussi ces montants : pratique quand ton \u00e9cran est tourn\u00e9 vers un client.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Renseigne toujours le montant final et les pourcentages de commission : c\u2019est ce qui rend ton Dashboard exact.</div></div>'},
   {sec:'Syst\u00e8me', num:33, titre:'Sauvegarde et restauration', html:
     '<p>Tes donn\u00e9es t\u2019appartiennent et restent sur ton ordinateur / ton nuage. Deux m\u00e9canismes les prot\u00e8gent.</p>'
@@ -6377,6 +6449,11 @@ function transferToConclus(fromTab,id){
   // la conclusion voyagera automatiquement (ta ligne passera dans tes Conclus avec ta part).
   if(rec._ownerDev&&rec._ownerDev!==_syncDeviceId()){toast('⚠ Ce dossier appartient à ton/ta collègue — c\'est lui/elle qui le conclut. Ta part arrivera automatiquement dans tes Conclus.');return;}
   var targetTab=(fromTab==="a"||fromTab==="pa")?"ac":"vc";
+  // C3/J2 — le delta annoncé est MESURÉ, pas recalculé à la main : on relève « en attente notaire »
+  // avant et après la bascule, et on annonce la différence. Impossible de diverger du Dashboard, et
+  // le dédoublonnage des fiches liées (_dashDedup) est pris en compte gratuitement.
+  var _anJ2=new Date().getFullYear();
+  var _attAvant=_dashEnAttenteNotaire(_anJ2).comm;
   pushUndo("Conclu");
   // Si la fiche est li\u00e9e, transf\u00e9rer aussi sa partenaire (toutes les fiches partageant le m\u00eame linkId)
   var toTransfer=[rec];
@@ -6454,7 +6531,21 @@ function transferToConclus(fromTab,id){
     });
   }
   sdb();rall();
-  toast("\u2713 "+noms.join(" + ")+" \u2192 "+(targetTab==="ac"?"Acheteurs conclus":"Vendeurs conclus"));
+  // C3/J2 \u2014 la 1re ligne (la destination) est CONSERV\u00c9E : elle disait d\u00e9j\u00e0 quelque chose de vrai et
+  // d'utile. La 2e est le seul endroit de la s\u00e9quence o\u00f9 nommer le pipeline est exact \u2014 et elle
+  // enseigne au passage le workflow notaire de la 0.3.35 : conclu \u2260 encaiss\u00e9.
+  var _dest="\u2713 "+noms.join(" + ")+" \u2192 "+(targetTab==="ac"?"Acheteurs conclus":"Vendeurs conclus");
+  var _delta=_dashEnAttenteNotaire(_anJ2).comm-_attAvant;
+  var _recRef=toTransfer[0];
+  if(_heroCommMasque()||_delta>0){
+    toast(_heroCommMasque()?_dest:(_dest+'\n'+_jalonMny(_delta)+' passent de \u00ab \u00e0 venir \u00bb \u00e0 \u00ab en attente notaire \u00bb'),{jalon:true});
+  }else{
+    // Rien \u00e0 annoncer faute de chiffres : on le dit, on ne se tait pas, et on propose de les saisir
+    // sur la fiche CONCLUE (celle qui vit d\u00e9sormais), jamais un \u00ab 0 $ \u00bb au moment du succ\u00e8s.
+    var _conclu=(db[targetTab]||[]).filter(function(x){return x.dateConclusion===dateConc&&x.prenom===_recRef.prenom&&x.nom===_recRef.nom;})[0];
+    toast(_dest+'\nMontant ou commission manquants \u2014 ajoute-les pour ton pipeline',
+      {jalon:true,action:_conclu?{label:'Ajouter',fn:function(r){_openMontantPop(targetTab,_conclu.id,r);}}:null});
+  }
   if (fromTab === 'v' && vIdsTransferred.length) {
     setTimeout(function(){ _promptDemandesAfterVConclu(vIdsTransferred, noms.join(' + ')); }, 250);
   }
@@ -6695,6 +6786,10 @@ function markNotaried(tab,id){
   for(var i=0;i<db[sourceTab].length;i++){if(db[sourceTab][i].id===id){rec=db[sourceTab][i];idx=i;break;}}
   if(!rec)return;
   var targetTab=(tab==='ac'||tab==='archac')?'archac':'archvc';
+  // C3/J3 — même méthode qu'au J2 : l'encaissé YTD relevé avant et après. Le « +X » est la
+  // différence réelle et le total est, au dollar près, celui que le Dashboard affichera.
+  var _anJ3=new Date().getFullYear();
+  var _encAvant=_dashCommYearMonth(_anJ3,null).comm;
   pushUndo('Notarié');
   // Date d'archivage = date du RDV notaire déjà saisie (champ 'notaire') si présente, sinon aujourd'hui.
   var dateNotaire=(rec.notaire&&rec.notaire!==true&&rec.notaire!=='done')?_dateOnly(rec.notaire):new Date().toISOString().split("T")[0];
@@ -6703,7 +6798,20 @@ function markNotaried(tab,id){
   db[targetTab].push(rec);
   db[sourceTab].splice(idx,1);
   sdb();rall();
-  toast('✓ '+(rec.prenom+' '+(rec.nom||'')).trim()+' → Archivé (notarié le '+dateNotaire+')');
+  // C3/J3 — le pic de la séquence, et le SEUL endroit où le 🎉 est mérité : l'argent est encaissé.
+  // Partout ailleurs, ✓. Même peau que les autres toasts, aucune couleur de fête, aucune animation :
+  // ce qui récompense, c'est le chiffre, pas l'emballage.
+  var _encApres=_dashCommYearMonth(_anJ3,null).comm;
+  var _gain=_encApres-_encAvant;
+  var _qui=(rec.prenom+' '+(rec.nom||'')).trim();
+  if(_heroCommMasque()){
+    toast('🎉 Notarié — '+_qui+' (notarié le '+dateNotaire+')',{jalon:true});
+  }else if(_gain>0){
+    toast('🎉 Notarié — '+_qui+' · +'+_jalonMny(_gain)+' encaissés\nTotal '+_anJ3+' : '+_jalonMny(_encApres),{jalon:true});
+  }else{
+    toast('🎉 Notarié — '+_qui+'\nMontant ou commission manquants — ajoute-les pour ton encaissé',
+      {jalon:true,action:{label:'Ajouter',fn:function(r){_openMontantPop(targetTab,rec.id,r);}}});
+  }
 }
 
 // ─── Google Calendar sync ───────────────────────────────────
@@ -10271,6 +10379,161 @@ function _pipelineParts(){
           comm:comm,nbDossiers:paAch.length+vWithPa.length+refsActives.length+refshActives.length};
 }
 function _pipelineCommEst(){return _pipelineParts().comm;}
+
+// ─── C3 — Le toast de revenu aux 3 jalons ───────────────────
+// La commission est la seule gratification que ce produit n'a pas à inventer : elle est réelle,
+// méritée, vérifiable, et elle sort du travail que le courtier voulait déjà faire. Trois moments,
+// force croissante : la promesse acceptée, la transaction conclue, l'acte notarié. Le CRM les
+// traversait en silence.
+//
+// ⚠ AMENDEMENT A2 — le format d'origine (« +X $ à ton pipeline » à l'acceptation) était FAUX.
+// _pipelineParts() compte une promesse dès sa CRÉATION, son statut lui est indifférent : à
+// l'acceptation, RIEN ne bouge dans le pipeline. L'annoncer aurait été un chiffre inventé au pixel
+// le plus scruté de l'app. Les deux seuls deltas vrais sont plus loin : conclure fait passer la
+// somme de « à venir » à « en attente notaire », notarier l'encaisse.
+//
+// Les montants viennent TOUJOURS de _dashCommAch/_dashCommVend : elles portent les gardes de
+// collaboration de l'Étape 33 (part cédée déduite chez le propriétaire, _collabMontant chez le
+// receveur). Sa part à lui, jamais la valeur de la transaction.
+function _jalonComm(store,rec){
+  return (store==='pa'||store==='a'||store==='ac'||store==='archac')?_dashCommAch(rec):_dashCommVend(rec);
+}
+function _jalonNom(rec){return ((rec.prenom||'')+' '+(rec.nom||'')).trim()||'la fiche';}
+// Montants au dollar près, et non _dashFmtMny : sur une carte de tableau de bord « 21,3 k$ » est un
+// résumé qui va bien, mais au moment où le courtier apprend ce qu'il vient de gagner, l'abrégé
+// affaiblit la nouvelle — et il masque le chiffre exact (21 250 ? 21 349 ?). La VALEUR, elle, sort
+// toujours des mêmes fonctions que le Dashboard (_dashCommAch/Vend, _dashEnAttenteNotaire,
+// _dashCommYearMonth) : les deux écrans ne peuvent pas dire deux nombres différents, seulement le
+// même nombre avec plus ou moins de décimales.
+function _jalonMny(v){return _fmtN(v)+' $';}
+// Les champs à chiffrer : 2 sur une promesse d'achat, 3 sur une vente. Plafond 3, jamais plus —
+// au-delà ce n'est plus un micro-éditeur, c'est le formulaire qu'on voulait éviter.
+function _jalonChamps(store){
+  if(store==='pa'||store==='a'||store==='ac'||store==='archac')
+    return [{k:'montant',lbl:'Montant de la promesse ($)'},{k:'commission',lbl:'Ta commission (%)'}];
+  return [{k:'montant',lbl:'Montant de la vente ($)'},{k:'commTot',lbl:'Commission totale (%)'},{k:'commAutre',lbl:"Part de l'autre courtier (%)"}];
+}
+// « Montant retenu : 425 000 $ × 5 % » — l'affichage EST l'invitation à corriger. Chiffres bruts et
+// non _dashFmtMny : c'est l'écho de ce que le courtier a saisi, pas un KPI du Dashboard.
+function _jalonRetenu(store,rec){
+  var m=parseFloat(rec.montant)||0;
+  var s='Montant retenu : '+_fmtN(m)+' $';
+  if(store==='pa'||store==='a'||store==='ac'||store==='archac'){
+    s+=' × '+(parseFloat(rec.commission)||0)+' %';
+  }else{
+    s+=' × '+(parseFloat(rec.commTot)||0)+' %';
+    var ca=parseFloat(rec.commAutre)||0;
+    if(ca>0)s+=' (moins '+ca+' % à l\'autre courtier)';
+  }
+  return s;
+}
+// Un seul constructeur pour les trois jalons : le texte change, la mécanique des gardes non.
+//  - masque 👁 actif (A4) → les faits SEULS, aucun montant, et pas de bouton : c'est précisément le
+//    réglage qu'on active quand l'écran est tourné vers un client.
+//  - commission à 0 (montant ou pourcentage manquant) → JAMAIS « +0 $ » au pic émotionnel du métier.
+//    Le toast dit ce qui manque et propose de le saisir. Même test que le « à chiffrer » de la carte 4.
+//  - le refus de chiffrer ne laisse AUCUNE trace : le déclencheur est la transition, un événement.
+//    Zéro drapeau stocké, donc zéro re-sollicitation au rendu suivant.
+// o = {faits, chiffre, seconde, store, id, manque}
+//   faits   = la ligne 1 SANS aucun montant — la seule qui survit au masque 👁
+//   chiffre = le complément chiffré de la ligne 1 (vide si rien à annoncer)
+//   seconde = la ligne 2 chiffrée · manque = la ligne 2 quand il n'y a rien à chiffrer
+function _jalonToast(o){
+  // A4 — masque actif : les FAITS seuls. Ni montant sur la ligne 1, ni ligne 2, ni bouton : c'est
+  // exactement le réglage qu'on active quand l'écran est tourné vers un client, un bouton
+  // « Ajuster » y ouvrirait les chiffres qu'on vient de cacher.
+  if(_heroCommMasque()){toast(o.faits,{jalon:true});return;}
+  if(o.chiffre)
+    toast(o.faits+o.chiffre+'\n'+o.seconde,{jalon:true,action:{label:'Ajuster',fn:function(r){_openMontantPop(o.store,o.id,r);}}});
+  else
+    toast(o.faits+'\n'+o.manque,{jalon:true,action:{label:'Ajouter',fn:function(r){_openMontantPop(o.store,o.id,r);}}});
+}
+// J1 — PA ACCEPTÉE. Aucune mention du pipeline : rien n'y bouge (A2). Pas de delta non plus, il n'y
+// en a pas à ce jalon — seulement la commission que cette promesse représente.
+function _jalonPaAcceptee(rec){
+  if(!rec)return;
+  var c=_dashCommAch(rec);
+  _jalonToast({
+    store:'pa',id:rec.id,
+    faits:'✓ PA acceptée — '+_jalonNom(rec),
+    chiffre:c>0?(' · ta commission estimée : '+_jalonMny(c)):'',
+    seconde:_jalonRetenu('pa',rec),
+    manque:'Montant ou commission manquants — ajoute-les pour ton pipeline'
+  });
+}
+
+// ─── C3 — Micro-éditeur montant/commission (popover) ────────
+// JAMAIS doEdit() : le formulaire d'une inscription compte une trentaine de contrôles. Deux ou trois
+// champs, à l'endroit où l'œil se trouve déjà, Entrée pour valider, Échap pour renoncer.
+// Une fois ouvert il est INDÉPENDANT du toast : un toast suivant ne peut pas le refermer (le toast
+// se remplace, le popover vit sa vie).
+var _mnyPop=null;
+function _mnyPopClose(){
+  if(!_mnyPop)return;
+  if(_mnyPop.el&&_mnyPop.el.parentNode)_mnyPop.el.parentNode.removeChild(_mnyPop.el);
+  document.removeEventListener('mousedown',_mnyPop.onDoc,true);
+  document.removeEventListener('keydown',_mnyPop.onKey,true);
+  _mnyPop=null;
+}
+function _openMontantPop(store,id,rect){
+  _mnyPopClose();
+  var rec=null,arr=db[store]||[];
+  for(var i=0;i<arr.length;i++){if(arr[i].id===id){rec=arr[i];break;}}
+  if(!rec)return;
+  var champs=_jalonChamps(store);
+  var pop=document.createElement('div');pop.className='cond-menu open mny-pop';
+  var ttl=document.createElement('div');ttl.className='mny-pop-title';ttl.textContent=_jalonNom(rec);
+  pop.appendChild(ttl);
+  var inputs=[];
+  champs.forEach(function(c){
+    var row=document.createElement('label');row.className='mny-pop-row';
+    var lb=document.createElement('span');lb.className='mny-pop-lbl';lb.textContent=c.lbl;
+    var inp=document.createElement('input');inp.type='number';inp.step='any';inp.className='mny-pop-inp';
+    inp.value=(rec[c.k]===undefined||rec[c.k]===null)?'':String(rec[c.k]);
+    row.appendChild(lb);row.appendChild(inp);pop.appendChild(row);
+    inputs.push({k:c.k,el:inp});
+  });
+  var bar=document.createElement('div');bar.className='mny-pop-bar';
+  var no=document.createElement('button');no.className='mny-pop-no';no.textContent='Annuler';
+  var ok=document.createElement('button');ok.className='mny-pop-ok';ok.textContent='Enregistrer';
+  bar.appendChild(no);bar.appendChild(ok);pop.appendChild(bar);
+  document.body.appendChild(pop);
+  var _z=_uiZoom();
+  var anchor=rect||{left:window.innerWidth/2-125,bottom:window.innerHeight-120,top:window.innerHeight-160,right:window.innerWidth/2+125};
+  pop.style.left=(anchor.left/_z)+'px';
+  pop.style.top=(Math.max(8,anchor.top-pop.offsetHeight-8)/_z)+'px';
+  _fitPopup(pop,anchor);
+  function _enregistrer(){
+    var chg=false;
+    inputs.forEach(function(x){if(x.el.value.trim()!==String(rec[x.k]||''))chg=true;});
+    if(chg)pushUndo('Montant/commission');
+    inputs.forEach(function(x){rec[x.k]=x.el.value.trim();});
+    sdb();rall();_mnyPopClose();
+    // A6 — la révision à la BAISSE (contre-offre) passe par ici comme les autres. On énonce le
+    // NOUVEAU montant retenu, neutre : jamais « −20 000 $ », jamais l'ancien chiffre en regard.
+    // Punir le courtier au moment précis où il met son dossier à jour est le meilleur moyen qu'il
+    // cesse de le mettre à jour.
+    toast('✓ '+_jalonRetenu(store,rec)+' — pipeline à jour');
+  }
+  ok.onclick=function(e){e.stopPropagation();_enregistrer();};
+  no.onclick=function(e){e.stopPropagation();_mnyPopClose();};
+  inputs.forEach(function(x){
+    x.el.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){e.preventDefault();e.stopPropagation();_enregistrer();}
+      if(e.key==='Escape'){e.preventDefault();e.stopPropagation();_mnyPopClose();}
+    });
+  });
+  _mnyPop={el:pop,
+    onDoc:function(ev){if(!pop.contains(ev.target))_mnyPopClose();},
+    onKey:function(ev){if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();_mnyPopClose();}}};
+  setTimeout(function(){
+    document.addEventListener('mousedown',_mnyPop.onDoc,true);
+    document.addEventListener('keydown',_mnyPop.onKey,true);
+  },10);
+  // Focus sur le premier champ VIDE : c'est celui qui manque qu'on vient remplir.
+  var cible=inputs.filter(function(x){return !x.el.value;})[0]||inputs[0];
+  cible.el.focus();if(cible.el.select)cible.el.select();
+}
 // Étape 31 — Références hypothécaires payées dans la période (filtre par dateRecue)
 function _dashRefshPaid(year,month){
   return (db.refsh||[]).filter(function(r){
@@ -10968,10 +11231,8 @@ function _paEchues(){return (db.pa||[]).filter(function(p){return _paEchue(p);})
 function _paAcceptee(id){
   var rec=_condSetValue('pa',id,'paEcheance','done','Promesse accept\u00e9e',function(r){r.statutPa='Accept\u00e9e';});
   if(!rec)return;
-  var qui=((rec.prenom||'')+' '+(rec.nom||'')).trim()||'la promesse';
-  toast(_paCondPending(rec)
-    ? '\u2713 '+qui+' \u2014 statut \u00ab Accept\u00e9e \u00bb, passe au suivi des conditions'
-    : '\u2713 '+qui+' \u2014 statut \u00ab Accept\u00e9e \u00bb : toutes les conditions sont d\u00e9j\u00e0 lev\u00e9es');
+  // C3/A3 \u2014 le toast existait d\u00e9j\u00e0 : on l'ENRICHIT, on n'en ajoute pas un second \u00e0 c\u00f4t\u00e9.
+  _jalonPaAcceptee(rec);
 }
 // ✗ Tombée — on réutilise les retours EXISTANTS (transferPaToA / transferPaevToDemande), avec leur
 // confirm() : ils détruisent les conditions et les montants, c'est le seul cas où P11 admet un
@@ -11173,7 +11434,10 @@ function ie(td){
   td.innerHTML="";td.appendChild(el);td.classList.add("ei");
   el.focus();if(el.type!=="datetime-local"&&el.select)el.select();
   var done=false;
-  function save(){if(done)return;done=true;var nv=el.value,ov=rec[field];if(field==='noCentris'||field==='centris')nv=_extractCentris(nv);if(nv!==String(ov||"")){pushUndo("\u00c9dition "+field);}rec[field]=nv;_touchAch();sdb();setTimeout(rall,15);if(type==="date"){try{syncCalendarField(rec,tab,field,ov,nv);}catch(e){}} if(tab==='a'&&field==='etat'&&nv==='PA Actif'&&ov!=='PA Actif'){setTimeout(function(){transferAToPa(rec.id);},150);}}
+  function save(){if(done)return;done=true;var nv=el.value,ov=rec[field];if(field==='noCentris'||field==='centris')nv=_extractCentris(nv);if(nv!==String(ov||"")){pushUndo("\u00c9dition "+field);}rec[field]=nv;_touchAch();sdb();setTimeout(rall,15);if(type==="date"){try{syncCalendarField(rec,tab,field,ov,nv);}catch(e){}} if(tab==='a'&&field==='etat'&&nv==='PA Actif'&&ov!=='PA Actif'){setTimeout(function(){transferAToPa(rec.id);},150);}
+    // C3/J1 — troisième accroche : le statut se pose aussi en 1 clic dans le tableau. Même jalon.
+    // Après le rall() différé, sinon le toast naîtrait avant le re-rendu qu'il commente.
+    if(tab==='pa'&&field==='statutPa'&&nv==='Acceptée'&&ov!=='Acceptée'){setTimeout(function(){_jalonPaAcceptee(rec);},150);}}
   el.addEventListener("blur",save);
   el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();el.blur();}if(e.key==="Escape"){done=true;el.removeEventListener("blur",save);setTimeout(rall,15);}});
 }
@@ -11495,8 +11759,13 @@ function saveEntry(){
   if(_toPa){
     setTimeout(function(){transferAToPa(entry.id);},100);
   }
+  // C3/J1 — le statut « Acceptée » peut aussi être posé depuis le formulaire. Même jalon, même toast.
+  // Il REMPLACE l'accusé de sauvegarde : un geste, un seul toast (le jalon dit tout ce que l'autre
+  // disait, et davantage).
+  var _j1=(ctab==='pa'&&entry.statutPa==='Acceptée'&&(!oldRec||oldRec.statutPa!=='Acceptée'));
   // Engagement (E1) — pas de toast si le modal de transfert PA prend le relais (deux signaux = bruit)
-  if(!_toPa)_toastSave(ctab,entry,!_isNew,oldRec);
+  if(!_toPa&&!_j1)_toastSave(ctab,entry,!_isNew,oldRec);
+  if(_j1)_jalonPaAcceptee(entry);
 }
 
 function doDel(tab,id){
