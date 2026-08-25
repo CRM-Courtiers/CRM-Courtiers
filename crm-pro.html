@@ -4063,7 +4063,13 @@ function getCW(tab){try{var x=localStorage.getItem("crmprocw"+tab);if(x){var ws=
 function saveCW(tab,ws){try{localStorage.setItem("crmprocw"+tab,JSON.stringify(ws));}catch(e){}}
 
 // ─── Helpers ─────────────────────────────────────────────────
-function dsince(d){if(!d)return 0;var dateP=String(d).substring(0,10);return Math.floor((Date.now()-new Date(dateP+"T12:00:00"))/86400000);}
+// COR-4 — comparaison CALENDAIRE : midi d'aujourd'hui contre midi de la date cible, comme le fait
+// déjà _daysBetween(). L'ancienne version comparait Date.now() — l'heure COURANTE — à midi de la
+// cible : dsince(aujourd'hui) valait donc −1 le matin et 0 l'après-midi, et le jour où une relance
+// devenait due, elle n'apparaissait qu'à partir de midi. Un demi-jour de retard, tous les jours.
+// Math.round et non floor : aux deux changements d'heure de l'année, midi-à-midi ne fait pas un
+// multiple exact de 24 h et floor rendrait un jour de moins.
+function dsince(d){if(!d)return 0;var dateP=String(d).substring(0,10);return Math.round((new Date(_todayStr()+"T12:00:00")-new Date(dateP+"T12:00:00"))/86400000);}
 // Extrait la partie date "YYYY-MM-DD" d'une cha\u00eene qui peut \u00eatre date seule ou datetime "YYYY-MM-DDTHH:MM"
 function _dateOnly(d){return String(d||'').substring(0,10);}
 // Retourne la partie heure "HH:MM" si pr\u00e9sente, sinon ''
@@ -7146,17 +7152,23 @@ function updatePancartesBadge(){
 }
 function updateRelanceBadges(){
   try{
-    var cpCount=(db.cp||[]).filter(function(x){return x.dateContact&&dsince(x.dateContact)>THR.cp;}).length;
-    var vpCount=(db.vp||[]).filter(function(x){return x.dateContact&&dsince(x.dateContact)>THR.vp;}).length;
-    var aRelance=(db.a||[]).filter(function(x){return x.lastModified&&dsince(x.lastModified)>THR.a;}).length;
-    // Étape 27 — le badge "Mes acheteurs" compte AUSSI les intérêts À SUIVRE (à traiter + visite à
-    // organiser), cohérent avec la pastille de ligne (_countInteretsSuivi).
+    // COR-4 — les badges ne recalculent PLUS la population : ils la DÉRIVENT de getRelancesList(),
+    // la même fonction que la carte « En relance » du bandeau et que la liste « À relancer » de
+    // l'Accueil. Ici les seuils étaient lus en direct (THR.cp) alors que getRelancesList passe par
+    // _thrTab() et son repli ||14/||20 : un THR absent ou à 0 donnait deux populations différentes
+    // sur trois surfaces qui prétendent compter la même chose. C'est exactement la divergence #20,
+    // déjà survenue en production entre ust() et getRelancesList — refermée d'un seul côté.
+    var _rel=getRelancesList();
+    var _parTab=function(t){return _rel.filter(function(r){return r.tab===t;}).length;};
+    // Étape 27 — le badge « Mes acheteurs » ADDITIONNE les intérêts à suivre (à traiter + visite à
+    // organiser). Écart VOULU avec les deux autres surfaces, et documenté : un badge d'onglet signale
+    // ce qui demande une action DANS cet onglet, ce n'est pas un total global. Seule la composante
+    // « relance » change de source ; l'addition reste.
     var aInterets=0;(db.a||[]).forEach(function(x){aInterets+=_countInteretsSuivi(x);});
-    var aCount=aRelance+aInterets;
     var setBadge=function(id,n){var b=document.getElementById(id);if(b){b.textContent=n;b.classList.toggle("zero",n===0);}};
-    setBadge("sb-cp-badge",cpCount);
-    setBadge("sb-vp-badge",vpCount);
-    setBadge("sb-a-badge",aCount);
+    setBadge("sb-cp-badge",_parTab('cp'));
+    setBadge("sb-vp-badge",_parTab('vp'));
+    setBadge("sb-a-badge",_parTab('a')+aInterets);
   }catch(e){console.warn('[relance badges]',e.message);}
 }
 
