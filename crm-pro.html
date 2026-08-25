@@ -3842,6 +3842,7 @@ async function autoImportFromFile(){
     // l'ancienne structure r\u00e9injecte des valeurs non migr\u00e9es par-dessus, champ par champ. On rejoue
     // donc la pr\u00e9qualification ici, comme le lastModified juste au-dessus le fait d\u00e9j\u00e0.
     _migrerPrequal();
+    _migrerCentrisV(); // COR-7 — même famille : la migration centris de COR-1 n'était pas rejouée
     if(added>0||updated>0){sdb();fullRender();var msg=[];if(added>0)msg.push(added+" ajout\u00e9(s)");if(updated>0)msg.push(updated+" mis \u00e0 jour");toast("\u2713 "+msg.join(", "));}
   }catch(e){console.error("Sync fichier erreur:",e);}
 }
@@ -3888,11 +3889,9 @@ function ldb(){
   // présents et différents), `centris` GAGNE — c'est la valeur que tout l'aval traite déjà comme
   // vraie. `centrisUrl` est laissé INERTE dans les données : aucun delete, donc aucun tombstone de
   // sync à propager, et rien n'est perdu si l'URL n'est pas extractible.
-  try{
-    var migCv=false;
-    (db.v||[]).forEach(function(r){if(!r.centris&&r.centrisUrl){var n=_extractCentris(r.centrisUrl);if(/^\d{6,9}$/.test(n)){r.centris=n;migCv=true;}}});
-    if(migCv){try{localStorage.setItem("crmpro-v",JSON.stringify(db.v));}catch(e){}}
-  }catch(e){}
+  // COR-7 — extraite en fonction (patron _migrerPrequal) pour être REJOUÉE après
+  // autoImportFromFile : la fusion réinjecte des fiches non migrées (famille COR-8c).
+  _migrerCentrisV();
   // COR-8 — la préqualification du client passe de la case `prequal2` au statut `prequal`. Aucun
   // courtier ne doit perdre ce qu'il a coché : une fiche acheteur dont la case était cochée et dont
   // le statut est vide reçoit « Oui ». Remplissage SI VIDE seulement — un statut déjà saisi est un
@@ -3915,6 +3914,15 @@ function ldb(){
 //    « Oui 350 000$ ») → on en TIRE le montant plutôt que de l'effacer, puis on ramène le statut
 //    dans la liste. Un montant déjà saisi n'est jamais écrasé.
 // `prequal2` n'est jamais supprimée : elle reste inerte, donc aucun tombstone à propager en synchro.
+// COR-1/COR-7 — migration centrisUrl→centris des inscriptions, ré-entrante (remplir-si-vide,
+// garde numérique) : appelée au chargement (ldb) ET rejouée après la fusion d'autoImportFromFile.
+function _migrerCentrisV(){
+  try{
+    var migCv=false;
+    (db.v||[]).forEach(function(r){if(!r.centris&&r.centrisUrl){var n=_extractCentris(r.centrisUrl);if(/^\d{6,9}$/.test(n)){r.centris=n;migCv=true;}}});
+    if(migCv){try{localStorage.setItem("crmpro-v",JSON.stringify(db.v));}catch(e){}}
+  }catch(e){}
+}
 function _migrerPrequal(){
   var mig=false;
   try{
@@ -5062,7 +5070,7 @@ var TUTORIELS=[
     +'<li><strong>En relance</strong> \u2014 les prospects et acheteurs qu\u2019il faut recontacter (inactifs depuis trop longtemps). M\u00eame nombre que la liste \u00ab \u00c0 relancer \u00bb plus bas.</li>'
     +'<li><strong>Aujourd\u2019hui</strong> \u2014 ce qui est c\u00e9dul\u00e9 <em>aujourd\u2019hui seulement</em> : tes rendez-vous de dossiers et les visites de tes acheteurs. Elle repart \u00e0 z\u00e9ro chaque matin.</li>'
     +'<li><strong>Demandes \u00e0 traiter</strong> \u2014 s\u00e9par\u00e9 en deux : c\u00f4t\u00e9 <strong>Acheteurs</strong> (int\u00e9r\u00eats \u00e0 traiter) et c\u00f4t\u00e9 <strong>Inscriptions</strong> (demandes re\u00e7ues sur tes propri\u00e9t\u00e9s).</li>'
-    +'<li>Une quatri\u00e8me carte, r\u00e9serv\u00e9e pour un usage \u00e0 venir.</li>'
+    +'<li><strong>Commissions \u00e0 venir</strong> \u2014 l\u2019estim\u00e9 de tes commissions sur les dossiers actifs : promesses d\u2019achat, promesses re\u00e7ues sur tes inscriptions (y compris celles d\u00e9pos\u00e9es par un autre courtier), r\u00e9f\u00e9rences. M\u00eame chiffre que le KPI \u00ab En cours \u00bb du Dashboard ; l\u2019\u0153il \ud83d\udc41 masque le montant quand ton \u00e9cran est tourn\u00e9 vers un client.</li>'
     +'</ul>'
     +'<h2>Tes t\u00e2ches \u00e0 faire</h2>'
     +'<p>Tout en haut de l\u2019Accueil, la carte <strong>\u2705 T\u00e2ches \u00e0 faire</strong> est ta liste personnelle. Tape une t\u00e2che et fais <strong>Entr\u00e9e</strong>. Si tu n\u2019as pas choisi d\u2019<strong>\u00e9ch\u00e9ance</strong>, TRI-ANGLE te la demande juste en dessous : choisis une date, ou clique <strong>Aujourd\u2019hui</strong> ou <strong>Sans \u00e9ch\u00e9ance</strong>. Aucune date n\u2019est jamais mise \u00e0 ta place \u2014 une \u00e9ch\u00e9ance, \u00e7a se d\u00e9cide. Tu peux en ajouter (ou en retirer) une plus tard avec \u270e. Coche-la quand c\u2019est fait (elle se barre), <strong>modifie son texte avec \u270e</strong>, supprime-la avec \u2715, ou efface tout d\u2019un coup les compl\u00e9t\u00e9es. Les \u00e9ch\u00e9ances d\u00e9pass\u00e9es s\u2019affichent en rouge.</p>'
@@ -5426,7 +5434,7 @@ var TUTORIELS=[
     +'<h2>Les indicateurs cl\u00e9s</h2>'
     +'<ul>'
     +'<li><strong>Encaiss\u00e9</strong> \u2014 tes commissions d\u00e9j\u00e0 touch\u00e9es cette ann\u00e9e (achats/ventes notari\u00e9s, r\u00e9f\u00e9rences).</li>'
-    +'<li><strong>En cours</strong> \u2014 les commissions \u00e0 venir des transactions actives (promesses + r\u00e9f\u00e9rences actives).</li>'
+    +'<li><strong>En cours</strong> \u2014 les commissions \u00e0 venir des transactions actives : promesses d\u2019achat, promesses re\u00e7ues sur tes inscriptions \u2014 qu\u2019elles viennent de tes propres acheteurs ou d\u2019un <strong>autre courtier</strong> (\u00e9ch\u00e9ance PA inscrite sur la fiche) \u2014 et r\u00e9f\u00e9rences actives.</li>'
     +'<li><strong>\u23f3 En attente notaire</strong> \u2014 la somme des commissions des dossiers <strong>conclus mais pas encore notari\u00e9s</strong> (Achats conclus + Ventes conclues). Ces montants ont quitt\u00e9 \u00ab En cours \u00bb sans entrer dans \u00ab Encaiss\u00e9 \u00bb \u2014 ce bloc \u00e9vite qu\u2019ils disparaissent de ta vue. Le sous-texte indique combien de dossiers sont en attente.</li>'
     +'<li><strong>Projection</strong> \u2014 Encaiss\u00e9 + En cours, compar\u00e9 \u00e0 l\u2019an dernier.</li>'
     +'</ul>'
@@ -5697,7 +5705,9 @@ function _todayStr(){var d=new Date(),m=d.getMonth()+1,dd=d.getDate();return d.g
 function _daysBetween(dateStr){
   var d=new Date(dateStr+"T12:00:00");
   var today=new Date(_todayStr()+"T12:00:00");
-  return Math.floor((d-today)/86400000);
+  // COR-7 (candidat consigné en COR-4) : round, pas floor — aux changements d'heure, midi-à-midi
+  // n'est pas 24 h pile et floor perdrait un jour. Même correctif que dsince().
+  return Math.round((d-today)/86400000);
 }
 
 // Trouve tous les événements (dates) tombant aujourd'hui dans PA + V — limité aux champs RDV
@@ -10624,15 +10634,24 @@ function _pipelineParts(){
   var paUniq=_dashDedup(db.pa||[]);
   var vUniq=_dashDedup(db.v||[]);
   var paAch=paUniq.filter(function(p){return !p.propertyId;});
-  var vWithPa=vUniq.filter(function(v){return paUniq.some(function(p){return p.propertyId===v.id;});});
+  // COR-7 — UN SEUL prédicat pour les deux sous-ensembles d'inscriptions (leçon #20 : jamais deux
+  // tests jumeaux). vWithPa = promesse INTERNE rattachée ; vExtPa = promesse d'un courtier EXTERNE
+  // (échéance PA posée sur la fiche v, truthy couvre la date ET 'done' — statut indifférent, comme
+  // pour les pa). La garde !hasPaInterne exclut TOUTE inscription à pa interne, plus forte que le
+  // seul cas double-rep (_syncDoubleRepPaToV recopie paEcheance→paExterneEcheance) : ces v-là sont
+  // déjà comptées via vWithPa — disjonction par construction, aucune ne compte deux fois.
+  function hasPaInterne(v){return paUniq.some(function(p){return p.propertyId===v.id;});}
+  var vWithPa=vUniq.filter(hasPaInterne);
+  var vExtPa=vUniq.filter(function(v){return !hasPaInterne(v)&&v.paExterneEcheance;});
   var refsActives=(db.refs||[]).filter(function(r){return r.statut!=='concluded';});
   var refshActives=(db.refsh||[]).filter(function(r){return r.statut!=='paid';});
   var comm=paAch.reduce(function(s,r){return s+_dashCommAch(r);},0)
           +vWithPa.reduce(function(s,r){return s+_dashCommVend(r);},0)
+          +vExtPa.reduce(function(s,r){return s+_dashCommVend(r);},0)
           +refsActives.reduce(function(s,r){return s+_dashCommRef(r);},0)
           +refshActives.reduce(function(s,r){return s+_dashCommRefh(r);},0);
-  return {paUniq:paUniq,vUniq:vUniq,paAch:paAch,vWithPa:vWithPa,refsActives:refsActives,refshActives:refshActives,
-          comm:comm,nbDossiers:paAch.length+vWithPa.length+refsActives.length+refshActives.length};
+  return {paUniq:paUniq,vUniq:vUniq,paAch:paAch,vWithPa:vWithPa,vExtPa:vExtPa,refsActives:refsActives,refshActives:refshActives,
+          comm:comm,nbDossiers:paAch.length+vWithPa.length+vExtPa.length+refsActives.length+refshActives.length};
 }
 function _pipelineCommEst(){return _pipelineParts().comm;}
 
@@ -10851,7 +10870,7 @@ function renderDashboard(){
   // Pipeline value (montants en cours) — le découpage ET la somme viennent de _pipelineParts(),
   // la source unique que partage la carte « Commissions à venir » du bandeau héros.
   var _pl=_pipelineParts();
-  var paUniq=_pl.paUniq,vUniq=_pl.vUniq,paAch=_pl.paAch,vWithPa=_pl.vWithPa;
+  var paUniq=_pl.paUniq,vUniq=_pl.vUniq,paAch=_pl.paAch,vWithPa=_pl.vWithPa,vExtPa=_pl.vExtPa;
   var refsActives=_pl.refsActives,refshActives=_pl.refshActives;
   var pipelineVal=paUniq.reduce(function(s,r){return s+(parseFloat(r.montant)||0);},0)+vWithPa.reduce(function(s,r){return s+(parseFloat(r.montant)||parseFloat(r.prix)||0);},0);
   var pipelineCommEst=_pl.comm;
@@ -10896,6 +10915,7 @@ function renderDashboard(){
   // Étape 24 — En cours décomposé par source
   var commPaAch=paAch.reduce(function(s,r){return s+_dashCommAch(r);},0);
   var commVwithPa=vWithPa.reduce(function(s,r){return s+_dashCommVend(r);},0);
+  var commVExtPa=vExtPa.reduce(function(s,r){return s+_dashCommVend(r);},0);
   var commRefsAct=refsActives.reduce(function(s,r){return s+_dashCommRef(r);},0);
   var commRefshAct=refshActives.reduce(function(s,r){return s+_dashCommRefh(r);},0);
   // Étape 24 — Projection annuelle + comparaison 2025 année complète
@@ -10914,7 +10934,7 @@ function renderDashboard(){
     +'<div class="dash-section-head"><div class="dash-section-title">Vue d\'ensemble &mdash; '+curYear+'</div><div class="dash-section-period">'+ytdLabel+'</div></div>'
     +'<div class="dash-kpis-3">'
     +'<div class="dash-kpi accent-lime"><div class="dash-kpi-label">&#128176; Encaiss&eacute; '+curYear+'</div><div class="dash-kpi-value">'+_dashFmtMny(yearData.comm)+'</div><div class="dash-kpi-sub">'+yearData.count+' transaction'+(yearData.count!==1?'s':'')+(prevYearData.comm?' &middot; Vs '+(curYear-1)+' m&ecirc;me p&eacute;riode : '+_dashFmtMny(prevYearData.comm):' &middot; Aucune r&eacute;f&eacute;rence '+(curYear-1))+'</div><div class="dash-kpi-delta '+deltaAnnComm.cls+'">'+deltaAnnComm.label+'</div></div>'
-    +'<div class="dash-kpi accent-amber"><div class="dash-kpi-label">&#128202; En cours &mdash; commissions &agrave; venir</div><div class="dash-kpi-value">'+_dashFmtMny(pipelineCommEst)+'</div><div class="dash-kpi-sub">'+paAch.length+' PA achats &middot; '+vWithPa.length+' PA re&ccedil;ues &middot; '+(refsActives.length+refshActives.length)+' r&eacute;f.</div></div>'
+    +'<div class="dash-kpi accent-amber"><div class="dash-kpi-label">&#128202; En cours &mdash; commissions &agrave; venir</div><div class="dash-kpi-value">'+_dashFmtMny(pipelineCommEst)+'</div><div class="dash-kpi-sub">'+paAch.length+' PA achats &middot; '+(vWithPa.length+vExtPa.length)+' PA re&ccedil;ues &middot; '+(refsActives.length+refshActives.length)+' r&eacute;f.</div></div>'
     +'<div class="dash-kpi accent-cyan"><div class="dash-kpi-label">⏳ En attente notaire</div><div class="dash-kpi-value">'+_dashFmtMny(attentNotaireData.comm)+'</div><div class="dash-kpi-sub">'+attentNotaireData.count+' dossier'+(attentNotaireData.count!==1?'s':'')+'</div></div>'
     +'</div></div>';
 
@@ -10973,6 +10993,15 @@ function renderDashboard(){
       +'<div class="dash-decomp-label">PA re&ccedil;ues sur tes inscriptions<div class="dash-decomp-meta">'+vWithPa.length+' inscription'+(vWithPa.length!==1?'s':'')+' avec offre active</div></div>'
       +'<div class="dash-decomp-amount">'+_dashFmtMny(commVwithPa)+'</div>'
       +'<div class="dash-decomp-arrow">'+(vWithPa.length>0?'&rarr;':'')+'</div>'
+    +'</div>'
+    // COR-7 — promesses de courtiers EXTERNES : la commission de l'inscripteur est réelle et en
+    // route. Cible = onglet v (ces inscriptions ne figurent PAS dans pa-en-vente — aucune fiche de
+    // promesse n'existe) ; la teinte v-paext fait le repérage à l'arrivée.
+    +'<div class="dash-decomp-row'+(vExtPa.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;v&quot;]\').click()':'')+'">'
+      +'<div class="dash-decomp-icon">&#128196;</div>'
+      +'<div class="dash-decomp-label">PA re&ccedil;ues (autre courtier)<div class="dash-decomp-meta">'+vExtPa.length+' inscription'+(vExtPa.length!==1?'s':'')+' avec promesse externe</div></div>'
+      +'<div class="dash-decomp-amount">'+_dashFmtMny(commVExtPa)+'</div>'
+      +'<div class="dash-decomp-arrow">'+(vExtPa.length>0?'&rarr;':'')+'</div>'
     +'</div>'
     +'<div class="dash-decomp-row'+(refsActives.length>0?' clickable" onclick="document.querySelector(\'.tbtn[data-tab=&quot;rea&quot;]\').click()':'')+'">'
       +'<div class="dash-decomp-icon">&#129309;</div>'
@@ -11441,11 +11470,20 @@ function _paCondPending(rec){return PA_COND_FIELDS.some(function(f){return rec[f
 function _paExterneRealisee(vid){
   var rec=_condSetValue('v',vid,'paExterneEcheance','done','Promesse externe r\u00e9alis\u00e9e');
   if(!rec)return;
-  // La destination n'est annoncée que si elle est vraie : une promesse dont toutes les conditions
-  // sont déjà levées n'apparaîtra dans aucune carte (P7 — ne jamais promettre un écran vide).
-  toast(_paCondPending(rec)
-    ? '\u2713 Promesse accept\u00e9e \u2014 '+(rec.adresse||'inscription')+' passe dans \u00ab PA Accept\u00e9e \u2014 Conditions \u00e0 finaliser \u00bb'
-    : '\u2713 Promesse accept\u00e9e \u2014 '+(rec.adresse||'inscription')+' : toutes les conditions sont d\u00e9j\u00e0 lev\u00e9es');
+  // COR-7 — l'interdiction de langage pipeline posée par C3 tombe (les v à PA externe comptent
+  // maintenant dans _pipelineParts), MAIS le montant y était DÉJÀ depuis la pose de l'échéance
+  // (critère « non vide », statut indifférent — même logique A2 que les pa) : à l'acceptation,
+  // RIEN ne bouge dans la carte 4. Donc FAIT STATIQUE, aucun verbe de mouvement, aucun delta.
+  // Patron _jalonToast : masque 👁 = faits seuls ; dégradé = jamais « 0 $ », ce qui manque + bouton
+  // « Ajouter » → _openMontantPop('v') (3 champs). La destination reste la ligne 2, annoncée
+  // seulement si elle est vraie (P7 — ne jamais promettre un écran vide).
+  _jalonToast({
+    store:'v',id:rec.id,
+    faits:'\u2713 Promesse accept\u00e9e \u2014 '+(rec.adresse||'inscription'),
+    chiffre:_dashCommVend(rec)>0?(' \u00b7 commission estim\u00e9e '+_jalonMny(_dashCommVend(rec))):'',
+    seconde:_paCondPending(rec)?'Passe dans \u00ab PA Accept\u00e9e \u2014 Conditions \u00e0 finaliser \u00bb':'Toutes les conditions sont d\u00e9j\u00e0 lev\u00e9es',
+    manque:'Montant ou commission manquants \u2014 ajoute-les pour ton pipeline'
+  });
 }
 function _paExterneNonRealisee(vid){
   var rec=_condSetValue('v',vid,'paExterneEcheance','','Promesse externe tomb\u00e9e',function(r){
