@@ -736,6 +736,22 @@ tbody tr.rl:hover .c-0,tbody tr.rl:hover .c-1,tbody tr.rl:hover .c-2{background:
 .frow .c-0,.frow .c-1,.frow .c-2{background:#F8FAFC!important;z-index:25!important}
 td.c-2,th.c-2{box-shadow:3px 0 8px rgba(15,23,42,.1)}
 
+/* 5e colonne sticky — Mes acheteurs SEULEMENT (décision LP : l'adresse reste sous les yeux, comme
+   sur les autres onglets où la bande figée s'arrête déjà à elle). Le jeu de règles doit être
+   COMPLET : il suffit d'en oublier une pour qu'une cellule blanche apparaisse au milieu d'une ligne
+   grise ou teintée — une couture bien plus visible que le gain. L'ombre de fin de bande quitte donc
+   .c-3 pour .c-4, ici et ici seulement. */
+#tbl-a .c-4{position:sticky!important;z-index:15}
+#tbl-a thead .c-4{z-index:25!important;background:linear-gradient(135deg,#0F172A,#1E293B)!important}
+#tbl-a tbody .c-4{background:#fff!important}
+#tbl-a tbody tr:nth-child(even) .c-4{background:#F8FAFC!important}
+#tbl-a tbody tr:hover .c-4{background:#E2E8F0!important}
+#tbl-a tbody tr.rl .c-4{background:#F8FAFC!important}
+#tbl-a tbody tr.rl:hover .c-4{background:#F1F5F9!important}
+#tbl-a .frow .c-4{background:#F8FAFC!important;z-index:25!important}
+#tbl-a .c-3,#tbl-a td.c-3,#tbl-a th.c-3{box-shadow:none}
+#tbl-a .c-4,#tbl-a td.c-4,#tbl-a th.c-4{box-shadow:3px 0 6px rgba(0,0,0,.08)}
+
 /* Copy email button */
 td.emc{position:relative}
 /* Cellule No. Centris — symétrique de emc : sans position:relative le bouton absolu s'échappait de
@@ -2628,6 +2644,10 @@ var COLS = {
     {lbl:"Notes",f:"notes",t:"text",w:130,cls:"nc"},
     {lbl:"MLS",f:"mls",t:"bool",w:44},
     {lbl:"DV",f:"declVend",t:"bool",w:40},
+    // COR-3 — sans cette colonne, le modal éditerait un champ invisible en grille : exactement le
+    // défaut que COR-1 vient de fermer sur le n° Centris. Le champ, le formulaire et la colonne
+    // arrivent ensemble ou pas du tout.
+    {lbl:"Inspection",f:"inspection",t:"cond",w:90,grp:"cond"},
     {lbl:"Financ.",f:"financement",t:"cond",w:80,grp:"cond"},
     {lbl:"R2.1",f:"r21",t:"cond",w:70,grp:"cond"},
     {lbl:"R2.2",f:"r22",t:"cond",w:70,grp:"cond"},
@@ -2824,7 +2844,10 @@ ST.a = {c1:4, d1:1, c2:3, d2:-1};
 ST.pa = {c1:3, d1:1, c2:2, d2:-1};
 ST['pa-en-vente'] = {c1:3, d1:1, c2:2, d2:-1};
 // Nombre de colonnes sticky par onglet (Pr\u00e9nom, Nom et autres en t\u00eate)
-var STICKY_COUNT = {cp:3, vp:3, a:4, pa:4, v:4, ac:3, vc:3, ca:3, "pa-en-vente":4, rea:3, rec:3, reh:3, archpa:2};
+// COR-3 (décision LP) — a:5 : sur Mes acheteurs, Adresse est la 5e colonne, alors qu'ailleurs la
+// bande figée s'y arrête déjà. Elle reste donc sous les yeux au défilement, et la barre de
+// progression court jusqu'à elle comme sur les autres onglets.
+var STICKY_COUNT = {cp:3, vp:3, a:5, pa:4, v:4, ac:3, vc:3, ca:3, "pa-en-vente":4, rea:3, rec:3, reh:3, archpa:2};
 
 // Load saved state (recherche vid\u00e9e au d\u00e9marrage pour \u00e9viter les filtres fant\u00f4mes)
 (function(){
@@ -3948,8 +3971,13 @@ function submitAToPA_Modal(){
   // quand des acheteurs liés partent ensemble : un seul toast.
   var _exigA=[['cca','CCA'],['loi25','Loi 25'],['consSec','Cons. sec.'],['canafe','CANAFE'],['prequal2','Préqualif.']];
   var _manq=_exigA.filter(function(x){return toTransfer.some(function(r){return !r[x[0]];});}).map(function(x){return x[1];});
+  // COR-3 — `alerte` est copiée elle aussi par la boucle for-in ci-dessus, et n'apparaît nulle part
+  // dans pa. Ligne SÉPARÉE, jamais mêlée aux manquants : un drapeau posé exprès n'est pas une pièce
+  // qui manque. Union sur le lot, comme les manquants — un seul toast pour des acheteurs liés.
+  var _alerte=toTransfer.some(function(r){return !!r.alerte;})?'\n⚠ Alerte au dossier — non affichée dans Promesses':'';
   var _msg='✓ '+noms.join(' + ')+' → Promesse en cours';
-  if(_manq.length)toast(_msg+'\nManquants au dossier : '+_manq.join(', '),{jalon:true});
+  if(_manq.length)toast(_msg+'\nManquants au dossier : '+_manq.join(', ')+_alerte,{jalon:true});
+  else if(_alerte)toast(_msg+_alerte,{jalon:true});
   else toast(_msg);
 }
 
@@ -4122,7 +4150,10 @@ var BARRE_COND_LBL={
 var BARRE_FIELDS_BY_TAB={
   a:["cca","loi25","consSec","canafe","prequal2"],
   pa:["inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"],
-  "pa-en-vente":["financement","r21","r22","assurImm","fosseSept","testEau","notaire"], // pas d'inspection : elle se gère sur la fiche En Vente
+  // COR-3 — inspection RÉINTÉGRÉE : le modal paev l'édite désormais et la colonne l'affiche. Sans
+  // elle ici, une promesse dont l'inspection est engagée mais pas faite afficherait 100 % — la barre
+  // mentirait sur le seul dossier où elle compte.
+  "pa-en-vente":["inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"],
   v:["evalVM","photos","mesures","inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"]
 };
 // Les 5 exigences du dossier acheteur — mêmes libellés et même ordre que le toast de transfert (E12).
@@ -4165,11 +4196,16 @@ function _barreTitre(tab,rec,p){
   // ce sont des pièces au dossier, pas des conditions de la promesse.
   var exig=BARRE_EXIG;
   var manq=exig.filter(function(x){return !rec[x[0]];});
-  if(!manq.length)return l1;
+  // COR-3 — l'alerte est de nature OPPOSÉE aux exigences : un drapeau posé volontairement, pas une
+  // pièce absente. Elle ne rejoint donc JAMAIS la liste « Manquants », elle prend sa propre ligne.
+  // Le transfert la copie dans la fiche pa (boucle for-in d'E12) où rien ne l'affiche ; le toast le
+  // dit une fois, la barre le redit à chaque survol — c'est la surface durable.
+  var _al=rec.alerte?"\n⚠ Alerte au dossier — non affichée dans Promesses":"";
+  if(!manq.length)return l1+_al;
   // Les cinq à false = promesse créée directement dans pa : la donnée n'a jamais été suivie. Annoncer
   // cinq manquements accuserait le courtier d'un oubli qu'il n'a pas commis.
-  if(manq.length===exig.length)return l1+"\nDossier acheteur : non suivi";
-  return l1+"\nManquants au dossier : "+manq.map(function(x){return x[1];}).join(", ");
+  if(manq.length===exig.length)return l1+"\nDossier acheteur : non suivi"+_al;
+  return l1+"\nManquants au dossier : "+manq.map(function(x){return x[1];}).join(", ")+_al;
 }
 // Paliers de couleur (demande LP) : la barre ne dit plus seulement « combien », elle dit « où j'en
 // suis ». Le vert est RÉSERVÉ au dossier complet — c'est ce qui lui garde sa valeur de récompense ;
@@ -4610,10 +4646,12 @@ function updateStickyOffsets(tab,liveWs){
   var l1=l0+(hid.indexOf(0)===-1?ws[0]:0);
   var l2=l1+(hid.indexOf(1)===-1?ws[1]:0);
   var l3=l2+(hid.indexOf(2)===-1?ws[2]:0);
+  var l4=l3+(hid.indexOf(3)===-1?ws[3]:0); // COR-3 — 5e colonne figée : une masquée compte 0, comme les autres
   document.querySelectorAll('#tbl-'+tab+' .c-0').forEach(function(el){el.style.left=l0+'px';});
   document.querySelectorAll('#tbl-'+tab+' .c-1').forEach(function(el){el.style.left=l1+'px';});
   document.querySelectorAll('#tbl-'+tab+' .c-2').forEach(function(el){el.style.left=l2+'px';});
   if(sc>=4)document.querySelectorAll('#tbl-'+tab+' .c-3').forEach(function(el){el.style.left=l3+'px';});
+  if(sc>=5)document.querySelectorAll('#tbl-'+tab+' .c-4').forEach(function(el){el.style.left=l4+'px';});
 }
 
 // ─── Build headers ───────────────────────────────────────────
@@ -6556,6 +6594,27 @@ function transferToConclus(fromTab,id){
       var paCorrespondantes=(db.pa||[]).filter(function(p){return p.propertyId===vendeur.id;});
       paCorrespondantes.forEach(function(pa){
         var archEntry={id:pa.id,prenom:pa.prenom,nom:pa.nom,statutPa:"Acceptée",telephone:pa.telephone,courriel:pa.courriel,adresse:pa.adresse||"",noCentris:pa.noCentris||pa.centris||"",montant:pa.montant||"",commission:pa.commission||"",notes:pa.notes||"",dateConclusion:dateConc,linkedToActeNom:((vendeur.prenom||"")+" "+(vendeur.nom||"")).trim()||"(sans nom)"};
+        // COR-1/§F5-A — c'était LE SEUL chemin de disparition de fiche qui ne nettoyait aucun
+        // événement : archEntry est énumérée champ par champ, donc sans les _evt_*, et rien
+        // n'appelait _calDeleteEvent. Les rappels de la promesse restaient dans l'agenda du courtier
+        // pour toujours, sur un dossier conclu, sans plus aucune fiche pour les gérer.
+        // Même règle que la branche principale juste au-dessus : un rappel FUTUR sur un dossier
+        // conclu n'a plus d'objet → on le supprime ; un événement passé est de l'historique d'agenda
+        // → on garde son id sur l'archive plutôt que de réécrire le passé. Le notaire suit toujours :
+        // la signature, elle, aura bien lieu.
+        (GCAL_FIELDS_BY_TAB['pa']||[]).forEach(function(champ){
+          if(champ==='notaire')return;
+          var k='_evt_'+champ;
+          if(!pa[k])return;
+          var dOnly=String(pa[champ]||"").slice(0,10);
+          var isFuture=/^\d{4}-\d{2}-\d{2}$/.test(dOnly)&&dOnly>_todayStr();
+          if(isFuture){
+            if(window.electronAPI){try{_calDeleteEvent({eventId:pa[k]}).catch(function(){});}catch(e){}}
+          }else{
+            archEntry[k]=pa[k];
+          }
+        });
+        if(pa._evt_notaire)archEntry._evt_notaire=pa._evt_notaire;
         db.archpa.push(archEntry);
         db.pa=(db.pa||[]).filter(function(x){return x.id!==pa.id;});
       });
@@ -11576,10 +11635,14 @@ function formForTab(tab,e){
       +'<div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>'
       +'<div class="fsec">Documents PA</div><div class="g4"><div class="fg"><label>Fiche MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"><label>Décl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div></div>'
       +'<div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div>'
-      +'<div class="g2">'+condFpaev("ffin","Financement",e.financement)+condFpaev("fr21","R2.1",e.r21)+'</div>'
-      +'<div class="g2">'+condFpaev("fr22","R2.2",e.r22)+condFpaev("fassur","Assur. immeuble",e.assurImm)+'</div>'
-      +'<div class="g2">'+condFpaev("ffosse","Fosse septique",e.fosseSept)+condFpaev("feau","Test eau",e.testEau)+'</div>'
-      +'<div class="g2">'+condFpaev("fnot","Notaire",e.notaire)+'<div class="fg"></div></div>'
+      // COR-3 — Inspection EN TÊTE, miroir exact de la grille de pa. Elle manquait alors que le
+      // champ vit sur db.pa comme les autres : getConditionsDue() lit db.pa SANS filtrer les
+      // promesses reçues, l'inspection d'une promesse reçue remontait donc déjà dans « Conditions à
+      // surveiller » de l'Accueil — nommée là-bas, non éditable ici. Un cul-de-sac exact.
+      +'<div class="g2">'+condFpaev("finsp","Inspection",e.inspection)+condFpaev("ffin","Financement",e.financement)+'</div>'
+      +'<div class="g2">'+condFpaev("fr21","R2.1",e.r21)+condFpaev("fr22","R2.2",e.r22)+'</div>'
+      +'<div class="g2">'+condFpaev("fassur","Assur. immeuble",e.assurImm)+condFpaev("ffosse","Fosse septique",e.fosseSept)+'</div>'
+      +'<div class="g2">'+condFpaev("feau","Test eau",e.testEau)+condFpaev("fnot","Notaire",e.notaire)+'</div>'
       +'<div style="margin-top:14px;padding:10px 12px;background:#FEF3C7;border-left:3px solid #F59E0B;border-radius:6px;font-size:11px;color:#78350F">💡 <strong>Montant et commission :</strong> non éditables ici — déjà comptabilisés sur la fiche <a href="javascript:void(0)" onclick="closeModal();doEdit(\'v\',\''+esc(e.propertyId)+'\')" style="color:#0EA5E9;font-weight:700">En Vente correspondante</a>.</div>';
   }
   if(tab==="pa"){
@@ -11710,10 +11773,11 @@ function saveEntry(){
     entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),noCentris:_extractCentris(gv("fnocentris")),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),inspection:gcondPa("finsp"),financement:gcondPa("ffin"),r21:gcondPa("fr21"),r22:gcondPa("fr22"),assurImm:gcondPa("fassur"),fosseSept:gcondPa("ffosse"),testEau:gcondPa("feau"),notaire:gcondPa("fnot"),ged:gc("fged"),montant:gv("fmontant"),commission:gv("fcomm")};
   }
   else if(ctab==="pa-en-vente"){
-    // Étape 19 — même structure que pa, sans Montant/Commission ni Inspection (déjà sur fiche En Vente)
+    // Étape 19 — même structure que pa, sans Montant/Commission (déjà comptabilisés sur la fiche
+    // En Vente). COR-3 : Inspection, elle, est bien éditée ici — le champ vit sur db.pa.
     // Étape 24 — courtierId = courtier collaborateur (vide = double rep)
     function gcondPaev(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
-    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),financement:gcondPaev("ffin"),r21:gcondPaev("fr21"),r22:gcondPaev("fr22"),assurImm:gcondPaev("fassur"),fosseSept:gcondPaev("ffosse"),testEau:gcondPaev("feau"),notaire:gcondPaev("fnot"),ged:gc("fged")};
+    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),inspection:gcondPaev("finsp"),financement:gcondPaev("ffin"),r21:gcondPaev("fr21"),r22:gcondPaev("fr22"),assurImm:gcondPaev("fassur"),fosseSept:gcondPaev("ffosse"),testEau:gcondPaev("feau"),notaire:gcondPaev("fnot"),ged:gc("fged")};
   }
   else if(ctab==="vp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),typeProp:gv("ftypeprop"),prix:gv("fprix"),dateContact:gv("fdate"),notes:gv("fnotes")};
   else if(ctab==="v"){
@@ -11778,13 +11842,15 @@ function saveEntry(){
       ['_collab','_ownerDev','_collabCh','_collabPct','_collabMontant'].forEach(function(_ck){
         if(oldRec[_ck]!==undefined&&entry[_ck]===undefined)entry[_ck]=JSON.parse(JSON.stringify(oldRec[_ck]));
       });
-      // Étape 19 — pa-en-vente : préserver propertyId, adresse (lookup), montant/commission, inspection (non-éditables ici — déjà sur fiche En Vente)
+      // Étape 19 — pa-en-vente : préserver propertyId, adresse (lookup) et montant/commission,
+      // non éditables ici car déjà comptabilisés sur la fiche En Vente.
+      // ⚠ COR-3 — `inspection` a QUITTÉ cette liste : le formulaire l'édite maintenant, et la
+      // préserver depuis l'ancien enregistrement écraserait purement et simplement la saisie.
       if(ctab==='pa-en-vente'){
         if(oldRec.propertyId)entry.propertyId=oldRec.propertyId;
         if(oldRec.adresse!==undefined)entry.adresse=oldRec.adresse;
         if(oldRec.montant!==undefined)entry.montant=oldRec.montant;
         if(oldRec.commission!==undefined)entry.commission=oldRec.commission;
-        if(oldRec.inspection!==undefined)entry.inspection=oldRec.inspection;
         if(oldRec.linkId)entry.linkId=oldRec.linkId;
       }
     }
