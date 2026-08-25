@@ -2615,7 +2615,9 @@ var COLS = {
     {lbl:"Nom",f:"nom",t:"text",w:100},
     {lbl:"Statut",f:"statutPa",t:"select",o:"STATUT_PA",w:100},
     {lbl:"Adresse (mandat)",f:"_vAdresse",t:"vlookup",w:200,cls:"mu"},
-    {lbl:"Lien Centris",f:"centrisUrl",t:"text",w:180,cls:"mu",title:"Entrez l'url de la propri\u00e9t\u00e9"},
+    // COR-1 \u2014 m\u00eame d\u00e9doublement ici : la colonne montrait `centrisUrl` alors que transferAToPa
+    // remplit `noCentris`, le champ qu'archpa affiche. Une seule maison pour le num\u00e9ro.
+    {lbl:"No. Centris",f:"noCentris",t:"centris",w:100,cls:"mu",title:"No Centris ou lien complet (num\u00e9ro extrait automatiquement)"},
     {lbl:"Repr\u00e9sentation",f:"courtierId",t:"courtier-coll",w:160,cls:"mu"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
@@ -2652,7 +2654,11 @@ var COLS = {
     {lbl:"Pr\u00e9nom",f:"prenom",t:"text",w:100},
     {lbl:"Nom",f:"nom",t:"text",w:100},
     {lbl:"Adresse",f:"adresse",t:"text",w:180,cls:"mu"},
-    {lbl:"Lien Centris",f:"centrisUrl",t:"text",w:180,cls:"mu",title:"Entrez l'url de la propri\u00e9t\u00e9"},
+    // COR-1 \u2014 `centris` est le champ canonique de l'inscription : c'est lui que le modal \u00e9crit et que
+    // tout l'aval lit (transferToConclus, lookup propri\u00e9t\u00e9, colonnes vc/ac/archvc). La colonne
+    // affichait `centrisUrl`, un second champ en texte brut que chaque enregistrement modal
+    // d\u00e9truisait. M\u00eame patron que pa : num\u00e9ro + bouton \ud83d\udd17 vers centris.ca.
+    {lbl:"No. Centris",f:"centris",t:"centris",w:100,cls:"mu",title:"No Centris ou lien complet (num\u00e9ro extrait automatiquement)"},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:110,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:160,cls:"mu"},
     {lbl:"Notes",f:"notes",t:"text",w:130,cls:"nc"},
@@ -3851,6 +3857,16 @@ function ldb(){
     (db.pa||[]).forEach(function(p){if(!p.noCentris&&p.centrisUrl){var n=_extractCentris(p.centrisUrl);if(/^\d{6,9}$/.test(n)){p.noCentris=n;migC=true;}}});
     if(migC){try{localStorage.setItem("crmpro-pa",JSON.stringify(db.pa));}catch(e){}}
   }catch(e){}
+  // COR-1 — même migration pour les inscriptions, dont la colonne montrait `centrisUrl` pendant que
+  // le modal écrivait `centris`. Fusion « remplir si vide » seulement : en cas de conflit (les deux
+  // présents et différents), `centris` GAGNE — c'est la valeur que tout l'aval traite déjà comme
+  // vraie. `centrisUrl` est laissé INERTE dans les données : aucun delete, donc aucun tombstone de
+  // sync à propager, et rien n'est perdu si l'URL n'est pas extractible.
+  try{
+    var migCv=false;
+    (db.v||[]).forEach(function(r){if(!r.centris&&r.centrisUrl){var n=_extractCentris(r.centrisUrl);if(/^\d{6,9}$/.test(n)){r.centris=n;migCv=true;}}});
+    if(migCv){try{localStorage.setItem("crmpro-v",JSON.stringify(db.v));}catch(e){}}
+  }catch(e){}
 }
 
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
@@ -3899,7 +3915,8 @@ function submitAToPA_Modal(){
     paEntry.id=newId();
     paEntry.statutPa='En cours';
     paEntry.adresse=adresse;
-    paEntry.centrisUrl=centrisUrl;
+    // COR-1 — plus d'écriture de centrisUrl : le numéro a une seule maison, noCentris, posée juste
+    // en dessous. La migration au chargement reste en place pour l'ancien stock.
     paEntry.noCentris=_extractCentris(centrisUrl); // la colonne visible est No. Centris
     if(!paEntry.mls)paEntry.mls=false;
     if(!paEntry.declVend)paEntry.declVend=false;
@@ -5053,7 +5070,7 @@ var TUTORIELS=[
   {sec:'En vente', num:12, titre:'Cr\u00e9er et g\u00e9rer une inscription', html:
     '<p>Une <strong>inscription</strong>, c\u2019est une propri\u00e9t\u00e9 que tu as en mandat de vente. La section <strong>Mes inscriptions</strong> centralise tout le suivi du mandat.</p>'
     +'<h2>Cr\u00e9er l\u2019inscription</h2>'
-    +'<p>Clique <strong>+ Ajouter</strong> et saisis le vendeur, l\u2019adresse, le n\u00b0 Centris et les d\u00e9tails. Tu peux promouvoir un prospect vendeur en inscription via son menu Actions.</p>'
+    +'<p>Clique <strong>+ Ajouter</strong> et saisis le vendeur, l\u2019adresse, le n\u00b0 Centris et les d\u00e9tails. Dans <strong>No. Centris</strong> tu peux <strong>coller le lien Centris complet</strong> : le num\u00e9ro en est extrait automatiquement, dans le formulaire comme dans la colonne. Tu peux promouvoir un prospect vendeur en inscription via son menu Actions.</p>'
     +'<h2>La check-list du mandat</h2>'
     +'<p>De nombreuses cases t\u2019aident \u00e0 ne rien oublier : \u00e9valuation, Loi 25, CANAFE, contrat de vente, d\u00e9claration du vendeur, MLS, taxes, zonage, certificat de localisation, photos, mesures, pancarte, etc. Coche au fur et \u00e0 mesure.</p>'
     +'<h2>Les pastilles d\u2019activit\u00e9</h2>'
@@ -11575,7 +11592,7 @@ function formForTab(tab,e){
       var dateVal=(!isDone&&val)?val:'';
       return'<div class="fg"><label>'+lbl+'</label><div style="display:flex;align-items:center;gap:6px"><input type="datetime-local" id="'+id+'d" step="900" value="'+esc(_toDtLocal(dateVal))+'" style="flex:1"><label style="display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;cursor:pointer"><input type="checkbox" id="'+id+'c"'+(isDone?' checked':'')+' style="width:auto"> Fait</label></div></div>';
     };
-    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>No Centris</label><input id="fcentris" value="'+esc(e.centris)+'"></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="g2">'+condFv("fevalvm","\u00c9valuation VM",e.evalVM)+'<div class="fg"></div></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div><div class="fg"></div></div><div class="fsec">Documents &amp; d\u00e9marches</div><div class="g4"><div class="fg"><label>Contrat vente</label><br>'+ck("fcontrat",e.contratVente)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"></div></div><div class="g4"><div class="fg"><label>Taxes scol.</label><br>'+ck("ftaxscol",e.taxesScol)+'</div><div class="fg"><label>Taxes mun.</label><br>'+ck("ftaxmun",e.taxesMun)+'</div><div class="fg"><label>Zonage</label><br>'+ck("fzonage",e.zonage)+'</div><div class="fg"><label>R\u00f4le \u00e9val.</label><br>'+ck("frole",e.roleEval)+'</div></div><div class="g4"><div class="fg"><label>Certif. loc.</label><br>'+ck("fcertif",e.certifLoc)+'</div><div class="fg"><label>Hydro</label><br>'+ck("fhydro",e.hydro)+'</div><div class="fg"></div><div class="fg"><label>Pancarte</label><br>'+ck("fpanc",e.pancarte)+'</div></div><div class="g4"><div class="fg"><label>Pr\u00e9qualif.</label><br>'+ck("fprequal2",e.prequal2)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFv("finsp","Inspection",e.inspection)+condFv("ffin","Financement",e.financement)+'</div><div class="g2">'+condFv("fr21","R2.1",e.r21)+condFv("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFv("fassur","Assur. immeuble",e.assurImm)+condFv("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFv("feau","Test eau",e.testEau)+condFv("fnot","Notaire",e.notaire)+'</div><div class="g2">'+condFv("fphotos","Photos",e.photos)+condFv("fmesures","Mesures",e.mesures)+'</div><div class="fsec">Transaction</div><div class="fg"><label>Montant transaction ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="g2"><div class="fg"><label>Commission totale (%)</label><input type="number" step="0.01" id="fcommtot" value="'+esc(e.commTot)+'"></div><div class="fg"><label>Commission autre courtier (%)</label><input type="number" step="0.01" id="fcommautre" value="'+esc(e.commAutre)+'"></div></div>';
+    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>No. Centris</label><input id="fcentris" placeholder="N&deg; ou lien Centris coll&eacute;" value="'+esc(e.centris)+'"></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="g2">'+condFv("fevalvm","\u00c9valuation VM",e.evalVM)+'<div class="fg"></div></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div><div class="fg"></div></div><div class="fsec">Documents &amp; d\u00e9marches</div><div class="g4"><div class="fg"><label>Contrat vente</label><br>'+ck("fcontrat",e.contratVente)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"></div></div><div class="g4"><div class="fg"><label>Taxes scol.</label><br>'+ck("ftaxscol",e.taxesScol)+'</div><div class="fg"><label>Taxes mun.</label><br>'+ck("ftaxmun",e.taxesMun)+'</div><div class="fg"><label>Zonage</label><br>'+ck("fzonage",e.zonage)+'</div><div class="fg"><label>R\u00f4le \u00e9val.</label><br>'+ck("frole",e.roleEval)+'</div></div><div class="g4"><div class="fg"><label>Certif. loc.</label><br>'+ck("fcertif",e.certifLoc)+'</div><div class="fg"><label>Hydro</label><br>'+ck("fhydro",e.hydro)+'</div><div class="fg"></div><div class="fg"><label>Pancarte</label><br>'+ck("fpanc",e.pancarte)+'</div></div><div class="g4"><div class="fg"><label>Pr\u00e9qualif.</label><br>'+ck("fprequal2",e.prequal2)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFv("finsp","Inspection",e.inspection)+condFv("ffin","Financement",e.financement)+'</div><div class="g2">'+condFv("fr21","R2.1",e.r21)+condFv("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFv("fassur","Assur. immeuble",e.assurImm)+condFv("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFv("feau","Test eau",e.testEau)+condFv("fnot","Notaire",e.notaire)+'</div><div class="g2">'+condFv("fphotos","Photos",e.photos)+condFv("fmesures","Mesures",e.mesures)+'</div><div class="fsec">Transaction</div><div class="fg"><label>Montant transaction ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="g2"><div class="fg"><label>Commission totale (%)</label><input type="number" step="0.01" id="fcommtot" value="'+esc(e.commTot)+'"></div><div class="fg"><label>Commission autre courtier (%)</label><input type="number" step="0.01" id="fcommautre" value="'+esc(e.commAutre)+'"></div></div>';
   }
   if(tab==="ac")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Date conclusion</label><input type="datetime-local" id="fdateconc" value="'+esc(_toDtLocal(e.dateConclusion))+'"></div><div class="fg"><label>Adresse</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="vc")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Date conclusion</label><input type="datetime-local" id="fdateconc" value="'+esc(_toDtLocal(e.dateConclusion))+'"></div><div class="fg"><label>Adresse</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fsec">Transaction</div><div class="fg"><label>Montant ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="g2"><div class="fg"><label>Commission totale (%)</label><input type="number" step="0.01" id="fcommtot" value="'+esc(e.commTot)+'"></div><div class="fg"><label>Commission autre courtier (%)</label><input type="number" step="0.01" id="fcommautre" value="'+esc(e.commAutre)+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
@@ -11693,7 +11710,7 @@ function saveEntry(){
   else if(ctab==="vp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),typeProp:gv("ftypeprop"),prix:gv("fprix"),dateContact:gv("fdate"),notes:gv("fnotes")};
   else if(ctab==="v"){
     function gcondV(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
-    entry={prenom:prenom,nom:gv("fnom"),centris:_extractCentris(gv("fcentris")),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),evalVM:gcondV("fevalvm"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),contratVente:gc("fcontrat"),declVend:gc("fdeclvend"),mls:gc("fmls"),taxesScol:gc("ftaxscol"),taxesMun:gc("ftaxmun"),zonage:gc("fzonage"),roleEval:gc("frole"),certifLoc:gc("fcertif"),hydro:gc("fhydro"),mesures:gcondV("fmesures"),pancarte:gc("fpanc"),photos:gcondV("fphotos"),prequal2:gc("fprequal2"),inspection:gcondV("finsp"),financement:gcondV("ffin"),r21:gcondV("fr21"),r22:gcondV("fr22"),assurImm:gcondV("fassur"),fosseSept:gcondV("ffosse"),testEau:gcondV("feau"),notaire:gcondV("fnot"),ged:gc("fged"),pancarteRet:gc("fpancret"),montant:gv("fmontant"),commTot:gv("fcommtot"),commAutre:gv("fcommautre")};
+    entry={prenom:prenom,nom:gv("fnom"),centris:_extractCentris(gv("fcentris")),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),evalVM:gcondV("fevalvm"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),contratVente:gc("fcontrat"),declVend:gc("fdeclvend"),mls:gc("fmls"),taxesScol:gc("ftaxscol"),taxesMun:gc("ftaxmun"),zonage:gc("fzonage"),roleEval:gc("frole"),certifLoc:gc("fcertif"),hydro:gc("fhydro"),mesures:gcondV("fmesures"),pancarte:gc("fpanc"),photos:gcondV("fphotos"),prequal2:gc("fprequal2"),inspection:gcondV("finsp"),financement:gcondV("ffin"),r21:gcondV("fr21"),r22:gcondV("fr22"),assurImm:gcondV("fassur"),fosseSept:gcondV("ffosse"),testEau:gcondV("feau"),notaire:gcondV("fnot"),ged:gc("fged"),montant:gv("fmontant"),commTot:gv("fcommtot"),commAutre:gv("fcommautre")};
   }
   else if(ctab==="ac")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),dateConclusion:gv("fdateconc"),adresse:gv("faddr"),montant:gv("fmontant"),commission:gv("fcomm"),notes:gv("fnotes")};
   else if(ctab==="vc")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),dateConclusion:gv("fdateconc"),adresse:gv("faddr"),montant:gv("fmontant"),commTot:gv("fcommtot"),commAutre:gv("fcommautre"),notes:gv("fnotes")};
@@ -11727,6 +11744,13 @@ function saveEntry(){
     // Pr\u00e9server les eventIds existants
     if(oldRec){
       for(var k in oldRec){if(k.indexOf('_evt_')===0)entry[k]=oldRec[k];}
+      // COR-1 — même préservation que vc, et pour la même raison : « pancarte retirée » se pose
+      // dans l'onglet Pancartes, jamais dans ce formulaire. La case fpancret a disparu en 0.3.48
+      // mais gc("fpancret") était resté : il rendait false, et comme le save REMPLACE l'objet
+      // entier, chaque enregistrement d'une inscription remettait pancarteRet à false — une
+      // pancarte marquée retirée RESSUSCITAIT dans l'inventaire. On préserve au lieu de supprimer
+      // la clé : la supprimer ferait exactement le même dégât.
+      if(ctab==='v'&&oldRec.pancarteRet!==undefined)entry.pancarteRet=oldRec.pancarteRet;
       // Préserver les champs pancarte pour vc (pas dans le formulaire — gérés via onglet Pancartes)
       if(ctab==='vc'){
         if(oldRec.pancarte!==undefined)entry.pancarte=oldRec.pancarte;
