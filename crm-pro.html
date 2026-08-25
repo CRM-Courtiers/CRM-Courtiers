@@ -747,6 +747,9 @@ td.emc{position:relative}
    la cellule, et sans règle de survol il restait à opacity:0. Il n'a donc jamais été cliquable. */
 td.cen{position:relative}
 td.cen:hover .cpb{opacity:1}
+/* Préqualification : le ✓ et le montant se lisent comme un bloc, centré dans sa colonne (demande LP).
+   Ciblé par data-f, que la cellule porte déjà — aucune classe ni aucun code à ajouter pour ça. */
+td[data-f="prequal"]{text-align:center}
 .cpb{position:absolute;right:2px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:20px;height:20px;border:none;border-radius:3px;background:#E2E8F0;color:#1E293B;cursor:pointer;font-size:11px;padding:0;opacity:0;transition:opacity .15s;z-index:3;box-shadow:0 0 4px rgba(255,255,255,.9)}
 td.emc:hover .cpb{opacity:1}
 .cpb:hover{background:#0F172A;color:#fff}
@@ -2509,7 +2512,7 @@ var COLS = {
     {lbl:"Nom",f:"nom",t:"text",w:110},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
-    {lbl:"Pr\u00e9qualif.",f:"prequal",t:"select",o:"PREQ_STS",w:90},
+    {lbl:"Pr\u00e9qualif.",f:"prequal",t:"select",o:"PREQ_STS",w:110},
     {lbl:"Type b\u00e2timent",f:"typeBat",t:"select",o:"TYPE_BAT",w:110},
     {lbl:"Prix min.",f:"prixMin",t:"number",w:90},
     {lbl:"Prix max.",f:"prixMax",t:"number",w:90},
@@ -2537,7 +2540,7 @@ var COLS = {
     // COR-8 \u2014 m\u00eame colonne que chez les prospects : la pr\u00e9qualification est UNE notion, elle se lit
     // au m\u00eame endroit et de la m\u00eame fa\u00e7on d'un onglet \u00e0 l'autre. Elle remplace la case `prequal2`,
     // qui disait la m\u00eame chose sous une autre forme (voir la migration au chargement).
-    {lbl:"Pr\u00e9qualif.",f:"prequal",t:"select",o:"PREQ_STS",w:90},
+    {lbl:"Pr\u00e9qualif.",f:"prequal",t:"select",o:"PREQ_STS",w:110},
     {lbl:"Actions",f:null,t:"action",w:400}
   ],
   pa: [
@@ -3835,6 +3838,10 @@ async function autoImportFromFile(){
     }
     // Migration : Acheteurs sans lastModified \u2014 initialiser \u00e0 aujourd'hui
     try{var today=_todayStr();(db.a||[]).forEach(function(r){if(!r.lastModified)r.lastModified=today;});}catch(e){}
+    // COR-8c \u2014 les migrations de ldb() tournent AVANT cette fusion : un fichier partag\u00e9 encore \u00e0
+    // l'ancienne structure r\u00e9injecte des valeurs non migr\u00e9es par-dessus, champ par champ. On rejoue
+    // donc la pr\u00e9qualification ici, comme le lastModified juste au-dessus le fait d\u00e9j\u00e0.
+    _migrerPrequal();
     if(added>0||updated>0){sdb();fullRender();var msg=[];if(added>0)msg.push(added+" ajout\u00e9(s)");if(updated>0)msg.push(updated+" mis \u00e0 jour");toast("\u2713 "+msg.join(", "));}
   }catch(e){console.error("Sync fichier erreur:",e);}
 }
@@ -3894,13 +3901,35 @@ function ldb(){
   // dans les données, donc aucun tombstone à propager en synchronisation et rien d'irréversible.
   // ⚠ Ne concerne que db.a : le `prequal2` des inscriptions est un document du dossier de vente,
   // sans rapport avec la préqualification d'un acheteur — il n'est pas touché.
-  try{
-    var migPq=false;
-    (db.a||[]).forEach(function(r){if(r.prequal2===true&&!r.prequal){r.prequal='Oui';migPq=true;}});
-    if(migPq){try{localStorage.setItem("crmpro-a",JSON.stringify(db.a));}catch(e){}}
-  }catch(e){}
+  _migrerPrequal();
 }
 
+// COR-8 — La préqualification passe de la case `prequal2` au statut `prequal` (+ son montant).
+// RÉ-ENTRANTE et sans effet sur des données déjà conformes : appelée au chargement ET après chaque
+// import du fichier partagé, parce que cet import fusionne champ par champ et peut réinjecter des
+// valeurs à l'ancienne structure par-dessus celles qu'on vient de migrer.
+// Deux reprises, aucune perte :
+//  ① case cochée + statut vide → « Oui ». Remplissage SI VIDE seulement : un statut déjà saisi est
+//    un choix explicite du courtier et gagne toujours, même s'il contredit la case.
+//  ② statut hors liste (les fiches d'exemple des premières versions portaient un texte libre,
+//    « Oui 350 000$ ») → on en TIRE le montant plutôt que de l'effacer, puis on ramène le statut
+//    dans la liste. Un montant déjà saisi n'est jamais écrasé.
+// `prequal2` n'est jamais supprimée : elle reste inerte, donc aucun tombstone à propager en synchro.
+function _migrerPrequal(){
+  var mig=false;
+  try{
+    (db.a||[]).forEach(function(r){if(r.prequal2===true&&!r.prequal){r.prequal='Oui';mig=true;}});
+    ['cp','a'].forEach(function(t){(db[t]||[]).forEach(function(r){
+      if(!r.prequal||PREQ_STS.indexOf(r.prequal)!==-1)return;
+      var brut=String(r.prequal),chiffres=brut.replace(/[^\d]/g,'');
+      if(!r.prequalMnt&&chiffres.length>=4)r.prequalMnt=chiffres;
+      r.prequal=/non/i.test(brut)?'Non':(/attente/i.test(brut)?'En attente':'Oui');
+      mig=true;
+    });});
+    if(mig){try{localStorage.setItem("crmpro-cp",JSON.stringify(db.cp));localStorage.setItem("crmpro-a",JSON.stringify(db.a));}catch(e){}}
+  }catch(e){}
+  return mig;
+}
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
 var _aToPA_acheteurId=null;
 function transferAToPa(id){
@@ -4002,7 +4031,7 @@ function _maybeSeedExamples(){
     var EX='EXEMPLE — supprimez cette fiche apr&egrave;s avoir parcouru l\'app';
 
     db.cp.push(
-      {id:newId(),prenom:'Luc',nom:'Sansnom',telephone:'514-555-0101',courriel:'luc.sansnom@exemple.com',prequal:'Oui 350 000$',typeBat:'Unifamiliale',prixMin:'300000',prixMax:'400000',secteur:'Plateau Mont-Royal',dateContact:d(-7),notes:EX},
+      {id:newId(),prenom:'Luc',nom:'Sansnom',telephone:'514-555-0101',courriel:'luc.sansnom@exemple.com',prequal:'Oui',prequalMnt:'350000',typeBat:'Unifamiliale',prixMin:'300000',prixMax:'400000',secteur:'Plateau Mont-Royal',dateContact:d(-7),notes:EX},
       {id:newId(),prenom:'Marie',nom:'Bidonneau',telephone:'438-555-0102',courriel:'marie.bidonneau@exemple.com',prequal:'En attente',typeBat:'Condo',prixMin:'200000',prixMax:'275000',secteur:'Rosemont',dateContact:d(-3),notes:EX}
     );
 
@@ -4075,7 +4104,7 @@ function getCW(tab){try{var x=localStorage.getItem("crmprocw"+tab);if(x){var ws=
   // Force la largeur de certaines colonnes \u00e0 la valeur d\u00e9finie dans COLS (\u00e9vite que les anciens caches \u00e9crasent les ajustements UI)
   // - action : boutons multiples, doit refl\u00e9ter ajouts r\u00e9cents
   // - pills : 2 pastilles (dem + pa), doit accommoder les 2
-  for(var i=0;i<COLS[tab].length;i++){if(COLS[tab][i].t==="action"||COLS[tab][i].t==="pills")ws[i]=COLS[tab][i].w;}
+  for(var i=0;i<COLS[tab].length;i++){if(COLS[tab][i].t==="action"||COLS[tab][i].t==="pills"||COLS[tab][i].f==="prequal")ws[i]=COLS[tab][i].w;}
   return ws;
 }}}catch(e){}return COLS[tab].map(function(c){return c.w;});}
 function saveCW(tab,ws){try{localStorage.setItem("crmprocw"+tab,JSON.stringify(ws));}catch(e){}}
