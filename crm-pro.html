@@ -2534,7 +2534,10 @@ var COLS = {
     {lbl:"Loi 25",f:"loi25",t:"bool",w:50},
     {lbl:"Cons. sec.",f:"consSec",t:"bool",w:64},
     {lbl:"CANAFE",f:"canafe",t:"bool",w:56},
-    {lbl:"Pr\u00e9qualif.",f:"prequal2",t:"bool",w:68},
+    // COR-8 \u2014 m\u00eame colonne que chez les prospects : la pr\u00e9qualification est UNE notion, elle se lit
+    // au m\u00eame endroit et de la m\u00eame fa\u00e7on d'un onglet \u00e0 l'autre. Elle remplace la case `prequal2`,
+    // qui disait la m\u00eame chose sous une autre forme (voir la migration au chargement).
+    {lbl:"Pr\u00e9qualif.",f:"prequal",t:"select",o:"PREQ_STS",w:90},
     {lbl:"Actions",f:null,t:"action",w:400}
   ],
   pa: [
@@ -3883,6 +3886,19 @@ function ldb(){
     (db.v||[]).forEach(function(r){if(!r.centris&&r.centrisUrl){var n=_extractCentris(r.centrisUrl);if(/^\d{6,9}$/.test(n)){r.centris=n;migCv=true;}}});
     if(migCv){try{localStorage.setItem("crmpro-v",JSON.stringify(db.v));}catch(e){}}
   }catch(e){}
+  // COR-8 — la préqualification du client passe de la case `prequal2` au statut `prequal`. Aucun
+  // courtier ne doit perdre ce qu'il a coché : une fiche acheteur dont la case était cochée et dont
+  // le statut est vide reçoit « Oui ». Remplissage SI VIDE seulement — un statut déjà saisi est un
+  // choix explicite du courtier et gagne toujours, même s'il contredit la case (donnée
+  // contradictoire qui existait déjà avant nous). `prequal2` n'est PAS supprimée : elle reste inerte
+  // dans les données, donc aucun tombstone à propager en synchronisation et rien d'irréversible.
+  // ⚠ Ne concerne que db.a : le `prequal2` des inscriptions est un document du dossier de vente,
+  // sans rapport avec la préqualification d'un acheteur — il n'est pas touché.
+  try{
+    var migPq=false;
+    (db.a||[]).forEach(function(r){if(r.prequal2===true&&!r.prequal){r.prequal='Oui';migPq=true;}});
+    if(migPq){try{localStorage.setItem("crmpro-a",JSON.stringify(db.a));}catch(e){}}
+  }catch(e){}
 }
 
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
@@ -3958,8 +3974,10 @@ function submitAToPA_Modal(){
   // visibles nulle part (ni colonne, ni champ) : sans ce rappel, une case non cochée disparaît en
   // silence. Constat, pas consigne — le courtier ne peut plus les cocher depuis pa. Union sur le lot
   // quand des acheteurs liés partent ensemble : un seul toast.
-  var _exigA=[['cca','CCA'],['loi25','Loi 25'],['consSec','Cons. sec.'],['canafe','CANAFE'],['prequal2','Préqualif.']];
-  var _manq=_exigA.filter(function(x){return toTransfer.some(function(r){return !r[x[0]];});}).map(function(x){return x[1];});
+  // COR-8 — une seule définition des exigences (BARRE_EXIG). La liste locale qui vivait ici en était
+  // une copie : deux copies de la même règle finissent toujours par diverger, et celle-ci aurait
+  // continué de lire la case pendant que la barre lisait le statut.
+  var _manq=BARRE_EXIG.filter(function(x){return toTransfer.some(function(r){return !_exigFaite(x,r);});}).map(function(x){return x[1];});
   // COR-3 — `alerte` est copiée elle aussi par la boucle for-in ci-dessus, et n'apparaît nulle part
   // dans pa. Ligne SÉPARÉE, jamais mêlée aux manquants : un drapeau posé exprès n'est pas une pièce
   // qui manque. Union sur le lot, comme les manquants — un seul toast pour des acheteurs liés.
@@ -3994,8 +4012,8 @@ function _maybeSeedExamples(){
     );
 
     db.a.push(
-      {id:newId(),prenom:'Jean',nom:'Anonyme',etat:'En attente',telephone:'514-555-0105',courriel:'jean.anonyme@exemple.com',adresse:'',notes:EX,cca:true,loi25:true,consSec:false,canafe:false,prequal2:true,lastModified:today},
-      {id:newId(),prenom:'Claudette',nom:'D&eacute;monstration',etat:'En attente',telephone:'438-555-0106',courriel:'claudette.demo@exemple.com',adresse:'',notes:EX,cca:true,loi25:false,consSec:true,canafe:true,prequal2:false,lastModified:d(-10)}
+      {id:newId(),prenom:'Jean',nom:'Anonyme',etat:'En attente',telephone:'514-555-0105',courriel:'jean.anonyme@exemple.com',adresse:'',notes:EX,cca:true,loi25:true,consSec:false,canafe:false,prequal:'Oui',prequalMnt:'375000',lastModified:today},
+      {id:newId(),prenom:'Claudette',nom:'D&eacute;monstration',etat:'En attente',telephone:'438-555-0106',courriel:'claudette.demo@exemple.com',adresse:'',notes:EX,cca:true,loi25:false,consSec:true,canafe:true,prequal:'En attente',lastModified:d(-10)}
     );
 
     db.pa.push(
@@ -4096,6 +4114,20 @@ function getOpts(k){if(k==="PREQ_STS")return PREQ_STS;if(k==="TYPE_BAT")return T
 function isEmailOk(v){return!v||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);}
 function fmEmail(v){if(!v)return'\u2014';var warn=!isEmailOk(v)?'<span style="color:#D97706;margin-left:3px" title="Format courriel invalide">\u26a0</span>':'';var safe=esc(v).replace(/\\/g,'\\\\').replace(/'/g,"\\'");return esc(v)+warn+'<button class="cpb" title="Copier" onclick="event.stopPropagation();navigator.clipboard.writeText(\''+safe+'\');this.textContent=\'\u2713\';var b=this;setTimeout(function(){b.textContent=\'\u2398\'},800)">&#9112;</button>';}
 // \u00c9tape 24 \u2014 No. Centris : affiche le num\u00e9ro + bouton \ud83d\udd17 pour ouvrir la fiche publique centris.ca
+// COR-8 — la préqualification du client : UN statut, UN montant, un seul rendu pour toutes les
+// grilles. Le montant ne s'affiche pas sur un « Non » (une préapprobation refusée n'a pas de
+// plafond) — mais il n'est PAS effacé : repasser à « Oui » le fait réapparaître tel quel.
+function fmPrequal(rec){
+  var st=rec.prequal||'';
+  var mnt=parseFloat(rec.prequalMnt)||0;
+  if(st==='Oui'){
+    return'<span class="chky">&#10003;</span>'
+      +(mnt>0?'<br><span style="font-size:10px;font-weight:700;color:#059669">'+_fmtN(mnt)+' $</span>':'');
+  }
+  if(st==='Non')return'<span class="badge bbl" style="background:#FEE2E2;color:#991B1B">Non</span>';
+  if(st)return'<span class="badge bbl">'+esc(st)+'</span>';
+  return'<span class="chkn">&#10003;</span>';
+}
 function fmCentris(v){if(!v)return'\u2014';var safe=esc(String(v).trim());return safe+'<button class="cpb" title="Ouvrir sur centris.ca" onclick="event.stopPropagation();_openCentris(\''+safe+'\')" style="margin-left:4px">\ud83d\udd17</button>';}
 function _openCentris(no){if(!no)return;var url='https://www.centris.ca/fr/propriete~a-vendre/'+encodeURIComponent(no);if(window.electronAPI&&window.electronAPI.openExternal){window.electronAPI.openExternal(url).catch(function(){window.open(url,'_blank');});}else{window.open(url,'_blank');}}
 // \u00c9tape 24 \u2014 Courtier : lookup nom dans db.courtiers, clic ouvre popup info, "(non assign\u00e9)" si vide
@@ -4143,7 +4175,7 @@ var BARRE_COND_LBL={
   evalVM:"Éval. VM",photos:"Photos",mesures:"Mesures"
 };
 var BARRE_FIELDS_BY_TAB={
-  a:["cca","loi25","consSec","canafe","prequal2"],
+  a:["cca","loi25","consSec","canafe","prequal"], // COR-8 — statut, plus la case
   pa:["inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"],
   // COR-3 — inspection RÉINTÉGRÉE : le modal paev l'édite désormais et la colonne l'affiche. Sans
   // elle ici, une promesse dont l'inspection est engagée mais pas faite afficherait 100 % — la barre
@@ -4152,7 +4184,13 @@ var BARRE_FIELDS_BY_TAB={
   v:["evalVM","photos","mesures","inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"]
 };
 // Les 5 exigences du dossier acheteur — mêmes libellés et même ordre que le toast de transfert (E12).
-var BARRE_EXIG=[['cca','CCA'],['loi25','Loi 25'],['consSec','Cons. sec.'],['canafe','CANAFE'],['prequal2','Préqualif.']];
+// COR-8 — la 5e lit désormais le STATUT de préqualification et non plus la case `prequal2` : le
+// nombre d'exigences et leurs libellés ne bougent pas d'un caractère, seule la source change. Les
+// chaînes figées du toast de transfert et du survol de la barre restent donc intactes.
+// 3e élément optionnel = le test d'accomplissement quand ce n'est pas un simple booléen.
+var BARRE_EXIG=[['cca','CCA'],['loi25','Loi 25'],['consSec','Cons. sec.'],['canafe','CANAFE'],
+  ['prequal','Préqualif.',function(r){return r.prequal==='Oui';}]];
+function _exigFaite(x,rec){return x[2]?!!x[2](rec):!!rec[x[0]];}
 function _barreProg(tab,rec){
   var fields=BARRE_FIELDS_BY_TAB[tab];if(!fields)return null;
   // Onglet a — exception assumée à la règle « pas de booléens ». Les cases documents de v sont
@@ -4163,7 +4201,7 @@ function _barreProg(tab,rec){
   // courtier PEUT cocher ces cases — la barre y désigne un geste, pas seulement un constat.
   if(tab==='a'){
     var d=0,r=[];
-    BARRE_EXIG.forEach(function(x){if(rec[x[0]])d++;else r.push(x[1]);});
+    BARRE_EXIG.forEach(function(x){if(_exigFaite(x,rec))d++;else r.push(x[1]);});
     return {done:d,total:BARRE_EXIG.length,reste:r,dossier:true};
   }
   var done=0,total=0,reste=[];
@@ -4190,7 +4228,7 @@ function _barreTitre(tab,rec,p){
   // le courtier relise exactement ce qu'il a lu en transférant. Elles n'entrent JAMAIS dans la barre :
   // ce sont des pièces au dossier, pas des conditions de la promesse.
   var exig=BARRE_EXIG;
-  var manq=exig.filter(function(x){return !rec[x[0]];});
+  var manq=exig.filter(function(x){return !_exigFaite(x,rec);});
   // COR-3 — l'alerte est de nature OPPOSÉE aux exigences : un drapeau posé volontairement, pas une
   // pièce absente. Elle ne rejoint donc JAMAIS la liste « Manquants », elle prend sa propre ligne.
   // Le transfert la copie dans la fiche pa (boucle for-in d'E12) où rien ne l'affiche ; le toast le
@@ -4880,7 +4918,12 @@ function renderTab(tab){
         h+=etd(col,tab,rec.id,dDisp);
       } else if(col.t==="select"){
         var val=rec[col.f]||"\u2014";
-        h+=etd(col,tab,rec.id,'<span class="badge bbl">'+esc(val)+'</span>');
+        // COR-8 \u2014 la pr\u00e9qualification s'affiche de la M\u00caME fa\u00e7on partout : un \u2713 vert quand le client
+        // est approuv\u00e9, et le montant accord\u00e9 juste dessous. M\u00eame patron que la colonne Notaire (une
+        // cellule dont le clic \u00e9dite un champ et dont l'affichage en porte un second, plus petit) :
+        // le clic ouvre toujours le select du statut, le montant se saisit dans la fiche.
+        if(col.f==='prequal')h+=etd(col,tab,rec.id,fmPrequal(rec));
+        else h+=etd(col,tab,rec.id,'<span class="badge bbl">'+esc(val)+'</span>');
       } else {
         var display=esc(rec[col.f]);
         if(j<2)display='<span class="bo">'+display+'</span>';
@@ -6158,7 +6201,7 @@ function transferCpToA(id){
     // colonne ni aucun champ de formulaire dans « Mes acheteurs » : ce sont des bagages, gardés en
     // silence pour que le retour aux prospects retrouve la qualification au lieu de la réinventer.
     db.a.push({id:newId(),prenom:r.prenom,nom:r.nom,etat:"",telephone:r.telephone,courriel:r.courriel,adresse:"",notes:r.notes||"",cca:false,loi25:false,consSec:false,canafe:false,mls:false,declVend:false,prequal2:false,inspection:"",financement:"",r21:"",r22:"",assurImm:"",fosseSept:"",testEau:"",notaire:"",montant:"",commission:"",linkId:r.linkId||"",lastModified:_todayStr(),
-      prequal:r.prequal||"",typeBat:r.typeBat||"",prixMin:r.prixMin||"",prixMax:r.prixMax||"",secteur:r.secteur||"",dateContact:r.dateContact||""});
+      prequal:r.prequal||"",prequalMnt:r.prequalMnt||"",typeBat:r.typeBat||"",prixMin:r.prixMin||"",prixMax:r.prixMax||"",secteur:r.secteur||"",dateContact:r.dateContact||""});
     noms.push(r.prenom+" "+r.nom);
   });
   var idsToRemove=toTransfer.map(function(r){return r.id;});
@@ -6195,7 +6238,7 @@ function transferPaToA(id,opts){
     // E11 — la trace suit le client : la fiche acheteur recréée dit pourquoi elle est revenue.
     var _n=(r.notes||'').replace(/\s+$/,'');
     if(opts&&opts.trace)_n=_n?(_n+'\n'+opts.trace):opts.trace;
-    var aEntry={id:newId(),prenom:r.prenom,nom:r.nom,etat:'En attente',telephone:r.telephone,courriel:r.courriel,adresse:r.adresse||'',notes:_n,cca:r.cca||false,loi25:r.loi25||false,consSec:r.consSec||false,canafe:r.canafe||false,prequal2:r.prequal2||false,linkId:r.linkId||''};
+    var aEntry={id:newId(),prenom:r.prenom,nom:r.nom,etat:'En attente',telephone:r.telephone,courriel:r.courriel,adresse:r.adresse||'',notes:_n,cca:r.cca||false,loi25:r.loi25||false,consSec:r.consSec||false,canafe:r.canafe||false,prequal2:r.prequal2||false,prequal:r.prequal||'',prequalMnt:r.prequalMnt||'',typeBat:r.typeBat||'',prixMin:r.prixMin||'',prixMax:r.prixMax||'',secteur:r.secteur||'',linkId:r.linkId||''};
     db.a.push(aEntry);
     noms.push(r.prenom+' '+r.nom);
   });
@@ -6223,7 +6266,7 @@ function transferAToCp(id){
     // ⚠ dateContact fait exception et reste AUJOURD'HUI : le retour EST un contact. Restituer la
     // vieille date rallumerait une relance immédiate sur un client qu'on vient justement de voir.
     db.cp.push({id:newId(),prenom:r.prenom,nom:r.nom,telephone:r.telephone,courriel:r.courriel,
-      prequal:r.prequal||"",typeBat:r.typeBat||"",prixMin:r.prixMin||"",prixMax:r.prixMax||"",secteur:r.secteur||"",
+      prequal:r.prequal||"",prequalMnt:r.prequalMnt||"",typeBat:r.typeBat||"",prixMin:r.prixMin||"",prixMax:r.prixMax||"",secteur:r.secteur||"",
       dateContact:dateNow,notes:r.notes||"",linkId:r.linkId||""});
     noms.push(r.prenom+" "+r.nom);
   });
@@ -11611,9 +11654,9 @@ function selOpts(arr,sel){return arr.map(function(o){return"<option"+(o===sel?" 
 function formForTab(tab,e){
   e=e||{};
   var ck=function(id,v){return'<input type="checkbox" id="'+id+'"'+(v?' checked':'')+' style="width:auto">';};
-  if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Type b\u00e2timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact <span style="font-size:10px;color:#94A3B8">(la relance se calcule à partir de cette date)</span></label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10)||(e.id?'':_todayStr()))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
+  if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Pr&eacute;qualifi&eacute; jusqu&rsquo;&agrave; ($)</label><input type="number" id="fprequalmnt" value="'+esc(e.prequalMnt)+'"></div></div><div class="g2"><div class="fg"><label>Type b&acirc;timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div><div class="fg"></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact <span style="font-size:10px;color:#94A3B8">(la relance se calcule à partir de cette date)</span></label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10)||(e.id?'':_todayStr()))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="a"){
-    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>\u00c9tat</label><select id="fetat"><option value="">\u2014</option>'+selOpts(ETAT_ACH,e.etat)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Recherche du client</div><div class="g2"><div class="fg"><label>Préqualification (statut)</label><select id="fprequal"><option value="">—</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Type bâtiment</label><select id="ftypebat"><option value="">—</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>CCA</label><br>'+ck("fcca",e.cca)+'</div><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div></div><div class="g4"><div class="fg"><label>Pr\u00e9qualif.</label><br>'+ck("fprequal2",e.prequal2)+'</div><div class="fg"><label>Alerte</label><br>'+ck("falerte",e.alerte)+'</div><div class="fg"></div><div class="fg"></div></div>';
+    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>\u00c9tat</label><select id="fetat"><option value="">\u2014</option>'+selOpts(ETAT_ACH,e.etat)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Recherche du client</div><div class="g2"><div class="fg"><label>Pr&eacute;qualification</label><select id="fprequal"><option value="">—</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Pr&eacute;qualifi&eacute; jusqu&rsquo;&agrave; ($)</label><input type="number" id="fprequalmnt" value="'+esc(e.prequalMnt)+'"></div></div><div class="g2"><div class="fg"><label>Type bâtiment</label><select id="ftypebat"><option value="">—</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div><div class="fg"></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>CCA</label><br>'+ck("fcca",e.cca)+'</div><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div></div><div class="g4"><div class="fg"><label>Alerte</label><br>'+ck("falerte",e.alerte)+'</div><div class="fg"></div><div class="fg"></div><div class="fg"></div></div>';
   }
   if(tab==="pa-en-vente"){
     // Étape 19 — form clone de pa, sans Montant/Commission. Adresse = lookup readonly depuis fiche En Vente.
@@ -11774,13 +11817,13 @@ function saveEntry(){
   var _isNew=!eid;
   pushUndo(eid?"Modification":"Ajout");
   var entry={};
-  if(ctab==="cp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),prequal:gv("fprequal"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),dateContact:gv("fdate"),notes:gv("fnotes")};
+  if(ctab==="cp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),prequal:gv("fprequal"),prequalMnt:gv("fprequalmnt"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),dateContact:gv("fdate"),notes:gv("fnotes")};
   else if(ctab==="a"){
     // COR-6b — la « Recherche du client » (statut de préqualification, type, fourchette, secteur) est
     // maintenant ÉDITÉE ici : mêmes champs et mêmes éditeurs que chez les prospects, pour qu'un
     // aller-retour ne change ni la donnée ni la façon de la saisir.
-    entry={prenom:prenom,nom:gv("fnom"),etat:gv("fetat"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),alerte:gc("falerte"),cca:gc("fcca"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),prequal2:gc("fprequal2"),
-      prequal:gv("fprequal"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),lastModified:_todayStr()};
+    entry={prenom:prenom,nom:gv("fnom"),etat:gv("fetat"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),notes:gv("fnotes"),alerte:gc("falerte"),cca:gc("fcca"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),
+      prequal:gv("fprequal"),prequalMnt:gv("fprequalmnt"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),lastModified:_todayStr()};
   }
   else if(ctab==="pa"){
     function gcondPa(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
@@ -11838,7 +11881,7 @@ function saveEntry(){
       // écraserait la saisie — le clobber exact fermé sur l'inspection en COR-3.
       // dateContact reste hors formulaire : sur cet onglet la relance se calcule sur lastModified,
       // afficher une seconde date créerait deux vérités concurrentes.
-      if(ctab==='a'&&oldRec.dateContact!==undefined)entry.dateContact=oldRec.dateContact;
+      if(ctab==='a'){if(oldRec.dateContact!==undefined)entry.dateContact=oldRec.dateContact;if(oldRec.prequal2!==undefined)entry.prequal2=oldRec.prequal2;}
       // COR-1 — même préservation que vc, et pour la même raison : « pancarte retirée » se pose
       // dans l'onglet Pancartes, jamais dans ce formulaire. La case fpancret a disparu en 0.3.48
       // mais gc("fpancret") était resté : il rendait false, et comme le save REMPLACE l'objet
