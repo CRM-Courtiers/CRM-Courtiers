@@ -3840,7 +3840,7 @@ function ldb(){
   try{var t=localStorage.getItem("crmprothr");if(t){var pt=JSON.parse(t);THR.cp=pt.cp||14;THR.vp=pt.vp||14;THR.a=pt.a||20;}}catch(e){}
   // Migration : fiches Acheteurs sans lastModified — initialiser à aujourd'hui pour démarrer le chrono d'inactivité
   try{
-    var today=new Date().toISOString().substring(0,10);
+    var today=_todayStr(); // COR-2 — heure locale, par uniformité avec le reste de l'app
     var migrated=false;
     (db.a||[]).forEach(function(r){if(!r.lastModified){r.lastModified=today;migrated=true;}});
     if(migrated){try{localStorage.setItem("crmpro-a",JSON.stringify(db.a));}catch(e){}}
@@ -6151,7 +6151,10 @@ function transferAToCp(id){
   // Si li\u00e9, transf\u00e9rer aussi la partenaire (lien pr\u00e9serv\u00e9 dans la nouvelle tab)
   var toTransfer=[rec];
   if(rec.linkId){toTransfer=db.a.filter(function(x){return x.linkId===rec.linkId;});}
-  var dateNow=new Date().toISOString().split("T")[0];
+  // COR-2 — _todayStr() et non toISOString() : ce dernier donne la date UTC, donc CELLE DE DEMAIN
+  // au Québec passé 20 h (EDT). Un acheteur renvoyé aux prospects en soirée repartait avec un
+  // « dernier contact » daté de demain — dsince() négatif, et la fiche n'entrait JAMAIS en relance.
+  var dateNow=_todayStr();
   var noms=[];
   toTransfer.forEach(function(r){
     db.cp.push({id:newId(),prenom:r.prenom,nom:r.nom,telephone:r.telephone,courriel:r.courriel,prequal:"",typeBat:"",prixMin:"",prixMax:"",secteur:"",dateContact:dateNow,notes:r.notes||"",linkId:r.linkId||""});
@@ -6460,7 +6463,10 @@ function transferToConclus(fromTab,id){
   if(rec.linkId){
     toTransfer=db[fromTab].filter(function(x){return x.linkId===rec.linkId;});
   }
-  var dateConc=new Date().toISOString().split("T")[0];
+  // COR-2 — heure LOCALE : une conclusion signée le 31 décembre après 20 h portait la date UTC du
+  // 1er janvier et basculait dans l'année comptable suivante au Dashboard (_dashFilterByPeriod
+  // découpe par année sur dateConclusion). Un revenu de l'an dernier compté cette année.
+  var dateConc=_todayStr();
   var noms=[];
   toTransfer.forEach(function(r){
     var baseEntry={id:newId(),prenom:r.prenom,nom:r.nom,telephone:r.telephone,courriel:r.courriel,dateConclusion:dateConc,adresse:r.adresse||"",notes:r.notes||"",linkId:r.linkId||""};
@@ -6792,7 +6798,9 @@ function markNotaried(tab,id){
   var _encAvant=_dashCommYearMonth(_anJ3,null).comm;
   pushUndo('Notarié');
   // Date d'archivage = date du RDV notaire déjà saisie (champ 'notaire') si présente, sinon aujourd'hui.
-  var dateNotaire=(rec.notaire&&rec.notaire!==true&&rec.notaire!=='done')?_dateOnly(rec.notaire):new Date().toISOString().split("T")[0];
+  // COR-2 — le repli en heure LOCALE (même enjeu d'année comptable qu'à la conclusion : l'Encaissé
+  // du Dashboard se découpe par année sur dateNotaire).
+  var dateNotaire=(rec.notaire&&rec.notaire!==true&&rec.notaire!=='done')?_dateOnly(rec.notaire):_todayStr();
   rec.dateNotaire=dateNotaire;  // affichée dans la colonne "Notaire (signé)" des archives
   // notaire / notaireId restent sur la fiche (le notaire qui a instrumenté reste visible)
   db[targetTab].push(rec);
