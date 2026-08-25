@@ -193,8 +193,6 @@ header h1{font-size:18px;font-weight:500;color:#F1F5F9;letter-spacing:.02em;font
 .dem-tbl tbody tr:nth-child(even) td{background:#F8FAFC!important}
 .dem-tbl tbody tr:nth-child(odd) td{background:#fff!important}
 .dem-tbl tbody tr:hover td{background:#E2E8F0!important}
-.centris-tooltip{display:none}
-td:hover .centris-tooltip{display:inline;color:#0EA5E9;font-style:italic;font-size:12px}
 .dem-tbl td.ei:hover{outline:1px solid #CBD5E1!important;outline-offset:-1px}
 .dem-tbl td.ei.editing{padding:2px 4px!important;overflow:visible!important;outline:2px solid #10B981!important;background:#F8FAFC!important}
 .dem-tbl td.ei input,.dem-tbl td.ei textarea,.dem-tbl td.ei select{width:100%;padding:4px 6px;border:1.5px solid #0EA5E9;border-radius:4px;font-family:inherit;font-size:12px;outline:none;background:#fff;color:#0F172A;box-sizing:border-box}
@@ -1316,13 +1314,13 @@ body.app-readonly th .rz{pointer-events:none}
       <div class="renew-plans">
         <div class="renew-plan">
           <div class="renew-plan-label">Mensuel</div>
-          <div class="renew-plan-price">50<span class="renew-plan-unit">$/mois</span></div>
+          <div class="renew-plan-price">60<span class="renew-plan-unit">$/mois</span></div>
           <div class="renew-plan-desc">Aucun engagement</div>
         </div>
         <div class="renew-plan featured">
           <div class="renew-plan-badge">&#11088; Recommand&eacute;</div>
           <div class="renew-plan-label">Annuel</div>
-          <div class="renew-plan-price">500<span class="renew-plan-unit">$/an</span></div>
+          <div class="renew-plan-price">600<span class="renew-plan-unit">$/an</span></div>
           <div class="renew-plan-desc">2 mois gratuits</div>
         </div>
       </div>
@@ -1336,7 +1334,7 @@ body.app-readonly th .rz{pointer-events:none}
           <div class="renew-step-title">Envoyez un virement Interac</div>
           <div class="renew-step-detail">
             Destinataire : <strong>lpbussiere.lpb@gmail.com</strong> (d&eacute;p&ocirc;t automatique &mdash; pas de question de s&eacute;curit&eacute;)<br>
-            Montant : <strong>50$</strong> (mensuel) ou <strong>500$</strong> (annuel) &mdash; l'adjoint(e) est incluse, sans frais
+            Montant : <strong>60$</strong> (mensuel) ou <strong>600$</strong> (annuel) &mdash; l'adjoint(e) est incluse, sans frais
           </div>
         </div>
       </div>
@@ -4986,9 +4984,6 @@ function renderTab(tab){
       } else {
         var display=esc(rec[col.f]);
         if(j<2)display='<span class="bo">'+display+'</span>';
-        if(!rec[col.f]&&col.f==='centrisUrl'){
-          display='<span class="centris-tooltip">Entrez l\'url de la propriété</span>';
-        }
         h+=etd(col,tab,rec.id,display);
       }
     }
@@ -12449,7 +12444,7 @@ if(window.electronAPI){
 else{tryRestoreAutoSave();try{var dn=localStorage.getItem("sc-autodir-name");if(dn)showSaveStatus("\uD83D\uDCC2 Dossier pr\u00e9c\u00e9dent : \u00ab "+dn+" \u00bb \u2014 cliquez 'Connecter dossier auto'");}catch(e){}}
 
 // ─── Version + Mises à jour (Electron only) ──────────────────
-// Stocker la date d'installation au tout premier lancement (utile plus tard pour trial 3 mois)
+// Stocker la date d'installation au tout premier lancement (utile plus tard pour l'essai 90 jours)
 try{if(!localStorage.getItem('crmpro-install-date'))localStorage.setItem('crmpro-install-date',new Date().toISOString().substring(0,10));}catch(e){}
 
 function _setUpdateStatus(msg,isError){
@@ -12969,9 +12964,17 @@ function _licApplyUI(){
       statusEl.style.borderLeftColor='#22C55E';
       statusEl.style.background='#F0FDF4';
       statusEl.style.color='#14532D';
+      // PASS — le plan vient du SERVEUR : /api/validate renvoie `plan` ('free_trial' | 'paid') et
+      // les trois chemins d'écriture (activation, wizard, refresh) stockent la réponse ENTIÈRE dans
+      // lastResult, donc rien n'est omis. Deux valeurs connues, deux libellés — et si le champ est
+      // absent (clé créée avant l'introduction du plan), la ligne DISPARAÎT au lieu d'annoncer
+      // « Abonnement » par défaut : mieux vaut ne rien dire que dire faux sur ce que le client paie.
+      // Libellé de l'essai : 90 jours (TRIAL_DAYS serveur et toast d'activation) — « 3 mois » était
+      // approximatif et faux de quelques jours selon les mois.
+      var _planLbl=(r.plan==='free_trial')?'Essai gratuit (90 jours)':((r.plan==='paid')?'Abonnement':'');
       statusEl.innerHTML='<strong>✓ Licence active</strong><br>'
         +'Client : '+esc(r.name||'')+'<br>'
-        +'Plan : '+(r.plan==='free_trial'?'Essai 3 mois':'Abonnement')+'<br>'
+        +(_planLbl?('Plan : '+_planLbl+'<br>'):'')
         +'Expire le : '+esc(r.expires||'')+' ('+r.daysRemaining+' jours restants)';
     } else if(_license&&_license.lastResult&&_license.lastResult.expired){
       statusEl.style.borderLeftColor='#DC2626';
@@ -13055,7 +13058,7 @@ function sendRenewEmail(){
     +'Je souhaite renouveler ma licence TRI-ANGLE.\n\n'
     +'Mon nom : '+clientName+'\n'
     +'Ma clé actuelle : '+currentKey+'\n'
-    +'Plan choisi : [ Mensuel 50$ / Annuel 500$ ]   ← Choisissez un\n\n'
+    +'Plan choisi : [ Mensuel 60$ / Annuel 600$ ]   ← Choisissez un\n\n'
     +'J\'ai envoyé le paiement par Interac à lpbussiere.lpb@gmail.com.\n\n'
     +'Merci !';
   _openMailto('contact@tri-angle.ca','Renouvellement TRI-ANGLE',body);
