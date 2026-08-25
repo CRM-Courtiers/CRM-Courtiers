@@ -770,6 +770,16 @@ td.emc:hover .cpb{opacity:1}
 .cond-date{color:#1E293B;font-size:11px;font-weight:600}
 .cond-empty{color:#D1D5DB;font-size:13px}
 
+/* Barre de progression de ligne (C2). Elle vit DANS la première cellule sticky, pas sur le <tr> :
+   les fonds de td sont opaques en !important et la table v scrolle sur une trentaine de colonnes —
+   une barre posée sur la rangée serait recouverte, et hors écran dès le premier défilement. Ici elle
+   reste sous les yeux, toujours à la même place, donc comparable d'un dossier à l'autre.
+   Le .c-0 est en position:sticky, ce qui suffit à ancrer l'absolu — aucun position:relative à ajouter. */
+.rprog{position:absolute;left:0;right:0;bottom:0;height:12px;display:block} /* 12 px = la zone de survol : 3 px seuls sont insurvolables */
+.rprog-rail{position:absolute;left:0;right:0;bottom:0;height:3px;background:#E2E8F0}
+.rprog-fill{position:absolute;left:0;bottom:0;height:3px;background:#64748B} /* neutre : les retards ont déjà leurs surfaces, pas de rouge ici */
+.rprog-fill.full{background:#059669} /* la teinte du ✓ de .cond-done : la barre pleine et les crochets racontent la même chose */
+
 /* Condition mini-menu */
 .cond-menu{position:fixed;z-index:9000;background:#fff;border:1.5px solid #CBD5E1;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.18);padding:6px;min-width:190px;display:none}
 .cond-menu.open{display:block}
@@ -4031,6 +4041,77 @@ function etd(col,tab,id,display,extra,titleAttr){
   return'<td '+a+' class="'+cls+'"'+titleStr+' onclick="ie(this)">'+display+'</td>';
 }
 function ctd(d,cls,ci){var c=(cls||'')+(ci!==undefined?' c-'+ci:'');return'<td'+(c.trim()?' class="'+c.trim()+'"':'')+'>'+d+'</td>';}
+
+// ─── Barre de progression de ligne (C2) ──────────────────────
+// LE PIÈGE DU DÉNOMINATEUR : une fosse septique et un test d'eau ne s'appliquent pas à un condo au
+// centre-ville. Compter TOUTES les conditions ferait afficher 66 % pour toujours à un dossier de
+// condo parfaitement complet — une barre qui ne peut jamais atteindre 100 % cesse d'être un signal
+// et fait passer l'app pour boguée. D'où la règle : le dénominateur ne compte que les conditions
+// ENGAGÉES (portant une date ou un ✓), et vide = ne s'applique pas. Aucun champ « N/A » à cocher,
+// aucune saisie nouvelle : la donnée existait déjà.
+//
+// Table DÉDIÉE, et non COND_FIELDS_BY_TAB : celui-là alimente getConditionsDue() et les RDV du jour,
+// il n'a pas de clé pa-en-vente, et le modifier déplacerait ce que compte l'Accueil. Trois champs
+// qui y figurent sont ici volontairement absents :
+//  - paEcheance / paExterneEcheance : une échéance n'est pas une condition que le courtier exécute
+//    (M5). Datée tant que la promesse vit, elle serait « engagée-jamais-done » — le 100 % deviendrait
+//    inatteignable, soit exactement le piège que cette barre existe pour éviter.
+//  - statutPa : un statut n'a pas d'état « fait ».
+// Absentes aussi, et délibérément : les cases documents de v (mls, loi25, taxes…). Un booléen n'a pas
+// d'état « engagé » — non coché veut dire « pas fait » OU « ne s'applique pas », indistinguables.
+// Conséquence assumée sur v : une inscription sans promesse mesure ses 3 tâches de préparation, et
+// son dénominateur grandit tout seul quand une promesse arrive. La régression apparente (3/3 → 3/9)
+// est honnête : du travail nouveau vient d'entrer au dossier.
+//
+// Libellés en toutes lettres : le survol n'a pas la contrainte de largeur qui a fait abréger les
+// en-têtes de colonnes (« Financ. », « Assur. imm. »).
+var BARRE_COND_LBL={
+  inspection:"Inspection",financement:"Financement",r21:"R2.1",r22:"R2.2",
+  assurImm:"Assurance",fosseSept:"Fosse septique",testEau:"Test d'eau",notaire:"Notaire",
+  evalVM:"Éval. VM",photos:"Photos",mesures:"Mesures"
+};
+var BARRE_FIELDS_BY_TAB={
+  pa:["inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"],
+  "pa-en-vente":["financement","r21","r22","assurImm","fosseSept","testEau","notaire"], // pas d'inspection : elle se gère sur la fiche En Vente
+  v:["evalVM","photos","mesures","inspection","financement","r21","r22","assurImm","fosseSept","testEau","notaire"]
+};
+function _barreProg(tab,rec){
+  var fields=BARRE_FIELDS_BY_TAB[tab];if(!fields)return null;
+  var done=0,total=0,reste=[];
+  fields.forEach(function(f){
+    var v=rec[f];
+    if(!v)return;                                  // vide = ne s'applique pas à ce dossier
+    total++;
+    if(v===true||v==='done')done++;else reste.push(BARRE_COND_LBL[f]||f); // même règle que condCell()
+  });
+  return {done:done,total:total,reste:reste};
+}
+// Nommer ce qui reste, jamais un pourcentage : c'est le fait de nommer qui ferme la boucle mentale.
+function _barreTitre(tab,rec,p){
+  var l1;
+  if(!p.total)l1="Conditions : aucune engagée — une date ou un ✓ démarre le suivi";
+  else if(p.done===p.total)l1="Conditions : "+p.done+" sur "+p.total+" ✓";
+  else l1="Conditions : "+p.done+" sur "+p.total+" · reste : "+p.reste.join(", ");
+  if(tab!=='pa')return l1;
+  // Ligne 2, onglet pa seulement — les 5 exigences du dossier acheteur. Le transfert (E12) les copie
+  // dans la fiche pa, mais aucune colonne ni aucun champ ne les y montre : sans ce rappel, une case
+  // non cochée disparaît pour de bon. Même chaîne et même ordre que le toast du transfert, pour que
+  // le courtier relise exactement ce qu'il a lu en transférant. Elles n'entrent JAMAIS dans la barre :
+  // ce sont des pièces au dossier, pas des conditions de la promesse.
+  var exig=[['cca','CCA'],['loi25','Loi 25'],['consSec','Cons. sec.'],['canafe','CANAFE'],['prequal2','Préqualif.']];
+  var manq=exig.filter(function(x){return !rec[x[0]];});
+  if(!manq.length)return l1;
+  // Les cinq à false = promesse créée directement dans pa : la donnée n'a jamais été suivie. Annoncer
+  // cinq manquements accuserait le courtier d'un oubli qu'il n'a pas commis.
+  if(manq.length===exig.length)return l1+"\nDossier acheteur : non suivi";
+  return l1+"\nManquants au dossier : "+manq.map(function(x){return x[1];}).join(", ");
+}
+function _barreHtml(tab,rec){
+  var p=_barreProg(tab,rec);if(!p)return'';
+  var plein=(p.total>0&&p.done===p.total);
+  var fill=p.total?'<span class="rprog-fill'+(plein?' full':'')+'" style="width:'+Math.round(p.done/p.total*100)+'%"></span>':'';
+  return'<span class="rprog" title="'+esc(_barreTitre(tab,rec,p))+'"><span class="rprog-rail">'+fill+'</span></span>';
+}
 // ─── Actions dropdown menu (unifié) ──────────────────────────
 var _activeActionsMenu=null;
 function _closeActionsMenu(){
@@ -4495,6 +4576,10 @@ function renderTab(tab){
     // il fallait la retrouver. Elle reste, en variante assombrie quand l'échéance est dépassée.
     if(tab==="v"&&_paExterneEnCours(rec))clsArr.push(_paExterneEchue(rec)?"v-paext v-paext-late":"v-paext");
     var trCls=clsArr.join(" ");
+    // C2 — la barre s'injecte dans la cellule d'index 0 (celle qui porte .c-0, donc le sticky).
+    // Selon l'onglet ce n'est pas le même type de cellule : Prénom sur pa et pa-en-vente, la cellule
+    // de pastilles sur v. D'où les deux points d'insertion plus bas, et une seule chaîne calculée ici.
+    var barreH=_barreHtml(tab,rec);
     h+='<tr data-rid="'+esc(rec.id)+'"'+(trCls?' class="'+trCls+'"':'')+'>';
     for(var j=0;j<cols.length;j++){
       var col=cols[j];
@@ -4525,7 +4610,7 @@ function renderTab(tab){
         if(nDem>0)pillsH+='<button class="vpill dem" title="'+nDem+' demande(s) — voir" onclick="event.stopPropagation();jumpToDemandes(\''+rec.id+'\')">📩 '+nDem+'</button>';
         if(nPa>0)pillsH+='<button class="vpill pa" title="'+nPa+' PA active(s) — voir" onclick="event.stopPropagation();jumpToPaEnVente(\''+rec.id+'\')">📄 '+nPa+'</button>';
         if(!pillsH)pillsH='<span style="color:#CBD5E1">—</span>';
-        h+=ctd(pillsH,'vpill-cell',j);
+        h+=ctd(pillsH+(j===0?barreH:''),'vpill-cell',j); // v : c'est cette cellule qui est la sticky d'index 0
       } else if(col.t==="pills-int"){
         // Étape 27 — pastille "intérêts acheteurs". Règle : alerte UNIQUEMENT s'il y a des intérêts
         // "à traiter" (nouveaux). Les intérêts en cours (visite/planifiée/offre) = marqueur discret neutre.
@@ -4615,6 +4700,7 @@ function renderTab(tab){
         if(!rec[col.f]&&col.f==='centrisUrl'){
           display='<span class="centris-tooltip">Entrez l\'url de la propriété</span>';
         }
+        if(j===0)display+=barreH; // pa et pa-en-vente : la sticky d'index 0 est la cellule Prénom
         h+=etd(col,tab,rec.id,display);
       }
     }
