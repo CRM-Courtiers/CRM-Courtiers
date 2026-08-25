@@ -12037,7 +12037,14 @@ function saveEntry(){
       // écraserait la saisie — le clobber exact fermé sur l'inspection en COR-3.
       // dateContact reste hors formulaire : sur cet onglet la relance se calcule sur lastModified,
       // afficher une seconde date créerait deux vérités concurrentes.
-      if(ctab==='a'){if(oldRec.dateContact!==undefined)entry.dateContact=oldRec.dateContact;if(oldRec.prequal2!==undefined)entry.prequal2=oldRec.prequal2;}
+      if(ctab==='a'){if(oldRec.dateContact!==undefined)entry.dateContact=oldRec.dateContact;if(oldRec.prequal2!==undefined)entry.prequal2=oldRec.prequal2;
+        // COR-9 — BUG PRÉEXISTANT (0.3.49) : ni linkId ni interets ne vivent dans ce formulaire, et
+        // le save remplace l’objet entier → enregistrer une fiche acheteur DÉLIAIT son couple et
+        // DÉTRUISAIT sa pastille Intérêts (Étape 27), avec ses visites et ses intentions. Copie
+        // profonde pour interets (objet), comme le bloc _collab plus bas.
+        if(oldRec.linkId!==undefined&&entry.linkId===undefined)entry.linkId=oldRec.linkId;
+        if(oldRec.interets!==undefined&&entry.interets===undefined)entry.interets=JSON.parse(JSON.stringify(oldRec.interets));
+      }
       // COR-1 — même préservation que vc, et pour la même raison : « pancarte retirée » se pose
       // dans l'onglet Pancartes, jamais dans ce formulaire. La case fpancret a disparu en 0.3.48
       // mais gc("fpancret") était resté : il rendait false, et comme le save REMPLACE l'objet
@@ -12074,6 +12081,23 @@ function saveEntry(){
         if(oldRec.montant!==undefined)entry.montant=oldRec.montant;
         if(oldRec.commission!==undefined)entry.commission=oldRec.commission;
         if(oldRec.linkId)entry.linkId=oldRec.linkId;
+        // COR-9 — la colonne « No. Centris » ajoutée par COR-1 s’édite dans la GRILLE, jamais dans
+        // ce formulaire (le modal paev renvoie les données de propriété ailleurs) : sans cette
+        // ligne, tout « Enregistrer » effaçait le numéro saisi. Même patron que pancarteRet.
+        if(oldRec.noCentris!==undefined)entry.noCentris=oldRec.noCentris;
+      }
+      // COR-9 — pa ET pa-en-vente (même collection db.pa) : le transfert a→pa copie TOUTE la fiche
+      // acheteur (boucle for-in), mais aucun de ces champs n’est dans le formulaire de promesse →
+      // chaque « Enregistrer », même pour corriger une note, les détruisait. Or la release s’appuie
+      // dessus : survol de la barre (les 5 exigences + l’alerte), toast du transfert, compte à
+      // rebours de l’échéance, couples liés, et la restitution aux Acheteurs si la promesse tombe.
+      // Remplir-si-ABSENT : un champ que le formulaire édite (ex. inspection) n’est jamais touché —
+      // c’est exactement le clobber fermé en COR-3, évité ici par construction.
+      if(ctab==='pa'||ctab==='pa-en-vente'){
+        ['alerte','cca','loi25','consSec','canafe','prequal','prequalMnt','typeBat','prixMin',
+         'prixMax','secteur','prequal2','paEcheance','linkId','interets'].forEach(function(_pk){
+          if(oldRec[_pk]!==undefined&&entry[_pk]===undefined)entry[_pk]=JSON.parse(JSON.stringify(oldRec[_pk]));
+        });
       }
     }
     entry.id=eid;db[_stc]=db[_stc].map(function(x){return x.id===eid?entry:x;});
