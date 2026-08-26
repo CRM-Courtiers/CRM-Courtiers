@@ -4008,9 +4008,9 @@ function submitAToPA_Modal(){
   db.a=db.a.filter(function(x){return idsToRemove.indexOf(x.id)===-1;});
   sdb();rall();
   closeAToPA_Modal();
-  // E12 — les 5 exigences du dossier acheteur sont bien COPIÉES dans la fiche pa, mais elles n'y sont
-  // visibles nulle part (ni colonne, ni champ) : sans ce rappel, une case non cochée disparaît en
-  // silence. Constat, pas consigne — le courtier ne peut plus les cocher depuis pa. Union sur le lot
+  // E12 — les 5 exigences du dossier acheteur sont COPIÉES dans la fiche pa. Le toast dit l'état AU
+  // MOMENT DU PASSAGE DE MAIN : c'est ce que le courtier emporte, et cela vaut d'être dit là même
+  // depuis que [N1] rend les cases cochables dans la fiche. Constat, pas consigne. Union sur le lot
   // quand des acheteurs liés partent ensemble : un seul toast.
   // COR-8 — une seule définition des exigences (BARRE_EXIG). La liste locale qui vivait ici en était
   // une copie : deux copies de la même règle finissent toujours par diverger, et celle-ci aurait
@@ -4276,10 +4276,11 @@ function _barreTitre(tab,rec,p){
   else l1=quoi+" : "+p.done+" sur "+p.total+" · reste : "+p.reste.join(", ");
   if(tab!=='pa')return l1;
   // Ligne 2, onglet pa seulement — les 5 exigences du dossier acheteur. Le transfert (E12) les copie
-  // dans la fiche pa, mais aucune colonne ni aucun champ ne les y montre : sans ce rappel, une case
-  // non cochée disparaît pour de bon. Même chaîne et même ordre que le toast du transfert, pour que
-  // le courtier relise exactement ce qu'il a lu en transférant. Elles n'entrent JAMAIS dans la barre :
-  // ce sont des pièces au dossier, pas des conditions de la promesse.
+  // dans la fiche pa ; aucune COLONNE ne les montre, mais [N1] les a rendues cochables au modal —
+  // d'où le suffixe, qui dit OÙ agir : un manquant nommé sans geste possible était un reproche.
+  // Même chaîne et même ordre que le toast du transfert, pour que le courtier relise exactement ce
+  // qu'il a lu en transférant. Elles n'entrent JAMAIS dans la barre : ce sont des pièces au dossier,
+  // pas des conditions de la promesse — les y faire entrer serait la dérive à interdire.
   var exig=BARRE_EXIG;
   var manq=exig.filter(function(x){return !_exigFaite(x,rec);});
   // COR-3 — l'alerte est de nature OPPOSÉE aux exigences : un drapeau posé volontairement, pas une
@@ -4291,7 +4292,7 @@ function _barreTitre(tab,rec,p){
   // Les cinq à false = promesse créée directement dans pa : la donnée n'a jamais été suivie. Annoncer
   // cinq manquements accuserait le courtier d'un oubli qu'il n'a pas commis.
   if(manq.length===exig.length)return l1+"\nDossier acheteur : non suivi"+_al;
-  return l1+"\nManquants au dossier : "+manq.map(function(x){return x[1];}).join(", ")+_al;
+  return l1+"\nManquants au dossier : "+manq.map(function(x){return x[1];}).join(", ")+" — cochables dans la fiche"+_al;
 }
 // Paliers de couleur (demande LP) : la barre ne dit plus seulement « combien », elle dit « où j'en
 // suis ». Le vert est RÉSERVÉ au dossier complet — c'est ce qui lui garde sa valeur de récompense ;
@@ -5142,6 +5143,7 @@ var TUTORIELS=[
     '<p>La section <strong>Mes acheteurs</strong> regroupe tes clients acheteurs actifs \u2014 ceux avec qui tu travailles concr\u00e8tement \u00e0 trouver une propri\u00e9t\u00e9.</p>'
     +'<h2>La fiche acheteur</h2>'
     +'<p>Chaque fiche contient les coordonn\u00e9es, l\u2019\u00e9tat du dossier, et des cases de conformit\u00e9 importantes : <strong>CCA</strong> (contrat de courtage achat), <strong>Loi 25</strong>, <strong>Conseiller en s\u00e9curit\u00e9</strong>, <strong>CANAFE</strong>, <strong>pr\u00e9-qualification</strong>. Coche-les au fur et \u00e0 mesure pour garder tes dossiers conformes.</p>'
+    +'<p>Ces cinq pi\u00e8ces <strong>suivent le client</strong> : quand tu transformes la fiche en promesse d\u2019achat, elles voyagent avec elle et restent cochables l\u00e0-bas, dans la section <strong>Dossier acheteur</strong> du formulaire de promesse.</p>'
     +'<h2>Les int\u00e9r\u00eats (colonne \ud83d\udc8e)</h2>'
     +'<p>La colonne <strong>Int\u00e9r\u00eats</strong> te permet de suivre les propri\u00e9t\u00e9s que ton acheteur veut visiter \u2014 voir le tuto d\u00e9di\u00e9 \u00ab Int\u00e9r\u00eats acheteurs \u00bb.</p>'
     +'<h2>Quand une offre est d\u00e9pos\u00e9e</h2>'
@@ -5190,6 +5192,9 @@ var TUTORIELS=[
     '<p>La section <strong>Promesses en cours</strong> suit les promesses d\u2019achat de tes clients acheteurs, du d\u00e9p\u00f4t de l\u2019offre jusqu\u2019\u00e0 la lev\u00e9e des conditions.</p>'
     +'<h2>Le statut de la promesse</h2>'
     +'<p>La colonne <strong>Statut</strong> suit le cheminement de l\u2019offre : <strong>En cours &rarr; D\u00e9pos\u00e9e &rarr; Contre-offre &rarr; Accept\u00e9e</strong>. Mets-la \u00e0 jour au fil des n\u00e9gociations pour voir d\u2019un coup d\u2019\u0153il o\u00f9 en est chaque dossier.</p>'
+    +'<h2>Le dossier acheteur de ton client</h2>'
+    +'<p>Ouvre une promesse : la section <strong>Dossier acheteur</strong> reprend les cinq pi\u00e8ces de conformit\u00e9 de ton client \u2014 <strong>CCA</strong>, <strong>Loi 25</strong>, <strong>Cons. sec.</strong>, <strong>CANAFE</strong> et la <strong>pr\u00e9qualification</strong> (statut + montant). Elles arrivent telles qu\u2019elles \u00e9taient sur la fiche acheteur, et tu peux les cocher ici, sans revenir en arri\u00e8re.</p>'
+    +'<p>Si des pi\u00e8ces manquent, le <strong>survol de la barre de progression</strong> de la ligne te les nomme. Ce sont des pi\u00e8ces au dossier, pas des conditions de la promesse : elles ne comptent jamais dans le pourcentage de la barre.</p>'
     +'<h2>Le suivi des conditions</h2>'
     +'<p>Chaque promesse a des colonnes de <strong>conditions</strong> (inspection, financement, etc.) o\u00f9 tu inscris une date/heure. Ces dates alimentent ton calendrier et tes rappels d\u2019\u00e9ch\u00e9ance sur l\u2019Accueil.</p>'
     +'<h2>Le notaire</h2>'
@@ -11885,7 +11890,7 @@ function formForTab(tab,e){
     // \u00c9tape 24 \u2014 Courtier inscripteur : s\u00e9lecteur compact (affiche le courtier assign\u00e9 + bouton pour ouvrir le picker)
     var couCur=e.courtierId?_courtierById(e.courtierId):null;
     var couHtml='<div class="fg"><label>Courtier inscripteur</label><div style="display:flex;gap:6px;align-items:center"><input type="hidden" id="fcourtierid" value="'+esc(e.courtierId||'')+'"><div id="fcourtierlabel" style="flex:1;padding:7px 10px;border:1.5px solid #CBD5E1;border-radius:6px;background:#F8FAFC;font-size:13px;color:'+(couCur?'#0F172A':'#94A3B8')+'">'+(couCur?esc(_courtierFullName(couCur))+(couCur.agence?' <span style="color:#94A3B8;font-size:11px">\u00b7 '+esc(couCur.agence)+'</span>':''):'(aucun)')+'</div><button type="button" class="tpl-btn" onclick="_openCourtierPickerFromForm()">'+(couCur?'Changer':'Assigner')+'</button>'+(couCur?'<button type="button" class="tpl-btn muted" onclick="_clearCourtierFromForm()" title="Retirer">\u2715</button>':'')+'</div></div>';
-    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>Statut PA</label><select id="fstatutpa"><option value="">\u2014</option>'+selOpts(STATUT_PA,e.statutPa)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>No. Centris</label><input id="fnocentris" value="'+esc(e.noCentris||'')+'" placeholder="ex: 21246703"></div>'+couHtml+'</div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Documents PA</div><div class="g4"><div class="fg"><label>Fiche MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFpa("finsp","Inspection",e.inspection)+condFpa("ffin","Financement",e.financement)+'</div><div class="g2">'+condFpa("fr21","R2.1",e.r21)+condFpa("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFpa("fassur","Assur. immeuble",e.assurImm)+condFpa("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFpa("feau","Test eau",e.testEau)+condFpa("fnot","Notaire",e.notaire)+'</div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant promesse ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div>';
+    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>Statut PA</label><select id="fstatutpa"><option value="">\u2014</option>'+selOpts(STATUT_PA,e.statutPa)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>No. Centris</label><input id="fnocentris" value="'+esc(e.noCentris||'')+'" placeholder="ex: 21246703"></div>'+couHtml+'</div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Dossier acheteur</div><div class="g4"><div class="fg"><label>CCA</label><br>'+ck("fcca",e.cca)+'</div><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div></div><div class="g2"><div class="fg"><label>Pr&eacute;qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Pr&eacute;qualifi&eacute; jusqu&rsquo;&agrave; ($)</label><input type="number" id="fprequalmnt" value="'+esc(e.prequalMnt)+'"></div></div><div class="fsec">Documents PA</div><div class="g4"><div class="fg"><label>Fiche MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFpa("finsp","Inspection",e.inspection)+condFpa("ffin","Financement",e.financement)+'</div><div class="g2">'+condFpa("fr21","R2.1",e.r21)+condFpa("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFpa("fassur","Assur. immeuble",e.assurImm)+condFpa("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFpa("feau","Test eau",e.testEau)+condFpa("fnot","Notaire",e.notaire)+'</div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant promesse ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div>';
   }
   if(tab==="vp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="g2"><div class="fg"><label>Type propri\u00e9t\u00e9</label><select id="ftypeprop"><option value="">\u2014</option>'+selOpts(TYPE_PROP,e.typeProp)+'</select></div><div class="fg"><label>Prix demand\u00e9 ($)</label><input type="number" id="fprix" value="'+esc(e.prix)+'"></div></div><div class="fg"><label>Dernier contact <span style="font-size:10px;color:#94A3B8">(la relance se calcule à partir de cette date)</span></label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10)||(e.id?'':_todayStr()))+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="v"){
@@ -12005,7 +12010,14 @@ function saveEntry(){
   }
   else if(ctab==="pa"){
     function gcondPa(id){if(gc(id+'c'))return'done';var d=gv(id+'d');return d||'';}
-    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),noCentris:_extractCentris(gv("fnocentris")),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),inspection:gcondPa("finsp"),financement:gcondPa("ffin"),r21:gcondPa("fr21"),r22:gcondPa("fr22"),assurImm:gcondPa("fassur"),fosseSept:gcondPa("ffosse"),testEau:gcondPa("feau"),notaire:gcondPa("fnot"),ged:gc("fged"),montant:gv("fmontant"),commission:gv("fcomm")};
+    entry={prenom:prenom,nom:gv("fnom"),statutPa:gv("fstatutpa"),telephone:gv("ftel"),courriel:gv("fco"),adresse:gv("faddr"),noCentris:_extractCentris(gv("fnocentris")),courtierId:gv("fcourtierid"),notes:gv("fnotes"),mls:gc("fmls"),declVend:gc("fdeclvend"),inspection:gcondPa("finsp"),financement:gcondPa("ffin"),r21:gcondPa("fr21"),r22:gcondPa("fr22"),assurImm:gcondPa("fassur"),fosseSept:gcondPa("ffosse"),testEau:gcondPa("feau"),notaire:gcondPa("fnot"),ged:gc("fged"),montant:gv("fmontant"),commission:gv("fcomm"),
+      // [N1] — les 5 pièces du dossier acheteur sont désormais ÉDITÉES ici (section « Dossier
+      // acheteur »), préqualification comprise : statut ET montant, comme sur cp et a (COR-8).
+      // La liste de préservation COR-9 plus bas garde ces clés : elle teste entry[k]===undefined,
+      // donc elle devient no-op sur pa par construction — et reste PORTEUSE pour pa-en-vente, qui
+      // n’a pas cette section. La retirer casserait paev.
+      cca:gc("fcca"),loi25:gc("floi25"),consSec:gc("fconssec"),canafe:gc("fcanafe"),
+      prequal:gv("fprequal"),prequalMnt:gv("fprequalmnt")};
   }
   else if(ctab==="pa-en-vente"){
     // Étape 19 — même structure que pa, sans Montant/Commission (déjà comptabilisés sur la fiche
@@ -12113,10 +12125,15 @@ function saveEntry(){
         if(oldRec.noCentris!==undefined)entry.noCentris=oldRec.noCentris;
       }
       // COR-9 — pa ET pa-en-vente (même collection db.pa) : le transfert a→pa copie TOUTE la fiche
-      // acheteur (boucle for-in), mais aucun de ces champs n’est dans le formulaire de promesse →
-      // chaque « Enregistrer », même pour corriger une note, les détruisait. Or la release s’appuie
-      // dessus : survol de la barre (les 5 exigences + l’alerte), toast du transfert, compte à
-      // rebours de l’échéance, couples liés, et la restitution aux Acheteurs si la promesse tombe.
+      // acheteur (boucle for-in), et le formulaire de promesse n’en portait aucun champ → chaque
+      // « Enregistrer », même pour corriger une note, les détruisait. [N1] en a ramené six au modal
+      // pa (les 5 pièces, montant de préqualification compris) : pour ceux-là la ligne ci-dessous est
+      // devenue no-op, le remplir-si-ABSENT laissant la main au formulaire. Elle reste indispensable
+      // aux autres champs, et à pa-en-vente pour TOUS : sa fiche est l’acheteur de l’AUTRE courtier,
+      // elle n’a pas la section, et sans cette garde son dossier serait détruit au premier save.
+      // La release s’appuie dessus : survol de la barre (les 5 exigences + l’alerte), toast du
+      // transfert, compte à rebours de l’échéance, couples liés, et la restitution aux Acheteurs
+      // si la promesse tombe.
       // Remplir-si-ABSENT : un champ que le formulaire édite (ex. inspection) n’est jamais touché —
       // c’est exactement le clobber fermé en COR-3, évité ici par construction.
       if(ctab==='pa'||ctab==='pa-en-vente'){
