@@ -729,6 +729,16 @@ tbody tr.rl .c-0,tbody tr.rl .c-1,tbody tr.rl .c-2{background:#F8FAFC!important}
 #tbl-a .c-2,#tbl-pa .c-2,#tbl-v .c-2{box-shadow:none}
 #tbl-a .c-3,#tbl-pa .c-3,#tbl-v .c-3,#tbl-pa-en-vente .c-3{box-shadow:3px 0 6px rgba(0,0,0,.08)}
 #tbl-a tbody tr.rl .c-3,#tbl-pa tbody tr.rl .c-3,#tbl-v tbody tr.rl .c-3{background:#F8FAFC!important}
+/* [N-2] — défaut préexistant d'E9 : la teinte d'une rangée échue s'arrêtait à la 3e colonne. Les
+   fonds de la 4e colonne figée sont posés juste au-dessus par des sélecteurs portés par un ID
+   (#tbl-… tbody .c-3, et sa jumelle nth-child(even)) : ils l'emportent sur tr.v-paext-late td,
+   et la bande figée coupait la teinte en deux — sur v, pa et pa-en-vente à la fois. Même remède
+   que la ligne « rl » juste au-dessus : on requalifie la teinte au même niveau, APRÈS, sans
+   toucher aux règles sticky elles-mêmes — elles font leur travail, garder les cellules opaques
+   au scroll. Aucune couleur nouvelle : ce sont les deux valeurs déjà posées aux lignes 718/720. */
+#tbl-v tbody tr.v-paext .c-3,#tbl-pa tbody tr.v-paext .c-3,#tbl-pa-en-vente tbody tr.v-paext .c-3{background:#FFE4E6!important}
+#tbl-v tbody tr.v-paext-late .c-3,#tbl-pa tbody tr.v-paext-late .c-3,#tbl-pa-en-vente tbody tr.v-paext-late .c-3{background:#FECDD3!important}
+#tbl-v tbody tr.v-paext:hover .c-3,#tbl-pa tbody tr.v-paext:hover .c-3,#tbl-pa-en-vente tbody tr.v-paext:hover .c-3{background:#FECDD3!important}
 tbody tr.rl .c-0,tbody tr.rl .c-1,tbody tr.rl .c-2{background:#F8FAFC!important}
 tbody tr.rl:hover .c-0,tbody tr.rl:hover .c-1,tbody tr.rl:hover .c-2{background:#F1F5F9!important}
 .frow .c-0,.frow .c-1,.frow .c-2{background:#F8FAFC!important;z-index:25!important}
@@ -5263,7 +5273,7 @@ var TUTORIELS=[
     +'<h2>Une promesse rest\u00e9e en haut alors que la vente est conclue ?</h2>'
     +'<p>\u00c7a arrive si la promesse a \u00e9t\u00e9 saisie apr\u00e8s la conclusion (ou conclue avec une ancienne version). Utilise <strong>\u2630 Actions &rarr; \ud83d\uddc4 Vendu</strong> sur la promesse : choisis la vente conclue correspondante, et la promesse descend dans Archiv\u00e9es, li\u00e9e \u00e0 l\u2019acte, avec le badge \ud83d\udc64 pos\u00e9 sur la vente.</p>'
     +'<h2>Promesse archiv\u00e9e li\u00e9e au mauvais acte ?</h2>'
-    +'<p>Dans la section <strong>Archiv\u00e9es</strong>, <strong>\u2630 Actions &rarr; \ud83d\udd17 Relier \u00e0 une autre vente\u2026</strong> corrige le lien : choisis le bon acte, la colonne <strong>Acte conclus</strong> se met \u00e0 jour et le badge \ud83d\udc64 quitte l\u2019ancienne vente pour la nouvelle.</p>'
+    +'<p>Dans la section <strong>Archiv\u00e9es</strong>, <strong>\u2630 Actions &rarr; \ud83d\udd17 Relier \u00e0 une autre vente\u2026</strong> corrige le lien : choisis le bon acte, la colonne <strong>Acte conclus</strong> se met \u00e0 jour et le badge \ud83d\udc64 quitte l\u2019ancienne vente pour la nouvelle. L\u2019app t\u2019emm\u00e8ne aussitôt sur la vente choisie, surlign\u00e9e, pour que tu voies le badge arriver.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Les gabarits de courriels \u00ab Courtiers collaborateurs \u00bb te font gagner du temps pour communiquer avec l\u2019autre courtier.</div></div>'},
   {sec:'En vente', num:15, titre:'Suivre les conditions et les \u00e9ch\u00e9ances', html:
     '<p>Les <strong>conditions</strong> (inspection, financement, R2.1/R2.2, assurance, fosse septique, test d\u2019eau, notaire\u2026) sont le c\u0153ur du suivi d\u2019une promesse. TRI-ANGLE t\u2019aide \u00e0 ne jamais manquer une date.</p>'
@@ -6861,6 +6871,29 @@ function _paArchOrphan(paId){
 // une commission côté acheteur dans la carte 4. L'erreur réelle sur une promesse archivée est
 // presque toujours « liée au MAUVAIS acte » → on RE-LIE : linkedToActeNom bascule, et le badge
 // 👤 (acheteurNom/acheteurId) passe de l'ancien acte au nouveau.
+// [N-2] — le re-lien réussissait sans rien montrer : le badge 👤 déménage dans « Ventes conclues »
+// pendant que le courtier, lui, est dans les Archives au bas de Promesses reçues. On l'emmène voir
+// l'arrivée, par la mécanique de _heroJump/jumpToDemandes — le VRAI bouton d'onglet (panes, titre,
+// rendu), puis scroll et halo de 1400 ms. Le halo reprend le turquoise des autres sauts « voici
+// l'enregistrement lié » : une seule couleur pour un seul sens.
+// ⚠ « Notariées » n'est PAS un onglet : c'est la section repliable archvc DANS l'onglet vc. Un acte
+// notarié demande donc de déplier avant de chercher la rangée — sinon elle n'existe pas au DOM.
+function _jumpToActeConclu(acte){
+  if(!acte||!acte.id)return;
+  var notarie=(db.archvc||[]).some(function(a){return a.id===acte.id;});
+  var btn=document.querySelector('.tbtn[data-tab="vc"]');
+  if(btn)btn.click();
+  setTimeout(function(){
+    if(notarie&&!_archOpen.vc)toggleArchSection('vc');
+    setTimeout(function(){
+      var row=document.querySelector('#tb-'+(notarie?'archvc':'vc')+' tr[data-rid="'+acte.id+'"]');
+      if(!row)return;
+      row.scrollIntoView({behavior:'smooth',block:'center'});
+      row.style.boxShadow='0 0 0 3px #0FBFAB';
+      setTimeout(function(){row.style.boxShadow='';},1400);
+    },notarie?120:0);
+  },80);
+}
 function _paArchRelink(paId){
   var arch=null;for(var i=0;i<(db.archpa||[]).length;i++){if(db.archpa[i].id===paId){arch=db.archpa[i];break;}}
   if(!arch)return;
@@ -6878,6 +6911,9 @@ function _paArchRelink(paId){
       arch.linkedToActeNom=((acte.prenom||'')+' '+(acte.nom||'')).trim()||'(sans nom)';
       sdb();rall();
       toast('🔗 '+nomPa+' — reliée à '+arch.linkedToActeNom);
+      // Le toast dit ce qui a été fait ; le saut montre OÙ. Il vient après sdb()/rall() : la
+      // rangée cible est déjà rendue avec son badge quand on va la chercher.
+      _jumpToActeConclu(acte);
     });
 }
 
