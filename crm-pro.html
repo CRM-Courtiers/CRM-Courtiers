@@ -2519,6 +2519,9 @@ var COLS = {
     {lbl:"Jours",f:null,t:"calc",w:52},
     {lbl:"Relance",f:null,t:"calc",w:72},
     {lbl:"Notes",f:"notes",t:"text",w:160,cls:"nc"},
+    // [AL-1] — une notion, un endroit : le drapeau « client à surveiller » se lit après Notes et
+    // avant Actions ici comme sur `a`. Rendu bool générique : toggle 1 clic via ie(), undo compris.
+    {lbl:"Alerte",f:"alerte",t:"bool",w:58},
     {lbl:"Actions",f:null,t:"action",w:160}
   ],
   a: [
@@ -5092,9 +5095,11 @@ var TUTORIELS=[
     +'<li>Va dans <strong>Prospects acheteurs</strong>, clique <strong>+ Ajouter</strong>.</li>'
     +'<li>Remplis les infos : nom, t\u00e9l\u00e9phone, courriel, type de b\u00e2timent recherch\u00e9, fourchette de prix, secteur, niveau de pr\u00e9-qualification.</li>'
     +'<li>Note la <strong>date du dernier contact</strong> : elle sert au calcul des relances.</li>'
+    +'<li>Coche <strong>Alerte</strong> si ce client est à surveiller : la case se voit aussi dans la colonne <strong>Alerte</strong> du tableau, et se met à jour d’un seul clic.</li>'
     +'</ol>'
     +'<h2>Faire avancer un prospect</h2>'
     +'<p>Quand un prospect est pr\u00eat \u00e0 passer \u00e0 l\u2019action, utilise le menu <strong>\u2630 Actions</strong> de sa ligne &rarr; <strong>Promouvoir en Acheteur</strong>. Sa fiche passe alors dans la section Achats.</p>'
+    +'<p>L’<strong>Alerte</strong> voyage avec le client : elle reste sur sa fiche dans Mes acheteurs, elle est rappelée au moment de créer la promesse, et elle est encore là s’il revient en arrière.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Tiens la colonne \u00ab Dernier contact \u00bb \u00e0 jour : c\u2019est ce qui d\u00e9clenche les rappels de relance pour ne perdre personne.</div></div>'},
   {sec:'Prospects', num:6, titre:'G\u00e9rer tes prospects vendeurs', html:
     '<p>Les <strong>Prospects vendeurs</strong> sont les propri\u00e9taires qui pourraient te confier un mandat, mais n\u2019ont pas encore sign\u00e9. M\u00eame logique que les prospects acheteurs, c\u00f4t\u00e9 vente.</p>'
@@ -6259,7 +6264,7 @@ function transferCpToA(id){
     // COR-6 — les 6 champs qui DÉFINISSENT un prospect acheteur voyagent avec lui. Ils n'ont aucune
     // colonne ni aucun champ de formulaire dans « Mes acheteurs » : ce sont des bagages, gardés en
     // silence pour que le retour aux prospects retrouve la qualification au lieu de la réinventer.
-    db.a.push({id:newId(),prenom:r.prenom,nom:r.nom,etat:"",telephone:r.telephone,courriel:r.courriel,adresse:"",notes:r.notes||"",cca:false,loi25:false,consSec:false,canafe:false,mls:false,declVend:false,prequal2:false,inspection:"",financement:"",r21:"",r22:"",assurImm:"",fosseSept:"",testEau:"",notaire:"",montant:"",commission:"",linkId:r.linkId||"",lastModified:_todayStr(),
+    db.a.push({id:newId(),prenom:r.prenom,nom:r.nom,etat:"",telephone:r.telephone,courriel:r.courriel,adresse:"",notes:r.notes||"",alerte:r.alerte||false,cca:false,loi25:false,consSec:false,canafe:false,mls:false,declVend:false,prequal2:false,inspection:"",financement:"",r21:"",r22:"",assurImm:"",fosseSept:"",testEau:"",notaire:"",montant:"",commission:"",linkId:r.linkId||"",lastModified:_todayStr(),
       prequal:r.prequal||"",prequalMnt:r.prequalMnt||"",typeBat:r.typeBat||"",prixMin:r.prixMin||"",prixMax:r.prixMax||"",secteur:r.secteur||"",dateContact:r.dateContact||""});
     noms.push(r.prenom+" "+r.nom);
   });
@@ -6297,7 +6302,7 @@ function transferPaToA(id,opts){
     // E11 — la trace suit le client : la fiche acheteur recréée dit pourquoi elle est revenue.
     var _n=(r.notes||'').replace(/\s+$/,'');
     if(opts&&opts.trace)_n=_n?(_n+'\n'+opts.trace):opts.trace;
-    var aEntry={id:newId(),prenom:r.prenom,nom:r.nom,etat:'En attente',telephone:r.telephone,courriel:r.courriel,adresse:r.adresse||'',notes:_n,cca:r.cca||false,loi25:r.loi25||false,consSec:r.consSec||false,canafe:r.canafe||false,prequal2:r.prequal2||false,prequal:r.prequal||'',prequalMnt:r.prequalMnt||'',typeBat:r.typeBat||'',prixMin:r.prixMin||'',prixMax:r.prixMax||'',secteur:r.secteur||'',linkId:r.linkId||''};
+    var aEntry={id:newId(),prenom:r.prenom,nom:r.nom,etat:'En attente',telephone:r.telephone,courriel:r.courriel,adresse:r.adresse||'',notes:_n,alerte:r.alerte||false,cca:r.cca||false,loi25:r.loi25||false,consSec:r.consSec||false,canafe:r.canafe||false,prequal2:r.prequal2||false,prequal:r.prequal||'',prequalMnt:r.prequalMnt||'',typeBat:r.typeBat||'',prixMin:r.prixMin||'',prixMax:r.prixMax||'',secteur:r.secteur||'',linkId:r.linkId||''};
     db.a.push(aEntry);
     noms.push(r.prenom+' '+r.nom);
   });
@@ -6326,7 +6331,7 @@ function transferAToCp(id){
     // vieille date rallumerait une relance immédiate sur un client qu'on vient justement de voir.
     db.cp.push({id:newId(),prenom:r.prenom,nom:r.nom,telephone:r.telephone,courriel:r.courriel,
       prequal:r.prequal||"",prequalMnt:r.prequalMnt||"",typeBat:r.typeBat||"",prixMin:r.prixMin||"",prixMax:r.prixMax||"",secteur:r.secteur||"",
-      dateContact:dateNow,notes:r.notes||"",linkId:r.linkId||""});
+      dateContact:dateNow,notes:r.notes||"",alerte:r.alerte||false,linkId:r.linkId||""});
     noms.push(r.prenom+" "+r.nom);
   });
   var idsToRemove=toTransfer.map(function(r){return r.id;});
@@ -11810,7 +11815,7 @@ function selOpts(arr,sel){return arr.map(function(o){return"<option"+(o===sel?" 
 function formForTab(tab,e){
   e=e||{};
   var ck=function(id,v){return'<input type="checkbox" id="'+id+'"'+(v?' checked':'')+' style="width:auto">';};
-  if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Pr&eacute;qualifi&eacute; jusqu&rsquo;&agrave; ($)</label><input type="number" id="fprequalmnt" value="'+esc(e.prequalMnt)+'"></div></div><div class="g2"><div class="fg"><label>Type b&acirc;timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div><div class="fg"></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact <span style="font-size:10px;color:#94A3B8">(la relance se calcule à partir de cette date)</span></label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10)||(e.id?'':_todayStr()))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
+  if(tab==="cp")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="g2"><div class="fg"><label>Pr\u00e9qualification</label><select id="fprequal"><option value="">\u2014</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Pr&eacute;qualifi&eacute; jusqu&rsquo;&agrave; ($)</label><input type="number" id="fprequalmnt" value="'+esc(e.prequalMnt)+'"></div></div><div class="g2"><div class="fg"><label>Type b&acirc;timent</label><select id="ftypebat"><option value="">\u2014</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div><div class="fg"></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="g2"><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fg"><label>Dernier contact <span style="font-size:10px;color:#94A3B8">(la relance se calcule à partir de cette date)</span></label><input type="date" id="fdate" value="'+esc(String(e.dateContact||"").substring(0,10)||(e.id?'':_todayStr()))+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="g4"><div class="fg"><label>Alerte</label><br>'+ck("falerte",e.alerte)+'</div><div class="fg"></div><div class="fg"></div><div class="fg"></div></div>';
   if(tab==="a"){
     return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>\u00c9tat</label><select id="fetat"><option value="">\u2014</option>'+selOpts(ETAT_ACH,e.etat)+'</select></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="fsec">Recherche du client</div><div class="g2"><div class="fg"><label>Pr&eacute;qualification</label><select id="fprequal"><option value="">—</option>'+selOpts(PREQ_STS,e.prequal)+'</select></div><div class="fg"><label>Pr&eacute;qualifi&eacute; jusqu&rsquo;&agrave; ($)</label><input type="number" id="fprequalmnt" value="'+esc(e.prequalMnt)+'"></div></div><div class="g2"><div class="fg"><label>Type bâtiment</label><select id="ftypebat"><option value="">—</option>'+selOpts(TYPE_BAT,e.typeBat)+'</select></div><div class="fg"></div></div><div class="g2"><div class="fg"><label>Prix min. ($)</label><input type="number" id="fpmin" value="'+esc(e.prixMin)+'"></div><div class="fg"><label>Prix max. ($)</label><input type="number" id="fpmax" value="'+esc(e.prixMax)+'"></div></div><div class="fg"><label>Secteur</label><input id="fsect" value="'+esc(e.secteur)+'"></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>CCA</label><br>'+ck("fcca",e.cca)+'</div><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div></div><div class="g4"><div class="fg"><label>Alerte</label><br>'+ck("falerte",e.alerte)+'</div><div class="fg"></div><div class="fg"></div><div class="fg"></div></div>';
   }
@@ -11973,7 +11978,7 @@ function saveEntry(){
   var _isNew=!eid;
   pushUndo(eid?"Modification":"Ajout");
   var entry={};
-  if(ctab==="cp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),prequal:gv("fprequal"),prequalMnt:gv("fprequalmnt"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),dateContact:gv("fdate"),notes:gv("fnotes")};
+  if(ctab==="cp")entry={prenom:prenom,nom:gv("fnom"),telephone:gv("ftel"),courriel:gv("fco"),prequal:gv("fprequal"),prequalMnt:gv("fprequalmnt"),typeBat:gv("ftypebat"),prixMin:gv("fpmin"),prixMax:gv("fpmax"),secteur:gv("fsect"),dateContact:gv("fdate"),notes:gv("fnotes"),alerte:gc("falerte")};
   else if(ctab==="a"){
     // COR-6b — la « Recherche du client » (statut de préqualification, type, fourchette, secteur) est
     // maintenant ÉDITÉE ici : mêmes champs et mêmes éditeurs que chez les prospects, pour qu'un
@@ -12045,6 +12050,10 @@ function saveEntry(){
         if(oldRec.linkId!==undefined&&entry.linkId===undefined)entry.linkId=oldRec.linkId;
         if(oldRec.interets!==undefined&&entry.interets===undefined)entry.interets=JSON.parse(JSON.stringify(oldRec.interets));
       }
+      // [AL-1] passager — BUG PRÉEXISTANT de la classe COR-9 : `linkId` ne vit dans aucun de ces deux
+      // formulaires et le save REMPLACE l’objet entier → enregistrer une simple note sur un prospect
+      // DÉLIAIT silencieusement son couple, et le transfert suivant ne partait plus qu’à un.
+      if((ctab==='cp'||ctab==='vp')&&oldRec.linkId!==undefined&&entry.linkId===undefined)entry.linkId=oldRec.linkId;
       // COR-1 — même préservation que vc, et pour la même raison : « pancarte retirée » se pose
       // dans l'onglet Pancartes, jamais dans ce formulaire. La case fpancret a disparu en 0.3.48
       // mais gc("fpancret") était resté : il rendait false, et comme le save REMPLACE l'objet
