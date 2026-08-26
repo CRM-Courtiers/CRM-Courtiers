@@ -12126,6 +12126,32 @@ function saveEntry(){
       // pancarte marquée retirée RESSUSCITAIT dans l'inventaire. On préserve au lieu de supprimer
       // la clé : la supprimer ferait exactement le même dégât.
       if(ctab==='v'&&oldRec.pancarteRet!==undefined)entry.pancarteRet=oldRec.pancarteRet;
+      // [M-A] — l'onglet Inscriptions n'avait jamais eu son tour dans la famille COR-1/COR-9/AL-1 :
+      // sa préservation s'arrêtait à pancarteRet. Trois champs vivent sur la fiche v sans exister dans
+      // son formulaire, et gv/gc rendent ""/false quand l'élément manque — jamais undefined — donc le
+      // save les écrivait à vide et l'objet remplacé emportait l'ancienne valeur. Remplir-si-ABSENT :
+      // vérifié champ par champ, aucun gv/gc du formulaire v ne touche ces trois clés.
+      if(ctab==='v'){
+        // paExterneEcheance — le plus coûteux. Échéance d'une promesse déposée sur MON inscription par
+        // un AUTRE courtier : elle s'édite en colonne, jamais au modal. La détruire éteignait la teinte,
+        // rendait _paExterneEchue aveugle, sortait la ligne de « Promesses à suivre » ET de la bande de
+        // l'Accueil, et — le pire — retirait le dossier de _pipelineParts (vExtPa filtre sur ce champ) :
+        // le travail de COR-7 annulé par un simple « Enregistrer », commission comprise. Et
+        // _syncDoubleRepPaToV ne l'aurait pas restaurée : elle n'écrit que s'il existe une pa double-rep
+        // DATÉE — précisément le cas où ce champ ne sert pas.
+        if(oldRec.paExterneEcheance!==undefined&&entry.paExterneEcheance===undefined)entry.paExterneEcheance=oldRec.paExterneEcheance;
+        // linkId — déjà préservé pour a, cp, vp et pa-en-vente ; v avait été oublié. Une inscription
+        // à deux vendeurs liés était DÉLIÉE au premier enregistrement, même pour corriger une note.
+        if(oldRec.linkId!==undefined&&entry.linkId===undefined)entry.linkId=oldRec.linkId;
+        // prix — écrit par transferVpToV (le prix demandé qui vient du prospect vendeur). Il n'a ni
+        // colonne ni champ, mais TROIS lecteurs bien vivants : _vPropertyLabel (le prix affiché à côté
+        // de la propriété dans Demandes reçues et le modal Pièces jointes), _collabBase (montant de
+        // base d'un dossier partagé, avec repli montant→prix) et pipelineVal du Dashboard (même repli).
+        // Sur une inscription fraîche, `montant` est encore vide : le repli sur `prix` EST la valeur.
+        // On préserve donc au lieu de cesser de l'écrire — trois lectures à l'écran valent mieux qu'un
+        // champ retiré, et le retirer aurait rendu ces trois lectures muettes pour de bon.
+        if(oldRec.prix!==undefined&&entry.prix===undefined)entry.prix=oldRec.prix;
+      }
       // Préserver les champs pancarte pour vc (pas dans le formulaire — gérés via onglet Pancartes)
       if(ctab==='vc'){
         if(oldRec.pancarte!==undefined)entry.pancarte=oldRec.pancarte;
