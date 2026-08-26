@@ -2510,6 +2510,11 @@ var COLS = {
     {lbl:"Nom",f:"nom",t:"text",w:110},
     {lbl:"T\u00e9l\u00e9phone",f:"telephone",t:"text",w:114,cls:"mu"},
     {lbl:"Courriel",f:"courriel",t:"text",w:170,cls:"mu"},
+    // [AL-1b] — décision LP après démo, qui supersède la position issue de la révision design
+    // (elle était après Notes, par symétrie avec `a`) : « client à surveiller » est une des
+    // PREMIÈRES choses à voir sur un prospect, donc devant la préqualification. Index 4 — hors
+    // de la bande figée (STICKY_COUNT.cp = 3 : prénom, nom, téléphone).
+    {lbl:"Alerte",f:"alerte",t:"bool",w:58},
     {lbl:"Pr\u00e9qualif.",f:"prequal",t:"select",o:"PREQ_STS",w:110},
     {lbl:"Type b\u00e2timent",f:"typeBat",t:"select",o:"TYPE_BAT",w:110},
     {lbl:"Prix min.",f:"prixMin",t:"number",w:90},
@@ -2519,9 +2524,6 @@ var COLS = {
     {lbl:"Jours",f:null,t:"calc",w:52},
     {lbl:"Relance",f:null,t:"calc",w:72},
     {lbl:"Notes",f:"notes",t:"text",w:160,cls:"nc"},
-    // [AL-1] — une notion, un endroit : le drapeau « client à surveiller » se lit après Notes et
-    // avant Actions ici comme sur `a`. Rendu bool générique : toggle 1 clic via ie(), undo compris.
-    {lbl:"Alerte",f:"alerte",t:"bool",w:58},
     {lbl:"Actions",f:null,t:"action",w:160}
   ],
   a: [
@@ -4113,7 +4115,9 @@ function getCW(tab){try{var x=localStorage.getItem("crmprocw"+tab);if(x){var ws=
   // Force la largeur de certaines colonnes \u00e0 la valeur d\u00e9finie dans COLS (\u00e9vite que les anciens caches \u00e9crasent les ajustements UI)
   // - action : boutons multiples, doit refl\u00e9ter ajouts r\u00e9cents
   // - pills : 2 pastilles (dem + pa), doit accommoder les 2
-  for(var i=0;i<COLS[tab].length;i++){if(COLS[tab][i].t==="action"||COLS[tab][i].t==="pills"||COLS[tab][i].f==="prequal")ws[i]=COLS[tab][i].w;}
+  // - alerte : case étroite (58) posée entre deux colonnes larges par [AL-1b] — sans forçage elle
+  //   hériterait de la largeur que le cache garde à cet index pour le voisin d’avant
+  for(var i=0;i<COLS[tab].length;i++){if(COLS[tab][i].t==="action"||COLS[tab][i].t==="pills"||COLS[tab][i].f==="prequal"||COLS[tab][i].f==="alerte")ws[i]=COLS[tab][i].w;}
   return ws;
 }}}catch(e){}return COLS[tab].map(function(c){return c.w;});}
 function saveCW(tab,ws){try{localStorage.setItem("crmprocw"+tab,JSON.stringify(ws));}catch(e){}}
@@ -12438,6 +12442,19 @@ document.querySelector(".card").addEventListener("mouseover",function(e){
 // ─── Init ────────────────────────────────────────────────────
 ldb();
 _maybeSeedExamples();
+// [AL-1b] — largeurs (crmprocw*) et colonnes masquées (crmprovis*) sont mémorisées par POSITION.
+// Insérer « Alerte » à l’index 4 de cp décale donc tout ce qui suit. Les largeurs : le garde-fou
+// de longueur de getCW ne voit rien dès que deux versions ont le même NOMBRE de colonnes — c’est
+// le piège de COR-8c. Le masquage, lui, n’a aucun garde-fou : un courtier qui avait caché
+// « Secteur » aurait retrouvé « Dernier contact » caché à sa place, sans un mot. Migration UNIQUE,
+// marquée par un drapeau : les largeurs cp repartent des valeurs de COLS, et les index masqués
+// >= 4 sont décalés de +1 pour désigner encore la même colonne.
+try{if(!localStorage.getItem("crmpro-cols-cp-al1b")){
+  localStorage.removeItem("crmprocwcp");
+  var _vcp=localStorage.getItem("crmproviscp");
+  if(_vcp){var _h=JSON.parse(_vcp);if(_h&&_h.length)localStorage.setItem("crmproviscp",JSON.stringify(_h.map(function(i){return i>=4?i+1:i;})));}
+  localStorage.setItem("crmpro-cols-cp-al1b","1");
+}}catch(e){}
 TABS_UI.forEach(function(tab){try{var x=localStorage.getItem("crmprovis"+tab);COL_VIS[tab]=x?JSON.parse(x):[];}catch(e){COL_VIS[tab]=[];}});
 applyColVisCSS();
 if(thrCp)thrCp.value=THR.cp;
