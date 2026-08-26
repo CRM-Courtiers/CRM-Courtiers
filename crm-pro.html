@@ -3944,11 +3944,9 @@ function _migrerPrequal(){
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
 var _aToPA_acheteurId=null;
 function transferAToPa(id){
-  console.log('transferAToPa called with id:', id);
   var rec=null;
   for(var i=0;i<db.a.length;i++){if(db.a[i].id===id){rec=db.a[i];break;}}
-  if(!rec){console.log('rec not found');return;}
-  console.log('rec found:', rec.prenom, rec.nom);
+  if(!rec)return;
   _aToPA_acheteurId=id;
   var nom=esc((rec.prenom||'')+" "+(rec.nom||'')).trim();
   var info=document.getElementById('aToPA-info');
@@ -4864,6 +4862,13 @@ function renderTab(tab){
     // E9 — la teinte s'effaçait dès l'échéance passée : la ligne redevenait ordinaire au moment où
     // il fallait la retrouver. Elle reste, en variante assombrie quand l'échéance est dépassée.
     if(tab==="v"&&_paExterneEnCours(rec))clsArr.push(_paExterneEchue(rec)?"v-paext v-paext-late":"v-paext");
+    // [N-1] — dernière asymétrie entre onglets jumeaux : marquage, comptage, issues, menu et lexique
+    // étaient déjà alignés sur v ; la teinte ne l’était pas. Une promesse échue rougit donc ici aussi,
+    // par la MÊME paire de classes (aucune couleur neuve) et la MÊME définition d’« échue » —
+    // _paEchue(), appelée et non recopiée : elle seule sait que « Acceptée » et 'done' n’en sont pas.
+    // Les classes gardent leur nom d’origine (nées sur v) : les renommer serait un refactor, et deux
+    // noms pour une teinte serait la faute que ce correctif répare.
+    if((tab==="pa"||tab==="pa-en-vente")&&_paEchue(rec))clsArr.push("v-paext v-paext-late");
     var trCls=clsArr.join(" ");
     h+='<tr data-rid="'+esc(rec.id)+'"'+(trCls?' class="'+trCls+'"':'')+'>';
     for(var j=0;j<cols.length;j++){
@@ -5828,12 +5833,19 @@ function _paExterneEchue(v){
   var ds=_dateOnly(val);
   return /^\d{4}-\d{2}-\d{2}$/.test(ds)&&ds<_todayStr();
 }
+// [N-1] — le dédoublon des échéances de promesse, défini UNE fois pour ses deux lecteurs (la liste
+// « Promesses à suivre » et le compteur de la bande). Il ne vaut QUE si la promesse interne porte
+// vraiment l'échéance : `paEcheance` non vide (truthy — une date OU 'done', même lecture qu'ailleurs).
+// AVANT, le test portait sur la seule EXISTENCE d'une pa pour la propriété : une double rep créée
+// sans date faisait taire la copie v, seule voix du retard — l'échue devenait invisible dans la
+// liste ET dans le compteur. Une échéance doit être comptée une fois, jamais zéro.
+function _paInterneAvecEcheance(vid){
+  return (db.pa||[]).some(function(p){return p.propertyId===vid&&!!p.paEcheance;});
+}
 function _paExternesEchues(){
   return (db.v||[]).filter(function(v){
     if(!_paExterneEchue(v))return false;
-    // Dédoublon identique à « Promesses à suivre » : si une double rep porte déjà cette propriété,
-    // c'est ELLE qui porte l'échéance (v.paExterneEcheance n'en est qu'une copie de synchro).
-    return !(db.pa||[]).some(function(p){return p.propertyId===v.id;});
+    return !_paInterneAvecEcheance(v.id);
   });
 }
 
@@ -5997,10 +6009,11 @@ function renderAccueil(){
     // et une date passée disparaissait pour toujours. Une date, c'est une ligne à l'écran — point.
     var aUneDate=/^[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(String(v.paExterneEcheance||''));
     if(!isDone&&!aUneDate)return;
-    // Dédoublon : si une double rep (db.pa avec propertyId) existe pour cette propriété, on skip le v
-    // (la double rep sera déjà affichée comme "Double rep.", la valeur v.paExterneEcheance est juste un sync)
-    var hasDoubleRep=(db.pa||[]).some(function(p){return p.propertyId===v.id;});
-    if(hasDoubleRep)return;
+    // Dédoublon : si une double rep PORTEUSE DE L’ÉCHÉANCE existe pour cette propriété, on skip le v
+    // (elle sera déjà affichée comme "Double rep.", v.paExterneEcheance n’en est qu’une copie de sync).
+    // [N-1] — même prédicat que le compteur de la bande, une seule définition : sans échéance côté pa,
+    // la copie v est la SEULE voix du retard et doit rester à l’écran.
+    if(_paInterneAvecEcheance(v.id))return;
     var urg=Infinity;
     if(isDone){
       urg=_paUrgency(v); // acceptée → urgence selon conditions restantes
