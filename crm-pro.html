@@ -5237,7 +5237,9 @@ var TUTORIELS=[
     +'<h2>Cr\u00e9er l\u2019inscription</h2>'
     +'<p>Clique <strong>+ Ajouter</strong> et saisis le vendeur, l\u2019adresse, le n\u00b0 Centris et les d\u00e9tails. Dans <strong>No. Centris</strong> tu peux <strong>coller le lien Centris complet</strong> : le num\u00e9ro en est extrait automatiquement, dans le formulaire comme dans la colonne. Tu peux promouvoir un prospect vendeur en inscription via son menu Actions.</p>'
     +'<h2>La check-list du mandat</h2>'
-    +'<p>De nombreuses cases t\u2019aident \u00e0 ne rien oublier : \u00e9valuation, Loi 25, CANAFE, contrat de vente, d\u00e9claration du vendeur, MLS, taxes, zonage, certificat de localisation, photos, mesures, pancarte, etc. Coche au fur et \u00e0 mesure.</p>'
+    +'<p>\u00c0 la cr\u00e9ation, le formulaire ne te montre que l\u2019essentiel \u2014 vendeur, adresse, n\u00b0 Centris, coordonn\u00e9es, pancarte, notes \u2014 pour que le bouton <strong>Enregistrer</strong> soit sous tes yeux sans avoir \u00e0 d\u00e9filer. Le reste attend dans trois sections repliables, les m\u00eames \u25be que dans Conclus, R\u00e9f\u00e9rences ou Pancartes : <strong>Documents du mandat</strong>, <strong>Conditions et \u00e9ch\u00e9ances</strong> et <strong>Transaction</strong>. Clique un titre pour l\u2019ouvrir \u2014 tu peux en ouvrir plusieurs \u00e0 la fois, rien ne se referme tout seul.</p>'
+    +'<p>C\u2019est l\u00e0 que vit la check-list du mandat : \u00e9valuation, Loi 25, CANAFE, contrat de vente, d\u00e9claration du vendeur, MLS, taxes, zonage, certificat de localisation, photos, mesures, etc. Chaque titre te dit o\u00f9 tu en es (\u00ab <em>Documents du mandat (6/14)</em> \u00bb). Coche au fur et \u00e0 mesure.</p>'
+    +'<p>Quand tu <strong>rouvres</strong> une inscription d\u00e9j\u00e0 travaill\u00e9e, chaque section o\u00f9 tu as d\u00e9j\u00e0 quelque chose est d\u00e9j\u00e0 d\u00e9pli\u00e9e : rien de ce que tu as rempli n\u2019est jamais cach\u00e9. Et pour un simple changement de case ou de date, le <strong>tableau reste le chemin le plus rapide</strong> \u2014 chaque colonne s\u2019\u00e9dite \u00e0 un clic, sans ouvrir la fiche.</p>'
     +'<h2>Les pastilles d\u2019activit\u00e9</h2>'
     +'<p>Sur chaque inscription, des pastilles signalent les <strong>demandes re\u00e7ues</strong> (\ud83d\udce9) et les <strong>promesses</strong> (\ud83d\udcc4) li\u00e9es \u00e0 cette propri\u00e9t\u00e9 \u2014 cliquables pour y acc\u00e9der directement.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Remplis le n\u00b0 Centris : il devient cliquable et t\u2019am\u00e8ne directement \u00e0 la fiche en ligne.</div></div>'},
@@ -5279,6 +5281,7 @@ var TUTORIELS=[
     '<p>Les <strong>conditions</strong> (inspection, financement, R2.1/R2.2, assurance, fosse septique, test d\u2019eau, notaire\u2026) sont le c\u0153ur du suivi d\u2019une promesse. TRI-ANGLE t\u2019aide \u00e0 ne jamais manquer une date.</p>'
     +'<h2>Inscrire une date</h2>'
     +'<p>Clique sur une cellule de condition : un petit calendrier s\u2019ouvre pour choisir <strong>date et heure</strong>. Une fois la condition remplie, marque-la comme faite.</p>'
+    +'<p>Sur une <strong>inscription</strong>, ces m\u00eames conditions se saisissent aussi dans la fiche, sous la section repliable <strong>\u25be Conditions et \u00e9ch\u00e9ances</strong> \u2014 avec l\u2019\u00e9valuation VM, les photos et les mesures, qui comptent dans le m\u00eame suivi. Son titre annonce combien sont engag\u00e9es (\u00ab <em>Conditions et \u00e9ch\u00e9ances (4/11)</em> \u00bb) et ce chiffre est exactement le total qu\u2019affiche la barre de progression de la ligne. Si la fiche en a d\u00e9j\u00e0 une, la section est ouverte d\u00e8s que tu ouvres la fiche.</p>'
     +'<h2>Les rappels</h2>'
     +'<ul>'
     +'<li>L\u2019Accueil affiche les <strong>conditions \u00e0 surveiller</strong> (\u00e9ch\u00e9ance \u2264 7 jours), avec les retards en \u00e9vidence.</li>'
@@ -7012,6 +7015,17 @@ function toggleArchSection(which){
     lblWord=(which==='ac')?'Notariés':(which==='vc'?'Notariées':'Archivées');
   }
   if(tog)tog.innerHTML=(_archOpen[which]?'▴ ':'▾ ')+lblWord+' (<span id="arch-count-'+which+'">'+cnt+'</span>)';
+}
+// [M-B] — replis du formulaire Inscription (patron .arch-toggle/.arch-body ci-dessus). Ne touche
+// QUE style.display : les 47 contrôles du formulaire restent dans le DOM à chaque ouverture, sans
+// quoi saveEntry les enregistrerait à vide (gv/gc rendent ""/false pour un élément absent). Aucun
+// re-rendu de #mb ici, donc rien de saisi ne peut être perdu en repliant.
+function _vFoldToggle(k){
+  var b=document.getElementById('vfold-b-'+k),c=document.getElementById('vfold-c-'+k);
+  if(!b)return;
+  var open=b.style.display!=='none';
+  b.style.display=open?'none':'block';
+  if(c)c.textContent=open?'▾':'▴';
 }
 // Depuis le Dashboard : ouvre la page Conclus (ac/vc) et déplie la section Notariés
 function _gotoNotaries(which){
@@ -11935,7 +11949,76 @@ function formForTab(tab,e){
       var dateVal=(!isDone&&val)?val:'';
       return'<div class="fg"><label>'+lbl+'</label><div style="display:flex;align-items:center;gap:6px"><input type="datetime-local" id="'+id+'d" step="900" value="'+esc(_toDtLocal(dateVal))+'" style="flex:1"><label style="display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;cursor:pointer"><input type="checkbox" id="'+id+'c"'+(isDone?' checked':'')+' style="width:auto"> Fait</label></div></div>';
     };
-    return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="fg"><label>No. Centris</label><input id="fcentris" placeholder="N&deg; ou lien Centris coll&eacute;" value="'+esc(e.centris)+'"></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Adresse propri\u00e9t\u00e9</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div><div class="g2">'+condFv("fevalvm","\u00c9valuation VM",e.evalVM)+'<div class="fg"></div></div><div class="fsec">Documents initiaux</div><div class="g4"><div class="fg"><label>Loi 25</label><br>'+ck("floi25",e.loi25)+'</div><div class="fg"><label>Cons. sec.</label><br>'+ck("fconssec",e.consSec)+'</div><div class="fg"><label>CANAFE</label><br>'+ck("fcanafe",e.canafe)+'</div><div class="fg"></div></div><div class="fsec">Documents &amp; d\u00e9marches</div><div class="g4"><div class="fg"><label>Contrat vente</label><br>'+ck("fcontrat",e.contratVente)+'</div><div class="fg"><label>D\u00e9cl. vend.</label><br>'+ck("fdeclvend",e.declVend)+'</div><div class="fg"><label>MLS</label><br>'+ck("fmls",e.mls)+'</div><div class="fg"></div></div><div class="g4"><div class="fg"><label>Taxes scol.</label><br>'+ck("ftaxscol",e.taxesScol)+'</div><div class="fg"><label>Taxes mun.</label><br>'+ck("ftaxmun",e.taxesMun)+'</div><div class="fg"><label>Zonage</label><br>'+ck("fzonage",e.zonage)+'</div><div class="fg"><label>R\u00f4le \u00e9val.</label><br>'+ck("frole",e.roleEval)+'</div></div><div class="g4"><div class="fg"><label>Certif. loc.</label><br>'+ck("fcertif",e.certifLoc)+'</div><div class="fg"><label>Hydro</label><br>'+ck("fhydro",e.hydro)+'</div><div class="fg"></div><div class="fg"><label>Pancarte</label><br>'+ck("fpanc",e.pancarte)+'</div></div><div class="g4"><div class="fg"><label>Pr\u00e9qualif.</label><br>'+ck("fprequal2",e.prequal2)+'</div><div class="fg"><label>GED</label><br>'+ck("fged",e.ged)+'</div><div class="fg"></div><div class="fg"></div></div><div class="fsec" style="background:linear-gradient(135deg,#1E293B,#475569);color:#fff;padding:8px 12px;border-radius:6px;border-bottom:none;margin-top:18px">Conditions PA</div><div class="g2">'+condFv("finsp","Inspection",e.inspection)+condFv("ffin","Financement",e.financement)+'</div><div class="g2">'+condFv("fr21","R2.1",e.r21)+condFv("fr22","R2.2",e.r22)+'</div><div class="g2">'+condFv("fassur","Assur. immeuble",e.assurImm)+condFv("ffosse","Fosse septique",e.fosseSept)+'</div><div class="g2">'+condFv("feau","Test eau",e.testEau)+condFv("fnot","Notaire",e.notaire)+'</div><div class="g2">'+condFv("fphotos","Photos",e.photos)+condFv("fmesures","Mesures",e.mesures)+'</div><div class="fsec">Transaction</div><div class="fg"><label>Montant transaction ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="g2"><div class="fg"><label>Commission totale (%)</label><input type="number" step="0.01" id="fcommtot" value="'+esc(e.commTot)+'"></div><div class="fg"><label>Commission autre courtier (%)</label><input type="number" step="0.01" id="fcommautre" value="'+esc(e.commAutre)+'"></div></div>';
+    // [M-B] — RÈGLE DOM-RÉSIDENT, non négociable : le formulaire rend TOUJOURS ses 47 contrôles ;
+    // un repli ne change QUE le style.display de son conteneur. Motif : gv()/gc() retournent
+    // ""/false quand l'élément n'existe pas — jamais undefined — et saveEntry REMPLACE l'objet
+    // entier. Un bloc rendu conditionnellement serait donc enregistré à vide et DÉTRUIRAIT ses
+    // champs (exactement la panne COR-1/pancarteRet, ici à l'échelle de 39 champs), tout en rendant
+    // inopérantes les préservations M-A/M-A2, qui testent entry[k]===undefined. Conséquences :
+    // saveEntry n'est pas touché d'une ligne, aucun re-rendu de #mb au changement de repli, et
+    // _ovEmpreinte() reste SANS filtre de visibilité (le confirm d'abandon doit voir un champ
+    // modifié puis replié ; Ctrl+Entrée sauve depuis n'importe où pour la même raison).
+    //
+    // Pourquoi un accordéon et pas des onglets ni un assistant par étapes : doEdit('v') sert six
+    // fois de « ouvrir la fiche » — le courtier ouvre le plus souvent pour REGARDER, et des onglets
+    // lui cacheraient ce qu'il vient chercher. Le patron .arch-toggle/.arch-body est déjà celui des
+    // sections « Notariés (3) » de Conclus, Références et Pancartes : rien de nouveau à apprendre.
+    // Multi-ouvert (aucune section n'en referme une autre), gris, sans animation.
+    var fold=function(k,lbl,open,body){
+      return'<div class="arch-toggle" id="vfold-t-'+k+'" onclick="_vFoldToggle(\''+k+'\')"><span id="vfold-c-'+k+'">'+(open?'▴':'▾')+'</span> '+lbl+'</div>'
+        +'<div class="arch-body" id="vfold-b-'+k+'"'+(open?'':' style="display:none"')+'>'+body+'</div>';
+    };
+    // Les 14 cases du mandat : UNE seule liste, qui sert au rendu ET au compteur — deux listes
+    // finiraient par diverger. « Documents initiaux » et « Documents & démarches » fusionnent : la
+    // distinction n'existe nulle part ailleurs dans l'app (ni colonne, ni survol, ni barre).
+    var _vDocs=[['floi25','Loi 25','loi25'],['fconssec','Cons. sec.','consSec'],['fcanafe','CANAFE','canafe'],['fcontrat','Contrat vente','contratVente'],
+      ['fdeclvend','Décl. vend.','declVend'],['fmls','MLS','mls'],['ftaxscol','Taxes scol.','taxesScol'],['ftaxmun','Taxes mun.','taxesMun'],
+      ['fzonage','Zonage','zonage'],['frole','Rôle éval.','roleEval'],['fcertif','Certif. loc.','certifLoc'],['fhydro','Hydro','hydro'],
+      ['fprequal2','Préqualif.','prequal2'],['fged','GED','ged']];
+    var _vDocN=0,_vDocH='';
+    _vDocs.forEach(function(d,i){
+      if(e[d[2]])_vDocN++;
+      if(i%4===0)_vDocH+=(i?'</div>':'')+'<div class="g4">';
+      _vDocH+='<div class="fg"><label>'+d[1]+'</label><br>'+ck(d[0],e[d[2]])+'</div>';
+    });
+    for(var _vp=_vDocs.length%4;_vp&&_vp<4;_vp++)_vDocH+='<div class="fg"></div>';
+    _vDocH+='</div>';
+    // Le compteur des conditions se LIT de la barre de progression : BARRE_FIELDS_BY_TAB.v donne le
+    // dénominateur (sa longueur) et _barreProg().total le nombre d'engagées — soit exactement le
+    // dénominateur qu'affiche la barre de la même ligne. Recopier la liste ici en ferait une
+    // deuxième source de vérité, condamnée à diverger au prochain ajout de condition.
+    var _vCondTot=BARRE_FIELDS_BY_TAB.v.length;
+    var _vCondN=(_barreProg('v',e)||{total:0}).total;
+    var _vMnt=parseFloat(e.montant);
+    // Ouverture par défaut : un repli s'ouvre s'il est ENGAGÉ — même prédicat que le dénominateur de
+    // la barre (une case cochée, une date, un 'done', un montant non vide). À la création rien n'est
+    // engagé, donc tout est replié : 8 contrôles visibles et le bouton Enregistrer sous les yeux.
+    // À l'édition d'une fiche mature, tout ce que le courtier a déjà rempli est déjà déplié — rien
+    // de rempli n'est jamais caché. Pas de localStorage : l'état dépend de la FICHE, pas du poste.
+    var _vOpenDoc=_vDocN>0, _vOpenCond=_vCondN>0, _vOpenTx=!!(e.montant||e.commTot||e.commAutre);
+    // L'essentiel — jamais repliable, pas d'en-tête. Pancarte est remontée ici depuis les documents :
+    // c'est le seul booléen du mandat qui allume une surface le jour même (la liste « à installer »).
+    return'<div class="g2"><div class="fg"><label>Prénom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div>'
+      +'<div class="fg"><label>Adresse propriété</label><input id="faddr" value="'+esc(e.adresse)+'"></div>'
+      +'<div class="fg"><label>No. Centris</label><input id="fcentris" placeholder="N&deg; ou lien Centris coll&eacute;" value="'+esc(e.centris)+'"></div>'
+      +'<div class="g2"><div class="fg"><label>Téléphone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div>'
+      +'<div class="g4"><div class="fg"><label>Pancarte</label><br>'+ck("fpanc",e.pancarte)+'</div><div class="fg"></div><div class="fg"></div><div class="fg"></div></div>'
+      +'<div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>'
+      +fold('doc','Documents du mandat ('+_vDocN+'/'+_vDocs.length+')',_vOpenDoc,_vDocH)
+      +fold('cond','Conditions et échéances ('+_vCondN+'/'+_vCondTot+')',_vOpenCond,
+        // Évaluation VM était orpheline en haut du formulaire, sans titre : elle rejoint les dix
+        // conditions PA, avec lesquelles la barre la compte déjà.
+        '<div class="g2">'+condFv("fevalvm","Évaluation VM",e.evalVM)+'<div class="fg"></div></div>'
+        +'<div class="g2">'+condFv("finsp","Inspection",e.inspection)+condFv("ffin","Financement",e.financement)+'</div>'
+        +'<div class="g2">'+condFv("fr21","R2.1",e.r21)+condFv("fr22","R2.2",e.r22)+'</div>'
+        +'<div class="g2">'+condFv("fassur","Assur. immeuble",e.assurImm)+condFv("ffosse","Fosse septique",e.fosseSept)+'</div>'
+        +'<div class="g2">'+condFv("feau","Test eau",e.testEau)+condFv("fnot","Notaire",e.notaire)+'</div>'
+        +'<div class="g2">'+condFv("fphotos","Photos",e.photos)+condFv("fmesures","Mesures",e.mesures)+'</div>')
+      // Pas de compteur ici — « 2/3 » sur des montants ne voudrait rien dire. C'est le montant
+      // lui-même qui se lit dans le libellé quand il existe.
+      +fold('tx','Transaction'+(_vMnt?' — '+fm(e.montant):''),_vOpenTx,
+        '<div class="fg"><label>Montant transaction ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div>'
+        +'<div class="g2"><div class="fg"><label>Commission totale (%)</label><input type="number" step="0.01" id="fcommtot" value="'+esc(e.commTot)+'"></div><div class="fg"><label>Commission autre courtier (%)</label><input type="number" step="0.01" id="fcommautre" value="'+esc(e.commAutre)+'"></div></div>');
   }
   if(tab==="ac")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Date conclusion</label><input type="datetime-local" id="fdateconc" value="'+esc(_toDtLocal(e.dateConclusion))+'"></div><div class="fg"><label>Adresse</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fsec">Transaction</div><div class="g2"><div class="fg"><label>Montant ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="fg"><label>Commission (%)</label><input type="number" step="0.01" id="fcomm" value="'+esc(e.commission)+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
   if(tab==="vc")return'<div class="g2"><div class="fg"><label>Pr\u00e9nom</label><input id="fprenom" value="'+esc(e.prenom)+'"></div><div class="fg"><label>Nom</label><input id="fnom" value="'+esc(e.nom)+'"></div></div><div class="g2"><div class="fg"><label>T\u00e9l\u00e9phone</label><input id="ftel" value="'+esc(e.telephone)+'"></div><div class="fg"><label>Courriel</label><input type="email" id="fco" value="'+esc(e.courriel)+'"></div></div><div class="fg"><label>Date conclusion</label><input type="datetime-local" id="fdateconc" value="'+esc(_toDtLocal(e.dateConclusion))+'"></div><div class="fg"><label>Adresse</label><input id="faddr" value="'+esc(e.adresse)+'"></div><div class="fsec">Transaction</div><div class="fg"><label>Montant ($)</label><input type="number" id="fmontant" value="'+esc(e.montant)+'"></div><div class="g2"><div class="fg"><label>Commission totale (%)</label><input type="number" step="0.01" id="fcommtot" value="'+esc(e.commTot)+'"></div><div class="fg"><label>Commission autre courtier (%)</label><input type="number" step="0.01" id="fcommautre" value="'+esc(e.commAutre)+'"></div></div><div class="fg"><label>Notes</label><textarea id="fnotes">'+esc(e.notes)+'</textarea></div>';
@@ -12027,6 +12110,14 @@ function _toastSave(tab,entry,isEdit,oldRec){
     // c'est-à-dire quand la conséquence est invisible dans le tableau.
     var bouge=((tab==='cp'||tab==='vp')&&oldRec&&String(oldRec.dateContact||'')!==String(entry.dateContact||''));
     if(bouge)toast('✓ Fiche mise à jour : '+nom+relance);
+    return;
+  }
+  // [M-B] — l'inscription est le seul type de fiche dont la création déclenche un geste terrain le
+  // jour même : poser la pancarte. Même prédicat que getPancartesAInstaller() (!r.pancarte), pour
+  // que le toast et la page Pancartes ne puissent pas se contredire. L'adresse plutôt que le nom :
+  // c'est elle que le courtier relira dans la liste « À installer ».
+  if(tab==='v'){
+    toast('✓ Inscription créée : '+((entry.adresse||'').trim()||nom)+(entry.pancarte?'':' — pancarte à installer'));
     return;
   }
   toast('✓ Fiche créée : '+nom+relance);
