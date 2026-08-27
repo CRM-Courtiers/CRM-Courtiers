@@ -12151,6 +12151,36 @@ function saveEntry(){
         // On préserve donc au lieu de cesser de l'écrire — trois lectures à l'écran valent mieux qu'un
         // champ retiré, et le retirer aurait rendu ces trois lectures muettes pour de bon.
         if(oldRec.prix!==undefined&&entry.prix===undefined)entry.prix=oldRec.prix;
+        // [M-A2] — 4e champ du même trou, manqué par l'inventaire de M-A : `notaireId` est posé par
+        // _notaireAssignToRecord depuis le menu inline de la colonne Notaire, et ne figure dans aucun
+        // formulaire (le `fnot` du modal est la condition-DATE `notaire`, pas le notaire choisi).
+        if(oldRec.notaireId!==undefined&&entry.notaireId===undefined)entry.notaireId=oldRec.notaireId;
+      }
+      // [M-A2] — 6e occurrence de la famille : ac et vc n'avaient AUCUNE préservation utile. Leur
+      // formulaire ne porte que 9 champs, leurs colonnes en éditent 12 et 14 : le n° Centris, la date
+      // notaire, le notaire assigné et la case Payé tombaient à chaque « Enregistrer », même pour
+      // corriger une note — et sur vc, le badge 👤 avec eux.
+      // ⚠ Ce qui rend le défaut ATTEIGNABLE depuis [N-2] : le re-lien d'une promesse archivée emmène
+      // maintenant le courtier sur la rangée vc qui vient de recevoir son badge et la surligne. Le geste
+      // naturel qui suit — ☰ Modifier sur la rangée qu'on lui montre — effaçait le badge qu'on venait
+      // de lui faire admirer. N-2 ne crée pas le trou, il conduit droit dessus.
+      // `linkId` en fait partie : transferToConclus le recopie, et _dashDedup s'en sert pour ne
+      // garder QU'UNE fiche par couple conclu ensemble. L'effacer défait ce regroupement — la
+      // commission du couple est alors comptée DEUX FOIS au Dashboard.
+      // `dateNotaire` n'y est PAS, délibérément : transferToConclus le pose à "" et markNotaried le
+      // renseigne en déplaçant l'objet vers les archives — sur ac/vc il est toujours vide. Le
+      // préserver donnerait à croire qu'il porte quelque chose, et quelqu'un finirait par s'y fier.
+      if(ctab==='ac'||ctab==='vc'){
+        ['centris','notaire','notaireId','paye','linkId'].forEach(function(_ck){
+          if(oldRec[_ck]!==undefined&&entry[_ck]===undefined)entry[_ck]=oldRec[_ck];
+        });
+      }
+      // acheteurNom/acheteurId — le badge 👤 de la double représentation, posé par transferToConclus
+      // et déplacé par _paArchRelink. Il ne vit que sur vc (et archvc) : rien à préserver côté ac.
+      if(ctab==='vc'){
+        ['acheteurNom','acheteurId'].forEach(function(_ck){
+          if(oldRec[_ck]!==undefined&&entry[_ck]===undefined)entry[_ck]=oldRec[_ck];
+        });
       }
       // Préserver les champs pancarte pour vc (pas dans le formulaire — gérés via onglet Pancartes)
       if(ctab==='vc'){
@@ -12199,8 +12229,11 @@ function saveEntry(){
       // Remplir-si-ABSENT : un champ que le formulaire édite (ex. inspection) n’est jamais touché —
       // c’est exactement le clobber fermé en COR-3, évité ici par construction.
       if(ctab==='pa'||ctab==='pa-en-vente'){
+        // [M-A2] — `notaireId` rejoint la liste : même trou, même mécanisme. Il vit sur pa comme sur
+        // pa-en-vente (le picker s'ouvre depuis la colonne Notaire des deux onglets) et l'effacer
+        // vidait le nom ⚖️ affiché sous la date ET le publipostage, qui lit le notaire par cet id.
         ['alerte','cca','loi25','consSec','canafe','prequal','prequalMnt','typeBat','prixMin',
-         'prixMax','secteur','prequal2','paEcheance','linkId','interets'].forEach(function(_pk){
+         'prixMax','secteur','prequal2','paEcheance','linkId','interets','notaireId'].forEach(function(_pk){
           if(oldRec[_pk]!==undefined&&entry[_pk]===undefined)entry[_pk]=JSON.parse(JSON.stringify(oldRec[_pk]));
         });
       }
