@@ -12246,6 +12246,19 @@ function saveEntry(){
         // _notaireAssignToRecord depuis le menu inline de la colonne Notaire, et ne figure dans aucun
         // formulaire (le `fnot` du modal est la condition-DATE `notaire`, pas le notaire choisi).
         if(oldRec.notaireId!==undefined&&entry.notaireId===undefined)entry.notaireId=oldRec.notaireId;
+        // [M-A4] — 9e et dernier trou connu de la famille, et le plus coûteux en confiance :
+        // `attachments` porte les métadonnées des pièces jointes de la propriété (Étape 25),
+        // écrites par le modal 📎 via _vById() et lues par _pjCount, _renderPJSlots, _pjOpen,
+        // _pjDelete et le publipostage. Sans cette ligne, ouvrir la fiche pour corriger une note
+        // effaçait d'un coup la fiche MLS, le certificat de localisation et le zonage : pastille
+        // 📎 à 0, modal PJ vide. Les fichiers restent sur le disque, mais l'app ne les voit plus —
+        // des documents légaux qui semblent avoir disparu sans qu'aucun geste ne les ait supprimés.
+        // COPIE PROFONDE et non référence, comme `interets` sur l'onglet a et les 16 clés de COR-9 :
+        // c'est le patron maison pour tout champ non scalaire, et attachments est le seul préservé
+        // qui soit muté EN PLACE (push sur .autres, splice, delete, affectation de clé). oldRec sort
+        // de db.v au remplacement, donc une référence partagée serait inoffensive AUJOURD'HUI — mais
+        // le jour où quelque chose retiendrait oldRec, ce serait un bug silencieux de plus.
+        if(oldRec.attachments!==undefined&&entry.attachments===undefined)entry.attachments=JSON.parse(JSON.stringify(oldRec.attachments));
       }
       // [M-A2] — 6e occurrence de la famille : ac et vc n'avaient AUCUNE préservation utile. Leur
       // formulaire ne porte que 9 champs, leurs colonnes en éditent 12 et 14 : le n° Centris, la date
