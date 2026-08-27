@@ -12274,9 +12274,17 @@ function saveEntry(){
         });
       }
       // Préserver les champs pancarte pour vc (pas dans le formulaire — gérés via onglet Pancartes)
+      // [M-A3] — `pancarteVendu` manquait à ses deux frères depuis toujours. Il est posé par
+      // _pancMarkVendu (bouton de la page Pancartes) et lu par getPancartesVenduAAjouter, qui liste
+      // `pancarte && !pancarteVendu && !pancarteRet` : l'effacer fait REAPPARAÎTRE la propriété dans
+      // « VENDU à ajouter » alors que l'autocollant est déjà sur la pancarte — le courtier se déplace
+      // pour poser ce qui est posé. 8e et dernière occurrence connue de la famille du save.
+      // Sa place est ici et non dans la liste ac/vc de M-A2 : les trois lecteurs de pancarteVendu
+      // itèrent db.vc, le champ n'existe pas sur ac — même raison que acheteurNom/acheteurId.
       if(ctab==='vc'){
         if(oldRec.pancarte!==undefined)entry.pancarte=oldRec.pancarte;
         if(oldRec.pancarteRet!==undefined)entry.pancarteRet=oldRec.pancarteRet;
+        if(oldRec.pancarteVendu!==undefined)entry.pancarteVendu=oldRec.pancarteVendu;
       }
       // Étape 31 — reh : préserver statut, source et date de réception (gérés via menu Actions)
       if(ctab==='reh'){
