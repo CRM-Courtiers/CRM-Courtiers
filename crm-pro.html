@@ -12300,6 +12300,11 @@ function saveEntry(){
       // Posée ICI, dans le bloc universel : le lot doit survivre même si la fiche est
       // un jour transférée vers un autre onglet. (Famille COR-1 / M-A / M-A2 / M-A3 / M-A4.)
       if(oldRec._importLot!==undefined&&entry._importLot===undefined)entry._importLot=oldRec._importLot;
+      // [I-4] _importMaj — même raison, sur une fiche PRÉEXISTANTE qu'un import a
+      // complétée. Sans lui, « Annuler cet import » ne saurait plus quels champs
+      // il avait remplis et laisserait la fiche à moitié importée. Copie profonde :
+      // c'est un objet, pas un scalaire.
+      if(oldRec._importMaj!==undefined&&entry._importMaj===undefined)entry._importMaj=JSON.parse(JSON.stringify(oldRec._importMaj));
       // COR-6 — le bagage venu des prospects survit au formulaire : le save REMPLACE l'objet entier,
       // donc tout champ absent du formulaire serait effacé au premier « Enregistrer », même pour
       // corriger une note. Même mécanisme que le pancarteRet ressuscité, fermé en COR-1.
@@ -12677,7 +12682,7 @@ function importData(input){
 // et montre un aperçu. L'écriture des fiches est le mandat suivant (I-2).
 // Le classeur est lu dans le processus principal (electron-app/main.js) : le
 // fichier du courtier ne transite jamais en base64 par le renderer.
-var _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false};
+var _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false,doublons:'ignorer',copierIgnorees:true};
 
 // Les rôles proposables. 'statut' et 'dateContact' sont RELEVÉS ici mais ne servent
 // qu'à l'aperçu : leur exploitation (destination, avalanche de relances) est I-3.
@@ -12755,7 +12760,7 @@ function _impProposerRoles(entetes,lignes){
 }
 
 function openImportExterne(){
-  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false};
+  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false,doublons:'ignorer',copierIgnorees:true};
   document.getElementById('impFileInfo').style.display='none';
   document.getElementById('impSheetPick').style.display='none';
   document.getElementById('impErr1').style.display='none';
@@ -12765,7 +12770,7 @@ function openImportExterne(){
 function closeImportExterne(){
   document.getElementById('importExterneOv').classList.remove('on');
   // On relâche les lignes lues : rien ne doit survivre à la fermeture.
-  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false};
+  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false,doublons:'ignorer',copierIgnorees:true};
 }
 function _impGo(n){
   // L'écran des questions n'a de sens que s'il y a quelque chose à demander.
@@ -12826,7 +12831,9 @@ function _impGroupes(){
 }
 function _impAQuestions(){
   var g=_impGroupes();
-  return !!(g.gros.length||g.rares.length||g.vides||_imp.roles.indexOf('dateContact')!==-1);
+  return !!(g.gros.length||g.rares.length||g.vides
+    ||_imp.roles.indexOf('dateContact')!==-1
+    ||_impCompteDoublons()||_impColonnesIgnorees().length);
 }
 // Destination retenue pour une ligne. Défaut ca, TOUJOURS : une ligne n'en sort
 // que si le courtier a assigné explicitement SA valeur de statut. Aucun
@@ -12912,12 +12919,49 @@ function _impRenderQuestions(){
         +sel('1','Les importer quand m&ecirc;me &mdash; je veux voir mon retard r&eacute;el','Les fiches envoy&eacute;es vers Autres contacts ne d&eacute;clenchent jamais de relance, quoi qu\'il arrive.'));
     }
   }
+  // Q7 — les doublons avec la base. UNE question pour tous, jamais une par fiche.
+  var nDup=_impCompteDoublons();
+  if(nDup){
+    q++;
+    var choix=function(v,lbl,sub){
+      var on=((_imp.doublons||'ignorer')===v);
+      return '<label style="display:block;padding:8px 10px;border:1px solid '+(on?'#0EA5E9':'#E2E8F0')+';border-radius:6px;margin-top:6px;cursor:pointer;background:'+(on?'#F0F9FF':'#fff')+'">'
+        +'<input type="radio" name="impDup" value="'+v+'"'+(on?' checked':'')+' onchange="_impSetDoublons(this.value)" style="margin-right:8px">'
+        +'<strong style="font-size:13px">'+lbl+'</strong>'
+        +'<div style="font-size:11px;color:#64748B;margin-left:22px">'+sub+'</div></label>';
+    };
+    h+=carte(nDup+' ligne'+(nDup>1?'s':'')+' correspond'+(nDup>1?'ent':'')+' &agrave; des fiches d&eacute;j&agrave; dans TRI-ANGLE.',
+      '<div style="font-size:11px;color:#94A3B8;margin-bottom:2px">Rapprochement par courriel ou par num&eacute;ro de t&eacute;l&eacute;phone &mdash; jamais par le nom seul.</div>'
+      +choix('ignorer','Ne pas les importer','Recommand&eacute;. Tes fiches actuelles ne bougent pas d\'un cheveu.')
+      +choix('completer','Compl&eacute;ter mes fiches existantes','Remplit UNIQUEMENT les champs rest&eacute;s vides. Rien de ce que tu as d&eacute;j&agrave; saisi ne sera &eacute;cras&eacute;.')
+      +choix('creer','Les cr&eacute;er quand m&ecirc;me','Tu te retrouveras avec deux fiches pour la m&ecirc;me personne.'));
+  }
+  // Q8 — les colonnes laissées de côté qui portent pourtant des données.
+  var colIgn=_impColonnesIgnorees();
+  if(colIgn.length){
+    q++;
+    var oui=(_imp.copierIgnorees!==false);
+    var bt=function(v,lbl){
+      var on=(oui===(v==='1'));
+      return '<label style="display:inline-block;padding:7px 14px;border:1px solid '+(on?'#0EA5E9':'#E2E8F0')
+        +';border-radius:6px;margin-right:8px;cursor:pointer;background:'+(on?'#F0F9FF':'#fff')+'">'
+        +'<input type="radio" name="impQ8" value="'+v+'"'+(on?' checked':'')
+        +' onchange="_impSetCopie(this.value)" style="margin-right:6px">'
+        +'<strong style="font-size:13px">'+lbl+'</strong></label>';
+    };
+    h+=carte(colIgn.length+' colonne'+(colIgn.length>1?'s':'')+' ne '+(colIgn.length>1?'sont':'est')+' pas reprise'+(colIgn.length>1?'s':'')+' mais contien'+(colIgn.length>1?'nent':'t')+' des donn&eacute;es.',
+      '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px">'+esc(colIgn.map(function(c){return c.nom;}).join(' · '))+'</div>'
+      +'<div style="font-size:13px;color:#475569;margin-bottom:8px">Les recopier &agrave; la fin des notes de chaque fiche ?</div>'
+      +bt('1','Oui')+bt('0','Non'));
+  }
   if(!h)h='<div style="font-size:13px;color:#94A3B8">Rien à demander pour ce fichier : tout ira dans Autres contacts.</div>';
   document.getElementById('impQuestions').innerHTML=h;
 }
+function _impSetDoublons(v){_imp.doublons=v;_impRenderQuestions();}
+function _impSetCopie(v){_imp.copierIgnorees=(v==='1');_impRenderQuestions();}
 function _impErr1(msg){
   var el=document.getElementById('impErr1');
-  el.innerHTML='&#9888; '+esc(msg);el.style.display='block';
+  el.innerHTML='&#9888; '+esc(msg).replace(/\n/g,'<br>');el.style.display='block';
 }
 async function _impPickFile(){
   if(!(window.electronAPI&&window.electronAPI.importPickFile)){
@@ -12958,6 +13002,14 @@ async function _impLoadSheet(){
   var res;
   try{res=await window.electronAPI.importReadSheet(_imp.path,nom);}catch(e){res={ok:false,error:e.message};}
   if(!res||!res.ok){_impErr1((res&&res.error)||'Lecture impossible.');return;}
+  // Refus AVANT que le courtier n'investisse le moindre effort dans l'écran des
+  // colonnes : une transaction par ligne ne devient pas une fiche par ligne.
+  if(_impDetecteTransaction(res.entetes||[])){
+    _impErr1("Ce fichier contient une transaction par ligne (des colonnes « Acheteur… » ET « Vendeur… »). "
+      +"TRI-ANGLE importe une PERSONNE par ligne.\n\nExporte plutôt ta liste de contacts seule, "
+      +"une ligne par personne — puis reviens ici.");
+    return;
+  }
   _imp.feuille=res.feuille;_imp.entetes=res.entetes||[];_imp.lignes=res.lignes||[];
   _imp.total=res.total||0;_imp.encodage=res.encodage||_imp.encodage;
   _imp.roles=_impProposerRoles(_imp.entetes,_imp.lignes);
@@ -13020,6 +13072,71 @@ function _impAdresse(ligne){
   return [_impVal(ligne,'adresse'),_impVal(ligne,'ville'),_impVal(ligne,'codePostal')]
     .filter(function(x){return x;}).join(', ');
 }
+
+// ─── [I-4] Multi-valeurs, doublons, colonnes non reprises ────────────────
+// Une cellule peut porter deux numéros (« 514-555-1234 / 438-555-9876 »). Le
+// premier prend le champ, les suivants vont dans les notes : on ne choisit pas
+// à la place du courtier, et on ne jette rien.
+function _impDecouper(v){
+  return String(v||'').split(/[\/;,\r\n]+/).map(function(x){return x.trim();})
+    .filter(function(x){return x;});
+}
+// Signatures de rapprochement. Le NOM n'en fait jamais partie : deux « Jean
+// Tremblay » sont deux personnes différentes bien plus souvent qu'une seule.
+// Un courriel ou un numéro, eux, désignent quelqu'un.
+function _impNormTel(v){var d=String(v||'').replace(/\D/g,'');return d.length>=7?d.slice(-10):'';}
+function _impNormMail(v){return String(v||'').trim().toLowerCase();}
+// Index de TOUTE la base existante — un doublon est un doublon quel que soit
+// l'onglet où la fiche vit déjà.
+function _impIndexExistant(){
+  var parMail={},parTel={};
+  TABS.forEach(function(t){
+    (db[t]||[]).forEach(function(r){
+      var m=_impNormMail(r.courriel);if(m&&!parMail[m])parMail[m]={tab:t,id:r.id};
+      var p=_impNormTel(r.telephone);if(p&&!parTel[p])parTel[p]={tab:t,id:r.id};
+    });
+  });
+  return {mail:parMail,tel:parTel};
+}
+function _impChercheDoublon(idx,mail,tel){
+  var m=_impNormMail(mail);if(m&&idx.mail[m])return idx.mail[m];
+  var p=_impNormTel(tel);if(p&&idx.tel[p])return idx.tel[p];
+  return null;
+}
+// Combien de lignes du fichier recoupent la base ? Compté pour la question.
+function _impCompteDoublons(){
+  var idx=_impIndexExistant(),n=0;
+  _imp.lignes.forEach(function(L){
+    var m=_impDecouper(_impVal(L,'courriel'))[0]||'';
+    var t=_impDecouper(_impVal(L,'telephone'))[0]||'';
+    if(!m&&!t)return;
+    if(_impChercheDoublon(idx,m,t))n++;
+  });
+  return n;
+}
+// Les colonnes mises sur « Ignorer » qui portent pourtant des données.
+function _impColonnesIgnorees(){
+  var out=[];
+  _imp.entetes.forEach(function(h,i){
+    if(_imp.roles[i])return;
+    var vue=false;
+    for(var r=0;r<_imp.lignes.length&&!vue;r++){if(String(_imp.lignes[r][i]||'').trim())vue=true;}
+    if(vue)out.push({i:i,nom:h||('colonne '+(i+1))});
+  });
+  return out;
+}
+// ⑤ Refus propre : une feuille où chaque ligne est une TRANSACTION (une famille
+// de colonnes « Acheteur… » ET une « Vendeur… ») ne peut pas devenir une fiche
+// par ligne. On refuse en disant quoi faire, plutôt que d'importer à moitié.
+function _impDetecteTransaction(entetes){
+  var ach=0,vend=0;
+  entetes.forEach(function(h){
+    var n=_impNorm(h);
+    if(/^acheteur|acheteur$/.test(n)||n.indexOf('acheteur ')===0)ach++;
+    if(/^vendeur|vendeur$/.test(n)||n.indexOf('vendeur ')===0)vend++;
+  });
+  return (ach>=2&&vend>=2);
+}
 function _impRenderPreview(){
   var c=_impCompte();
   document.getElementById('impPreviewHead').innerHTML=
@@ -13061,16 +13178,61 @@ function _impRenderPreview(){
 // Mémoire du dernier import, pour l'écran de rapport uniquement.
 var _impDernier=null;
 
-// Combien de fiches par destination, d'après les réponses de l'écran 3.
-function _impRepartition(){
-  var r={};
+// Parcourt les lignes une fois et rend le plan complet : ce qui sera créé, ce qui
+// sera complété, ce qui sera sauté. UNE seule implémentation des règles, utilisée
+// par l'aperçu ET par l'écriture — deux calculs parallèles finiraient par diverger.
+function _impPlan(){
+  var idx=_impIndexExistant(),vusMail={},vusTel={};
+  var creations=[],completions=[],sautees=0,dupInternes=0,dupBase=0;
   _imp.lignes.forEach(function(L){
     var prenom=_impVal(L,'prenom'),nom=_impVal(L,'nom');
-    var tel=_impVal(L,'telephone'),co=_impVal(L,'courriel');
-    if(!prenom&&!nom&&!tel&&!co)return;
-    var d=_impDestLigne(L);r[d]=(r[d]||0)+1;
+    var tel=_impDecouper(_impVal(L,'telephone'))[0]||'';
+    var co=_impDecouper(_impVal(L,'courriel'))[0]||'';
+    if(!prenom&&!nom&&!tel&&!co){sautees++;return;}
+    // Doublon INTERNE au fichier : la première ligne gagne, sans question —
+    // demander laquelle garder pour deux lignes identiques coûterait plus cher
+    // que la réponse ne vaut. Signalé au rapport.
+    var m=_impNormMail(co),p=_impNormTel(tel);
+    if((m&&vusMail[m])||(p&&vusTel[p])){dupInternes++;return;}
+    if(m)vusMail[m]=1;if(p)vusTel[p]=1;
+    var ex=_impChercheDoublon(idx,co,tel);
+    if(ex){
+      dupBase++;
+      var mode=_imp.doublons||'ignorer';
+      if(mode==='ignorer')return;
+      if(mode==='completer'){completions.push({ligne:L,ref:ex});return;}
+      // 'creer' : on continue, la ligne devient une fiche de plus
+    }
+    creations.push({ligne:L,dest:_impDestLigne(L)});
   });
+  return {creations:creations,completions:completions,sautees:sautees,
+    dupInternes:dupInternes,dupBase:dupBase};
+}
+// Combien de fiches par destination — lit le plan, ne recalcule pas les règles.
+function _impRepartition(){
+  var r={};
+  _impPlan().creations.forEach(function(c){r[c.dest]=(r[c.dest]||0)+1;});
   return r;
+}
+// Complétion : on ne remplit QUE les champs vides. Rien de ce que le courtier a
+// saisi ne peut être écrasé — c'est la condition pour que « compléter » soit sûr,
+// et c'est pourquoi le mode « écraser » n'est pas offert du tout.
+// Retourne une COPIE modifiée, jamais l'original : l'écriture reste tout-ou-rien.
+function _impCompleter(cible,L,tab,lot){
+  var modele=_impConstruireFiche(L,tab,lot);
+  var copie=JSON.parse(JSON.stringify(cible)),ajouts=[];
+  Object.keys(modele).forEach(function(k){
+    if(k==='id'||k==='_importLot')return;
+    var v=modele[k];
+    if(v===''||v===false||v===null||v===undefined)return;   // rien à apporter
+    var actuel=copie[k];
+    if(actuel===''||actuel===null||actuel===undefined){copie[k]=v;ajouts.push(k);}
+  });
+  if(!ajouts.length)return null;
+  // Trace exactement ce que CE lot a ajouté, pour que l'annulation puisse le
+  // retirer sans toucher au reste de la fiche.
+  copie._importMaj={lot:lot,cles:ajouts};
+  return copie;
 }
 // Les notes d'une fiche importée. `ca` n'ayant pas de champ adresse, l'adresse y
 // va ; ailleurs elle a son propre champ. La date source y va toujours SAUF si le
@@ -13082,6 +13244,20 @@ function _impNotes(L,dest,avecDate){
   if(adr&&dest==='ca')t.push('Adresse : '+adr);
   var dc=_impVal(L,'dateContact');
   if(dc&&!avecDate)t.push('Dernier contact selon l\'ancien logiciel : '+dc);
+  // [I-4] Les valeurs en trop d'une cellule multi-valeurs. Le champ ne peut en
+  // porter qu'une ; les autres seraient perdues sans ça.
+  var tels=_impDecouper(_impVal(L,'telephone'));
+  if(tels.length>1)t.push('Autres téléphones : '+tels.slice(1).join(' · '));
+  var mails=_impDecouper(_impVal(L,'courriel'));
+  if(mails.length>1)t.push('Autres courriels : '+mails.slice(1).join(' · '));
+  // [I-4] Q8 — les colonnes laissées de côté, une ligne chacune, nommées.
+  // Rien n'est perdu, rien n'est deviné : on recopie tel quel, étiqueté.
+  if(_imp.copierIgnorees!==false){
+    _impColonnesIgnorees().forEach(function(c){
+      var v=String(L[c.i]||'').trim();
+      if(v)t.push(c.nom+' : '+v);
+    });
+  }
   return t.join('\n');
 }
 // Une fiche reçoit EXACTEMENT les champs que son onglet connaît, avec les mêmes
@@ -13089,7 +13265,9 @@ function _impNotes(L,dest,avecDate){
 // une fiche importée doit être indiscernable d'une fiche saisie à la main.
 function _impConstruireFiche(L,dest,lot){
   var prenom=_impVal(L,'prenom'),nom=_impVal(L,'nom');
-  var tel=_impVal(L,'telephone'),co=_impVal(L,'courriel');
+  // Multi-valeurs : le champ prend la PREMIÈRE, les suivantes sont dans les notes.
+  var tel=_impDecouper(_impVal(L,'telephone'))[0]||'';
+  var co=_impDecouper(_impVal(L,'courriel'))[0]||'';
   var cat=_impVal(L,'statut'),adr=_impAdresse(L);
   var dc=_impVal(L,'dateContact');
   var avecDate=!!(_imp.importerDates&&dc&&dest!=='ca');
@@ -13127,31 +13305,44 @@ async function _impEcrire(){
   try{
     // ── 1. Construction en mémoire ──
     var lot='lot'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-    var parDest={},total=0,sautees=0,troisPremieres=[];
-    _imp.lignes.forEach(function(L){
-      var prenom=_impVal(L,'prenom'),nom=_impVal(L,'nom');
-      var tel=_impVal(L,'telephone'),co=_impVal(L,'courriel');
-      // Une ligne sans aucun moyen d'identifier ni de joindre quelqu'un n'est pas
-      // un contact. On la saute et on le DIT au rapport.
-      if(!prenom&&!nom&&!tel&&!co){sautees++;return;}
-      var dest=_impDestLigne(L);
-      var f=_impConstruireFiche(L,dest,lot);
-      (parDest[dest]=parDest[dest]||[]).push(f);
+    var plan=_impPlan();
+    var parDest={},total=0,troisPremieres=[];
+    plan.creations.forEach(function(c){
+      var f=_impConstruireFiche(c.ligne,c.dest,lot);
+      (parDest[c.dest]=parDest[c.dest]||[]).push(f);
       total++;if(troisPremieres.length<3)troisPremieres.push(f);
     });
-    if(!total){
-      alert("Aucune fiche à créer : aucune ligne de ce fichier n'a de nom, de téléphone ni de courriel.");
+    // Complétions : construites en COPIE, appliquées seulement à l'écriture.
+    var majStage={},nbCompletees=0;
+    plan.completions.forEach(function(c){
+      var cible=null;
+      (db[c.ref.tab]||[]).forEach(function(r){if(r.id===c.ref.id)cible=r;});
+      if(!cible)return;
+      var copie=_impCompleter(cible,c.ligne,c.ref.tab,lot);
+      if(!copie)return;                       // rien à apporter : on ne touche à rien
+      (majStage[c.ref.tab]=majStage[c.ref.tab]||{})[c.ref.id]=copie;
+      nbCompletees++;
+      if(troisPremieres.length<3)troisPremieres.push(copie);
+    });
+    if(!total&&!nbCompletees){
+      alert("Rien à importer : toutes les lignes de ce fichier sont vides, en double, ou déjà dans TRI-ANGLE.");
       if(btn){btn.disabled=false;btn.innerHTML=libelle;}
       return;
     }
     // Les nouvelles collections sont construites À PART, avant toute écriture.
     var nouvelles={};
-    Object.keys(parDest).forEach(function(d){nouvelles[d]=(db[d]||[]).concat(parDest[d]);});
+    var basePour=function(t){if(!nouvelles[t])nouvelles[t]=(db[t]||[]).slice();return nouvelles[t];};
+    Object.keys(majStage).forEach(function(t){
+      var m=majStage[t];
+      nouvelles[t]=basePour(t).map(function(r){return m[r.id]||r;});
+    });
+    Object.keys(parDest).forEach(function(d){nouvelles[d]=basePour(d).concat(parDest[d]);});
     var compte={};Object.keys(parDest).forEach(function(d){compte[d]=parDest[d].length;});
     var nouveauImports=[{id:lot,date:new Date().toISOString(),fichier:_imp.nom,
-      feuille:_imp.feuille,nb:total,compte:compte,
+      feuille:_imp.feuille,nb:total,compte:compte,completees:nbCompletees,
       colonnes:_imp.roles.filter(function(r){return r;}).length}].concat(db.imports||[]);
     var ignorees=_imp.entetes.filter(function(h,i){return !_imp.roles[i];});
+    var sautees=plan.sautees;
     // ── 2. Filet, identique à celui de la restauration ──
     if(window.electronAPI&&window.electronAPI.backupNow){
       try{
@@ -13166,7 +13357,10 @@ async function _impEcrire(){
     db.imports=nouveauImports;
     sdb();fullRender();
     _impDernier={lot:lot,nb:total,sautees:sautees,ignorees:ignorees,compte:compte,
-      fichier:_imp.nom,fiches:troisPremieres,dates:!!_imp.importerDates};
+      fichier:_imp.nom,fiches:troisPremieres,dates:!!_imp.importerDates,
+      completees:nbCompletees,dupBase:plan.dupBase,dupInternes:plan.dupInternes,
+      modeDup:_imp.doublons||'ignorer',
+      colonnesRecopiees:(_imp.copierIgnorees!==false)?_impColonnesIgnorees().length:0};
     _impGo(5);
   }catch(e){
     alert("Import interrompu : "+e.message+"\n\nAucune fiche n'a été créée.");
@@ -13190,8 +13384,13 @@ function _impRenderRapport(){
       .map(function(x){return d.compte[x.k]+' &rarr; <strong>'+esc(x.lbl)+'</strong>';}).join(' &middot; ')
     +'</div></div>';
   var reste=[];
+  if(d.completees)reste.push(d.completees+' fiche'+(d.completees>1?'s':'')+' existante'+(d.completees>1?'s':'')+' complétée'+(d.completees>1?'s':'')+' (champs vides seulement)');
+  if(d.dupBase&&d.modeDup==='ignorer')reste.push(d.dupBase+' ligne'+(d.dupBase>1?'s':'')+' déjà dans TRI-ANGLE, non importée'+(d.dupBase>1?'s':''));
+  if(d.dupBase&&d.modeDup==='creer')reste.push(d.dupBase+' ligne'+(d.dupBase>1?'s':'')+' en double avec des fiches existantes, créée'+(d.dupBase>1?'s':'')+' quand même');
+  if(d.dupInternes)reste.push(d.dupInternes+' doublon'+(d.dupInternes>1?'s':'')+' à l\'intérieur du fichier (la première ligne a été gardée)');
   if(d.sautees)reste.push(d.sautees+' ligne'+(d.sautees>1?'s':'')+' sautée'+(d.sautees>1?'s':'')+' (ni nom, ni téléphone, ni courriel)');
-  if(d.ignorees.length)reste.push(d.ignorees.length+' colonne'+(d.ignorees.length>1?'s':'')+' non reprise'+(d.ignorees.length>1?'s':'')+' : '+d.ignorees.join(', '));
+  if(d.colonnesRecopiees)reste.push(d.colonnesRecopiees+' colonne'+(d.colonnesRecopiees>1?'s':'')+' recopiée'+(d.colonnesRecopiees>1?'s':'')+' dans les notes');
+  if(d.ignorees.length&&!d.colonnesRecopiees)reste.push(d.ignorees.length+' colonne'+(d.ignorees.length>1?'s':'')+' non reprise'+(d.ignorees.length>1?'s':'')+' : '+d.ignorees.join(', '));
   if(reste.length){
     h+='<div style="margin-top:14px;padding:12px 14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;color:#475569">'
       +'<div style="font-weight:700;color:#0F172A;margin-bottom:5px">Ce qui n\'a pas été pris</div>'
@@ -13222,6 +13421,15 @@ function _impFichesDuLot(id){
   });
   return out;
 }
+// [I-4] Les fiches PRÉEXISTANTES qu'un lot a complétées. Elles ne doivent pas
+// être supprimées à l'annulation — seulement rendues à leur état d'avant.
+function _impMajDuLot(id){
+  var out=[];
+  TABS.forEach(function(t){
+    (db[t]||[]).forEach(function(x){if(x._importMaj&&x._importMaj.lot===id)out.push({tab:t,rec:x});});
+  });
+  return out;
+}
 function _impRenderLots(){
   var z=document.getElementById('impLotsZone');if(!z)return;
   var lots=db.imports||[];
@@ -13244,16 +13452,27 @@ function _impRenderLots(){
 function _impAnnulerLot(id){
   var lot=null;(db.imports||[]).forEach(function(l){if(l.id===id)lot=l;});
   if(!lot)return;
-  var cibles=_impFichesDuLot(id);
+  var cibles=_impFichesDuLot(id),majs=_impMajDuLot(id);
   var msg="Retirer les "+cibles.length+" fiche"+(cibles.length>1?"s":"")+" importée"+(cibles.length>1?"s":"")+" de « "+(lot.fichier||'ce fichier')+" » ?";
   if(cibles.length<lot.nb)msg+="\n\n("+(lot.nb-cibles.length)+" fiche(s) de ce lot ont déjà été retirées ou déplacées.)";
+  if(majs.length)msg+="\n\n"+majs.length+" fiche(s) que cet import avait COMPLÉTÉES retrouveront leur état d'avant : seuls les champs qu'il avait remplis seront revidés, le reste ne bouge pas.";
   msg+="\n\nLes fiches que tu aurais modifiées depuis l'import seront retirées elles aussi.\nCtrl+Z / Cmd+Z peut annuler cette opération.";
   if(!confirm(msg))return;
   pushUndo("Annuler l'import "+(lot.fichier||''));
+  // Les fiches CRÉÉES par le lot disparaissent.
   TABS.forEach(function(t){db[t]=(db[t]||[]).filter(function(x){return x._importLot!==id;});});
+  // Les fiches PRÉEXISTANTES complétées par le lot sont rendues à leur état
+  // d'avant : on revide exactement les clés que ce lot avait remplies, et rien
+  // d'autre. Supprimer ces fiches détruirait des données que le courtier avait
+  // saisies lui-même.
+  majs.forEach(function(m){
+    (m.rec._importMaj.cles||[]).forEach(function(k){m.rec[k]='';});
+    delete m.rec._importMaj;
+  });
   db.imports=(db.imports||[]).filter(function(l){return l.id!==id;});
   sdb();fullRender();_impRenderLots();
-  toast("↩ Import annulé — "+cibles.length+" fiche"+(cibles.length>1?"s":"")+" retirée"+(cibles.length>1?"s":""));
+  toast("↩ Import annulé — "+cibles.length+" fiche"+(cibles.length>1?"s":"")+" retirée"+(cibles.length>1?"s":"")
+    +(majs.length?", "+majs.length+" restaurée"+(majs.length>1?"s":""):""));
 }
 
 // ─── Restauration d'un backup (UI Paramètres → Sauvegarde) ───
