@@ -1894,6 +1894,7 @@ body.app-readonly th .rz{pointer-events:none}
           <div class="settings-actions">
             <button class="btn-import" onclick="openImportExterne()">&#128229; Importer des contacts&hellip;</button>
           </div>
+          <div id="impLotsZone" style="margin-top:12px"></div>
         </div>
 
         </div><!-- /sauvegarde -->
@@ -2077,6 +2078,7 @@ body.app-readonly th .rz{pointer-events:none}
         <div class="imp-step" data-step="1" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">1 &middot; Le fichier</div>
         <div class="imp-step" data-step="2" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">2 &middot; Les colonnes</div>
         <div class="imp-step" data-step="3" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">3 &middot; L'aper&ccedil;u</div>
+        <div class="imp-step" data-step="4" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">4 &middot; Le r&eacute;sultat</div>
       </div>
 
       <!-- ── Écran 1 : le fichier ── -->
@@ -2114,13 +2116,19 @@ body.app-readonly th .rz{pointer-events:none}
       <div id="impScreen3" style="display:none">
         <div id="impPreviewHead" style="font-size:13px;color:#475569;margin-bottom:12px"></div>
         <div id="impPreview"></div>
-        <div style="margin-top:18px;padding:12px 14px;background:#FFFBEB;border:1px solid #FDE68A;border-left:4px solid #D97706;border-radius:6px;font-size:13px;color:#78350F">
-          <strong>Rien n'a &eacute;t&eacute; &eacute;crit dans ton CRM.</strong> Cette &eacute;tape lit ton fichier et te montre ce qu'il contient. L'&eacute;criture des fiches arrive &agrave; la prochaine &eacute;tape du chantier.
+        <div style="margin-top:18px;padding:12px 14px;background:#F0F9FF;border:1px solid #BAE6FD;border-left:4px solid #0EA5E9;border-radius:6px;font-size:13px;color:#0C4A6E">
+          Tout ira dans <strong>Autres contacts</strong>. Rien n'est class&eacute; en prospect et <strong>aucune relance ne sera d&eacute;clench&eacute;e</strong> : tu ranges ensuite qui tu veux, quand tu veux. Une copie de s&eacute;curit&eacute; est prise juste avant, et cet import pourra &ecirc;tre annul&eacute; d'un clic.
         </div>
         <div class="settings-actions" style="margin-top:16px">
           <button class="tpl-btn muted" onclick="_impGo(2)">&#8592; Retour aux colonnes</button>
-          <button class="btn-import" onclick="closeImportExterne()">Fermer</button>
+          <button class="btn-export" id="impBtnEcrire" onclick="_impEcrire()">&#128229; Importer</button>
+          <button class="tpl-btn muted" onclick="closeImportExterne()">Annuler</button>
         </div>
+      </div>
+
+      <!-- ── Écran 4 : le rapport ── -->
+      <div id="impScreen4" style="display:none">
+        <div id="impRapport"></div>
       </div>
 
     </div>
@@ -2895,6 +2903,7 @@ db.signature = {body:""}; // Étape 22 : signature courriel (texte + image data 
 db.courtiers = []; // Étape 24 : master list courtiers inscripteurs ({id, prenom, nom, agence, telephone, courriel, lastModified}) — référencée par db.pa[i].courtierId
 db.refs = []; // Étape 24 : références (Sophie réfère un client à un collègue → touche une commission %). {id, prenom, nom, telephone, courriel, adresse, courtierId, dateReference, dateConclusion, montantTransaction, commissionCollegue, pctReference, commissionSophie, notes, statut, lastModified}
 db.refsh = []; // Étape 31 : références hypothécaires (client référé à un courtier hypothécaire de la banque Financement). {id, prenom, nom, adresse, financierId, montant, dateReference, dateRecue, notes, statut('active'|'paid'), sourceTab, sourceId, lastModified}
+db.imports = []; // [I-2] registre des lots d'import — {id, date, fichier, feuille, nb, colonnes}. LOCAL au poste : volontairement HORS de SYNC_COLLS (un import est un geste fait ici, pas une donnée à propager). Chaque fiche créée porte _importLot = id du lot.
 db.collabChannels = []; // Étape 33 : canaux de collaboration entre courtiers. {id, nom, lastModified} — le CHEMIN du dossier-canal est local à chaque poste (crmpro-collab-paths)
 db.notaires = []; // Étape 26 : master list notaires ({id, prenom, nom, agence, telephone, courriel, lastModified}) — référencée par db.pa[i].notaireId
 db.taches = []; // Étape 29 : tâches à faire (Accueil) — {id, texte, echeance, done, dateAjout}
@@ -3952,6 +3961,7 @@ function ldb(){
   try{var xfi=localStorage.getItem("crmpro-financiers");db.financiers=xfi?JSON.parse(xfi):[];}catch(e){db.financiers=[];}
   try{var xrh=localStorage.getItem("crmpro-refsh");db.refsh=xrh?JSON.parse(xrh):[];}catch(e){db.refsh=[];}
   try{var xcc=localStorage.getItem("crmpro-collabchannels");db.collabChannels=xcc?JSON.parse(xcc):[];}catch(e){db.collabChannels=[];}
+  try{var xim=localStorage.getItem("crmpro-imports");db.imports=xim?JSON.parse(xim):[];}catch(e){db.imports=[];}
   // Étape 24 — migration : ancien key 'courtiers' (v0.3.15 dev) → 'courtiers-insc'
   try{var migT=false;(db.templates||[]).forEach(function(t){if(t.section==='courtiers'){t.section='courtiers-insc';migT=true;}});if(migT)localStorage.setItem("crmpro-templates",JSON.stringify(db.templates));}catch(e){}
   try{var t=localStorage.getItem("crmprothr");if(t){var pt=JSON.parse(t);THR.cp=pt.cp||14;THR.vp=pt.vp||14;THR.a=pt.a||20;}}catch(e){}
@@ -4161,8 +4171,8 @@ function _maybeSeedExamples(){
 }
 
 var UNDO=[],UNDO_MAX=10;
-function pushUndo(label){var snap={label:label};TABS.forEach(function(t){snap[t]=JSON.parse(JSON.stringify(db[t]));});snap.demandes=JSON.parse(JSON.stringify(db.demandes||[]));snap.templates=JSON.parse(JSON.stringify(db.templates||[]));snap.signature=JSON.parse(JSON.stringify(db.signature||{body:""}));snap.courtiers=JSON.parse(JSON.stringify(db.courtiers||[]));snap.refs=JSON.parse(JSON.stringify(db.refs||[]));snap.notaires=JSON.parse(JSON.stringify(db.notaires||[]));snap.taches=JSON.parse(JSON.stringify(db.taches||[]));snap.tacheCal=JSON.parse(JSON.stringify(db.tacheCal||{}));snap.financiers=JSON.parse(JSON.stringify(db.financiers||[]));snap.refsh=JSON.parse(JSON.stringify(db.refsh||[]));snap.collabChannels=JSON.parse(JSON.stringify(db.collabChannels||[]));UNDO.push(snap);if(UNDO.length>UNDO_MAX)UNDO.shift();}
-function undo(){if(!UNDO.length){toast("Rien \u00e0 annuler");return;}var snap=UNDO.pop();TABS.forEach(function(t){db[t]=snap[t];});if(snap.demandes)db.demandes=snap.demandes;if(snap.templates)db.templates=snap.templates;if(snap.signature)db.signature=snap.signature;if(snap.courtiers)db.courtiers=snap.courtiers;if(snap.refs)db.refs=snap.refs;if(snap.notaires)db.notaires=snap.notaires;if(snap.taches)db.taches=snap.taches;if(snap.tacheCal)db.tacheCal=snap.tacheCal;if(snap.financiers)db.financiers=snap.financiers;if(snap.refsh)db.refsh=snap.refsh;if(snap.collabChannels)db.collabChannels=snap.collabChannels;sdb();rall();toast("\u21a9 Annul\u00e9 : "+snap.label);}
+function pushUndo(label){var snap={label:label};TABS.forEach(function(t){snap[t]=JSON.parse(JSON.stringify(db[t]));});snap.demandes=JSON.parse(JSON.stringify(db.demandes||[]));snap.templates=JSON.parse(JSON.stringify(db.templates||[]));snap.signature=JSON.parse(JSON.stringify(db.signature||{body:""}));snap.courtiers=JSON.parse(JSON.stringify(db.courtiers||[]));snap.refs=JSON.parse(JSON.stringify(db.refs||[]));snap.notaires=JSON.parse(JSON.stringify(db.notaires||[]));snap.taches=JSON.parse(JSON.stringify(db.taches||[]));snap.tacheCal=JSON.parse(JSON.stringify(db.tacheCal||{}));snap.financiers=JSON.parse(JSON.stringify(db.financiers||[]));snap.refsh=JSON.parse(JSON.stringify(db.refsh||[]));snap.collabChannels=JSON.parse(JSON.stringify(db.collabChannels||[]));snap.imports=JSON.parse(JSON.stringify(db.imports||[]));UNDO.push(snap);if(UNDO.length>UNDO_MAX)UNDO.shift();}
+function undo(){if(!UNDO.length){toast("Rien \u00e0 annuler");return;}var snap=UNDO.pop();TABS.forEach(function(t){db[t]=snap[t];});if(snap.demandes)db.demandes=snap.demandes;if(snap.templates)db.templates=snap.templates;if(snap.signature)db.signature=snap.signature;if(snap.courtiers)db.courtiers=snap.courtiers;if(snap.refs)db.refs=snap.refs;if(snap.notaires)db.notaires=snap.notaires;if(snap.taches)db.taches=snap.taches;if(snap.tacheCal)db.tacheCal=snap.tacheCal;if(snap.financiers)db.financiers=snap.financiers;if(snap.refsh)db.refsh=snap.refsh;if(snap.collabChannels)db.collabChannels=snap.collabChannels;if(snap.imports)db.imports=snap.imports;sdb();rall();toast("\u21a9 Annul\u00e9 : "+snap.label);}
 document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="z"&&!e.target.matches("input,textarea,select")){e.preventDefault();undo();}});
 
 function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
@@ -4182,6 +4192,7 @@ function sdb(){
   try{localStorage.setItem("crmpro-financiers",JSON.stringify(db.financiers||[]));}catch(e){ok=false;}
   try{localStorage.setItem("crmpro-refsh",JSON.stringify(db.refsh||[]));}catch(e){ok=false;}
   try{localStorage.setItem("crmpro-collabchannels",JSON.stringify(db.collabChannels||[]));}catch(e){ok=false;}
+  try{localStorage.setItem("crmpro-imports",JSON.stringify(db.imports||[]));}catch(e){ok=false;}
   if(!ok)toast("\u26a0 Stockage plein! Exportez vos donn\u00e9es imm\u00e9diatement.");
   // \u00c9tape 32 \u2014 journalise les changements locaux pour le travail \u00e0 deux (no-op si d\u00e9sactiv\u00e9)
   try{_syncOnLocalChange();}catch(e){console.warn('[sync diff]',e&&e.message);}
@@ -5172,13 +5183,23 @@ var TUTORIELS=[
     +'<p>Quand tes <strong>relances</strong>, tes <strong>conditions en retard</strong>, tes <strong>nouvelles demandes</strong> et tes <strong>t\u00e2ches \u00e9chues</strong> sont toutes \u00e0 z\u00e9ro en m\u00eame temps, une bande calme appara\u00eet en haut de l\u2019Accueil : <strong>Rien en retard aujourd\u2019hui</strong>. C\u2019est le signal que ta journ\u00e9e est boucl\u00e9e.</p>'
     +'<p>Elle dispara\u00eet d\u2019elle-m\u00eame d\u00e8s qu\u2019un \u00e9l\u00e9ment revient. Et tant qu\u2019il reste du travail, elle ne s\u2019affiche tout simplement pas : ce sont les cartes qui te montrent quoi faire, jamais un reproche. Deux pr\u00e9cisions : avoir des rendez-vous aujourd\u2019hui n\u2019emp\u00eache pas d\u2019\u00eatre \u00e0 jour (un rendez-vous c\u00e9dul\u00e9 n\u2019est pas un retard), et une t\u00e2che <strong>sans \u00e9ch\u00e9ance</strong> ne bloque jamais la bande \u2014 tu as choisi de ne pas lui en donner, ce n\u2019est donc jamais du retard.</p>'
     +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Prends l\u2019habitude d\u2019ouvrir l\u2019Accueil en d\u00e9but de journ\u00e9e. Quand la bande s\u2019affiche, tu n\u2019as rien en retard : ce qui reste \u00e0 l\u2019\u00e9cran est du travail en cours, pas du rattrapage.</div></div>'},
-  {sec:'D\u00e9marrage', num:4, titre:'Importer / migrer tes contacts', html:
-    '<p>Tu arrives d\u2019un autre outil (Excel, un autre CRM) ? Tu peux r\u00e9cup\u00e9rer tes donn\u00e9es dans TRI-ANGLE plut\u00f4t que de tout retaper.</p>'
-    +'<h2>Restaurer une sauvegarde TRI-ANGLE</h2>'
-    +'<p>Si tu changes d\u2019ordinateur ou veux repartir d\u2019un export, va dans <strong>Param\u00e8tres &rarr; Sauvegarde &rarr; Importer</strong> et s\u00e9lectionne ton fichier <strong>.json</strong>. Tes contacts, propri\u00e9t\u00e9s et r\u00e9glages sont r\u00e9tablis.</p>'
-    +'<h2>Partir d\u2019une autre source</h2>'
-    +'<p>Pour un import depuis Excel ou un autre logiciel, pr\u00e9pare ta liste (nom, t\u00e9l\u00e9phone, courriel) et ajoute les fiches dans la bonne section avec le bouton <strong>+ Ajouter</strong>. Pour un gros volume, contacte le support : un format d\u2019import peut \u00eatre pr\u00e9par\u00e9.</p>'
-    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>L\u2019import <strong>remplace</strong> les donn\u00e9es de ce poste par le contenu du fichier. Avant de remplacer, TRI-ANGLE te demande confirmation et cr\u00e9e <strong>automatiquement une copie de s\u00e9curit\u00e9</strong> ; <span class="aide-kbd">Ctrl</span>+<span class="aide-kbd">Z</span> peut aussi annuler juste apr\u00e8s. Pour revenir \u00e0 une copie pr\u00e9cise, vois \u00ab Sauvegarde et restauration \u00bb.</div></div>'},
+  {sec:'D\u00e9marrage', num:4, titre:'Importer tes contacts depuis un autre logiciel', html:
+    '<p>Tu arrives d\u2019un autre outil \u2014 un ancien CRM, Outlook, Google Contacts, un fichier Excel ? <strong>Tu n\u2019as rien \u00e0 retaper.</strong></p>'
+    +'<div class="aide-note"><span class="aide-tip-ico">\u26a0\ufe0f</span><div>Deux boutons voisins, deux gestes <strong>oppos\u00e9s</strong>. <strong>Importer des contacts\u2026</strong> <strong>AJOUTE</strong> des fiches aux tiennes. <strong>Restaurer une sauvegarde</strong> et <strong>Importer JSON</strong> <strong>REMPLACENT TOUT</strong> par une copie TRI-ANGLE. Pour reprendre les contacts d\u2019un autre logiciel, c\u2019est toujours le premier.</div></div>'
+    +'<h2>Comment \u00e7a marche</h2>'
+    +'<p>Sors de ton ancien logiciel un fichier <strong>.xlsx</strong>, <strong>.xls</strong> ou <strong>.csv</strong> \u2014 tous les logiciels savent exporter leur liste de contacts. Puis <strong>Param\u00e8tres &rarr; Sauvegarde &rarr; Importer des contacts\u2026</strong>.</p>'
+    +'<ol>'
+    +'<li><strong>Le fichier</strong> \u2014 tu le choisis. S\u2019il contient plusieurs feuilles, tu dis laquelle.</li>'
+    +'<li><strong>Les colonnes</strong> \u2014 TRI-ANGLE affiche les colonnes de ton fichier avec des exemples, et <strong>propose</strong> ce que chacune contient. Rien n\u2019est devin\u00e9 en silence : v\u00e9rifie, corrige, et mets sur <em>Ignorer</em> ce que tu ne veux pas. L\u2019adresse peut venir de plusieurs colonnes \u00e0 la fois (n\u00b0 et rue, ville, code postal).</li>'
+    +'<li><strong>L\u2019aper\u00e7u</strong> \u2014 trois fiches telles qu\u2019elles seront cr\u00e9\u00e9es. C\u2019est ton dernier arr\u00eat avant l\u2019\u00e9criture.</li>'
+    +'<li><strong>Le r\u00e9sultat</strong> \u2014 ce qui a \u00e9t\u00e9 ajout\u00e9, et ce qui ne l\u2019a pas \u00e9t\u00e9.</li>'
+    +'</ol>'
+    +'<h2>O\u00f9 vont les fiches</h2>'
+    +'<p>Tout arrive dans <strong>Autres contacts</strong>, jamais directement dans tes prospects. C\u2019est voulu : une fiche import\u00e9e ne d\u00e9clenche <strong>aucune relance</strong>. Tu ne re\u00e7ois pas 300 alertes le lendemain matin pour des appels que tu n\u2019as pas manqu\u00e9s. Tu ranges ensuite qui tu veux, quand tu veux.</p>'
+    +'<p>Ce que ton fichier contenait et que TRI-ANGLE n\u2019a pas de case pour ranger \u2014 l\u2019adresse, la date du dernier contact chez l\u2019ancien logiciel \u2014 est recopi\u00e9 dans les <strong>notes</strong> de la fiche. Rien n\u2019est perdu.</p>'
+    +'<h2>Si tu changes d\u2019avis</h2>'
+    +'<p>Chaque import est un <strong>lot</strong>. Dans <strong>Param\u00e8tres &rarr; Sauvegarde</strong>, sous le bouton d\u2019import, tes imports pr\u00e9c\u00e9dents sont list\u00e9s avec un bouton <strong>\u21bb Annuler cet import</strong> : il retire exactement les fiches de ce lot, sans toucher au reste. Une copie de s\u00e9curit\u00e9 est prise avant chaque import, et <span class="aide-kbd">Ctrl</span>+<span class="aide-kbd">Z</span> reste possible.</p>'
+    +'<div class="aide-tip"><span class="aide-tip-ico">\ud83d\udca1</span><div>Ton fichier est lu <strong>sur ton ordinateur</strong> et n\u2019est envoy\u00e9 nulle part. Tu peux importer plusieurs fichiers l\u2019un apr\u00e8s l\u2019autre \u2014 Outlook, puis ton vieux CRM, puis ton Excel.</div></div>'},
   {sec:'Prospects', num:5, titre:'G\u00e9rer tes prospects acheteurs', html:
     '<p>Les <strong>Prospects acheteurs</strong> sont les gens qui cherchent \u00e0 acheter mais n\u2019ont pas encore sign\u00e9 avec toi. C\u2019est ton pipeline d\u2019entr\u00e9e : on les cultive jusqu\u2019\u00e0 ce qu\u2019ils deviennent des acheteurs actifs.</p>'
     +'<h2>Ajouter un prospect</h2>'
@@ -5568,7 +5589,8 @@ var TUTORIELS=[
     +'<h2>Export / Import manuel</h2>'
     +'<ul>'
     +'<li><strong>Exporter</strong> (Param\u00e8tres &rarr; Sauvegarde) : cr\u00e9e un fichier .json complet \u2014 ta copie de s\u00e9curit\u00e9 \u00e0 conserver \u00e0 part.</li>'
-    +'<li><strong>Importer</strong> : restaure tes donn\u00e9es depuis un fichier .json (nouvel ordinateur, retour en arri\u00e8re). Avant de remplacer, TRI-ANGLE confirme et cr\u00e9e une copie de s\u00e9curit\u00e9.</li>'
+    +'<li><strong>Importer JSON</strong> : <strong>REMPLACE</strong> tes donn\u00e9es par le contenu d\u2019un fichier .json TRI-ANGLE (nouvel ordinateur, retour en arri\u00e8re). Avant de remplacer, TRI-ANGLE confirme et cr\u00e9e une copie de s\u00e9curit\u00e9.</li>'
+    +'<li>\u26a0\ufe0f \u00c0 ne pas confondre avec <strong>Importer des contacts\u2026</strong>, plus bas dans la m\u00eame page : celui-l\u00e0 <strong>AJOUTE</strong> les contacts d\u2019un autre logiciel (.xlsx, .xls, .csv) sans rien effacer. Voir le tuto \u00ab Importer tes contacts depuis un autre logiciel \u00bb.</li>'
     +'</ul>'
     +'<h2>Restaurer une sauvegarde</h2>'
     +'<p>Dans <strong>Param\u00e8tres \u2192 Sauvegarde</strong>, le bouton <strong>\u21bb Restaurer une sauvegarde\u2026</strong> liste les copies automatiques faites pour toi : les <strong>quotidiennes</strong> (une par jour, en d\u00e9but de journ\u00e9e) et celles cr\u00e9\u00e9es <strong>juste avant un import</strong> ou une restauration. Chaque copie est \u00e9tiquet\u00e9e (<strong>Quotidien</strong> / <strong>Avant import</strong>), dat\u00e9e et tri\u00e9e de la plus r\u00e9cente \u00e0 la plus ancienne. Choisis-en une et confirme : tes donn\u00e9es reviennent \u00e0 cet \u00e9tat. Une copie de s\u00e9curit\u00e9 est encore prise juste avant, et <span class="aide-kbd">Ctrl</span>+<span class="aide-kbd">Z</span> reste possible \u2014 c\u2019est ton filet de s\u00e9curit\u00e9.</p>'
@@ -12261,6 +12283,12 @@ function saveEntry(){
     // Pr\u00e9server les eventIds existants
     if(oldRec){
       for(var k in oldRec){if(k.indexOf('_evt_')===0)entry[k]=oldRec[k];}
+      // [I-2] Numéro de lot d'import — champ hors formulaire, donc absent de `entry`.
+      // Sans cette ligne, le premier « Enregistrer » sur une fiche importée l'effacerait
+      // en silence et « Annuler cet import » laisserait des orphelines derrière lui.
+      // Posée ICI, dans le bloc universel : le lot doit survivre même si la fiche est
+      // un jour transférée vers un autre onglet. (Famille COR-1 / M-A / M-A2 / M-A3 / M-A4.)
+      if(oldRec._importLot!==undefined&&entry._importLot===undefined)entry._importLot=oldRec._importLot;
       // COR-6 — le bagage venu des prospects survit au formulaire : le save REMPLACE l'objet entier,
       // donc tout champ absent du formulaire serait effacé au premier « Enregistrer », même pour
       // corriger une note. Même mécanisme que le pancarteRet ressuscité, fermé en COR-1.
@@ -12729,7 +12757,7 @@ function closeImportExterne(){
   _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0};
 }
 function _impGo(n){
-  [1,2,3].forEach(function(i){
+  [1,2,3,4].forEach(function(i){
     var el=document.getElementById('impScreen'+i);if(el)el.style.display=(i===n?'block':'none');
   });
   document.querySelectorAll('#impSteps .imp-step').forEach(function(s){
@@ -12739,6 +12767,7 @@ function _impGo(n){
   });
   if(n===2)_impRenderMap();
   if(n===3)_impRenderPreview();
+  if(n===4)_impRenderRapport();
 }
 function _impErr1(msg){
   var el=document.getElementById('impErr1');
@@ -12868,6 +12897,144 @@ function _impRenderPreview(){
   if(!n)h='<div style="font-size:13px;color:#94A3B8">Aucune ligne à montrer.</div>';
   h+='<div style="font-size:13px;font-weight:700;color:#0F172A;margin-top:6px">'+_imp.total+' ligne'+(_imp.total>1?'s':'')+' pr&ecirc;te'+(_imp.total>1?'s':'')+'.</div>';
   document.getElementById('impPreview').innerHTML=h;
+  var btn=document.getElementById('impBtnEcrire');
+  if(btn){btn.disabled=false;btn.innerHTML='&#128229; Importer '+_imp.total+' fiche'+(_imp.total>1?'s':'');}
+  // La sync propage ce qui est écrit ici : on le dit AVANT, pas après.
+  try{
+    if(_syncOn())document.getElementById('impPreviewHead').innerHTML+=
+      '<div style="margin-top:6px;color:#D97706">&#9888; La synchronisation est active : ces fiches arriveront aussi sur tes autres postes.</div>';
+  }catch(e){}
+}
+
+// ─── [I-2] L'écriture ────────────────────────────────────────────────────
+// Mémoire du dernier import, pour l'écran de rapport uniquement.
+var _impDernier=null;
+
+// TOUT-OU-RIEN. Tout est construit à part, puis posé en DEUX affectations qui ne
+// peuvent pas lever. Une exception pendant la construction laisse donc db
+// strictement identique — il n'existe aucun état intermédiaire à rattraper.
+// Le filet (writeAutoSave → backupNow → pushUndo) est celui de
+// _applyRestorePayload, à une différence près : ici on AJOUTE, on ne remplace pas.
+async function _impEcrire(){
+  var btn=document.getElementById('impBtnEcrire');
+  var libelle=btn?btn.innerHTML:'';
+  if(btn){btn.disabled=true;btn.textContent='Import en cours…';}
+  try{
+    // ── 1. Construction en mémoire ──
+    var lot='lot'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    var fiches=[],sautees=0;
+    _imp.lignes.forEach(function(L){
+      var prenom=_impVal(L,'prenom'),nom=_impVal(L,'nom');
+      var tel=_impVal(L,'telephone'),co=_impVal(L,'courriel');
+      // Une ligne sans aucun moyen d'identifier ni de joindre quelqu'un n'est pas
+      // un contact. On la saute et on le DIT au rapport.
+      if(!prenom&&!nom&&!tel&&!co){sautees++;return;}
+      // `ca` n'a pas de champ adresse : l'adresse et la date source vont dans les
+      // notes. Rien n'est perdu, et surtout la date n'atterrit PAS dans un champ
+      // qui déclencherait une relance (amendement 2).
+      var notes=[];
+      var n0=_impVal(L,'notes');if(n0)notes.push(n0);
+      var adr=_impAdresse(L);if(adr)notes.push('Adresse : '+adr);
+      var dc=_impVal(L,'dateContact');
+      if(dc)notes.push('Dernier contact selon l\'ancien logiciel : '+dc);
+      fiches.push({id:newId(),prenom:prenom,nom:nom,telephone:tel,courriel:co,
+        categorie:_impVal(L,'statut'),notes:notes.join('\n'),_importLot:lot});
+    });
+    if(!fiches.length){
+      alert("Aucune fiche à créer : aucune ligne de ce fichier n'a de nom, de téléphone ni de courriel.");
+      if(btn){btn.disabled=false;btn.innerHTML=libelle;}
+      return;
+    }
+    var nouveauCa=db.ca.concat(fiches);
+    var nouveauImports=[{id:lot,date:new Date().toISOString(),fichier:_imp.nom,
+      feuille:_imp.feuille,nb:fiches.length,
+      colonnes:_imp.roles.filter(function(r){return r;}).length}].concat(db.imports||[]);
+    var ignorees=_imp.entetes.filter(function(h,i){return !_imp.roles[i];});
+    // ── 2. Filet, identique à celui de la restauration ──
+    if(window.electronAPI&&window.electronAPI.backupNow){
+      try{
+        await writeAutoSave();
+        var bk=await window.electronAPI.backupNow();
+        if(!bk||!bk.ok)toast("⚠ Copie de sécurité non créée — import poursuivi (Ctrl+Z reste possible)");
+      }catch(be){toast("⚠ Copie de sécurité échouée — import poursuivi (Ctrl+Z reste possible)");}
+    }
+    // ── 3. Écriture ──
+    pushUndo('Import '+_imp.nom);
+    db.ca=nouveauCa;
+    db.imports=nouveauImports;
+    sdb();fullRender();
+    _impDernier={lot:lot,nb:fiches.length,sautees:sautees,ignorees:ignorees,
+      fichier:_imp.nom,fiches:fiches.slice(0,3)};
+    _impGo(4);
+  }catch(e){
+    alert("Import interrompu : "+e.message+"\n\nAucune fiche n'a été créée.");
+    if(btn){btn.disabled=false;btn.innerHTML=libelle;}
+  }
+}
+
+// Rapport : des NOMS avant des chiffres, ce qui n'a pas été pris, UN bouton.
+function _impRenderRapport(){
+  var d=_impDernier;if(!d)return;
+  var noms=d.fiches.map(function(f){
+    return ((f.prenom+' '+f.nom).trim())||f.courriel||f.telephone;
+  }).filter(function(x){return x;});
+  var phrase=noms.length
+    ? '<strong>'+esc(noms.join(', '))+'</strong>'+(d.nb>noms.length?' et '+(d.nb-noms.length)+' autre'+((d.nb-noms.length)>1?'s':''):'')+' '+(d.nb>1?'sont maintenant':'est maintenant')+' dans TRI-ANGLE.'
+    : d.nb+' fiche'+(d.nb>1?'s':'')+' ajoutée'+(d.nb>1?'s':'')+'.';
+  var h='<div style="padding:16px 18px;background:#F0FDFA;border:1px solid #99F6E4;border-left:4px solid #0FBFAB;border-radius:8px">'
+    +'<div style="font-size:15px;color:#0F172A;line-height:1.5">'+phrase+'</div>'
+    +'<div style="font-size:12px;color:#475569;margin-top:8px">'+d.nb+' fiche'+(d.nb>1?'s':'')+' ajoutée'+(d.nb>1?'s':'')+' à <strong>Autres contacts</strong>.</div></div>';
+  var reste=[];
+  if(d.sautees)reste.push(d.sautees+' ligne'+(d.sautees>1?'s':'')+' sautée'+(d.sautees>1?'s':'')+' (ni nom, ni téléphone, ni courriel)');
+  if(d.ignorees.length)reste.push(d.ignorees.length+' colonne'+(d.ignorees.length>1?'s':'')+' non reprise'+(d.ignorees.length>1?'s':'')+' : '+d.ignorees.join(', '));
+  if(reste.length){
+    h+='<div style="margin-top:14px;padding:12px 14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;font-size:12px;color:#475569">'
+      +'<div style="font-weight:700;color:#0F172A;margin-bottom:5px">Ce qui n\'a pas été pris</div>'
+      +reste.map(function(r){return '<div>&middot; '+esc(r)+'</div>';}).join('')+'</div>';
+  }
+  h+='<div style="margin-top:14px;font-size:11px;color:#94A3B8">Import '+esc(d.lot)+' &mdash; annulable depuis Param&egrave;tres &rarr; Sauvegarde.</div>'
+    +'<div class="settings-actions" style="margin-top:16px">'
+    +'<button class="btn-export" onclick="_impVoirContacts()">Voir mes contacts</button></div>';
+  document.getElementById('impRapport').innerHTML=h;
+}
+function _impVoirContacts(){
+  closeImportExterne();
+  var b=document.querySelector('.tbtn[data-tab="ca"]');if(b)b.click();
+}
+
+// ─── [I-2] Les lots : liste et annulation ────────────────────────────────
+function _impRenderLots(){
+  var z=document.getElementById('impLotsZone');if(!z)return;
+  var lots=db.imports||[];
+  if(!lots.length){z.innerHTML='';return;}
+  var h=lots.map(function(l){
+    var d='';try{d=new Date(l.date).toLocaleString('fr-CA',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){}
+    var vivantes=(db.ca||[]).filter(function(x){return x._importLot===l.id;}).length;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EEF2F7">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#0F172A">'+esc(l.fichier||'(fichier)')+'</div>'
+      +'<div style="font-size:10px;color:#94A3B8">'+esc(d)+' &mdash; '+l.nb+' fiche'+(l.nb>1?'s':'')+' import&eacute;e'+(l.nb>1?'s':'')
+      +(vivantes!==l.nb?' &middot; '+vivantes+' encore pr&eacute;sente'+(vivantes>1?'s':''):'')+'</div></div>'
+      +'<button class="btn-import" style="padding:6px 12px;font-size:11px;color:#DC2626;border-color:#FECACA" onclick="_impAnnulerLot(\''+esc(l.id)+'\')">&#8635; Annuler cet import</button></div>';
+  }).join('');
+  z.innerHTML='<div style="font-size:11px;color:#64748B;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:4px">Imports pr&eacute;c&eacute;dents</div>'
+    +'<div style="border:1px solid #E2E8F0;border-radius:8px;padding:4px 12px;max-height:220px;overflow:auto">'+h+'</div>';
+}
+// On annule LE LOT, pas un état : une fiche modifiée depuis l'import part quand
+// même. C'est le sens de « annuler cet import » — sinon le geste serait partiel
+// et l'utilisateur ne saurait pas ce qui reste.
+function _impAnnulerLot(id){
+  var lot=null;(db.imports||[]).forEach(function(l){if(l.id===id)lot=l;});
+  if(!lot)return;
+  var cibles=(db.ca||[]).filter(function(x){return x._importLot===id;});
+  var msg="Retirer les "+cibles.length+" fiche"+(cibles.length>1?"s":"")+" importée"+(cibles.length>1?"s":"")+" de « "+(lot.fichier||'ce fichier')+" » ?";
+  if(cibles.length<lot.nb)msg+="\n\n("+(lot.nb-cibles.length)+" fiche(s) de ce lot ont déjà été retirées ou déplacées.)";
+  msg+="\n\nLes fiches que tu aurais modifiées depuis l'import seront retirées elles aussi.\nCtrl+Z / Cmd+Z peut annuler cette opération.";
+  if(!confirm(msg))return;
+  pushUndo("Annuler l'import "+(lot.fichier||''));
+  db.ca=(db.ca||[]).filter(function(x){return x._importLot!==id;});
+  db.imports=(db.imports||[]).filter(function(l){return l.id!==id;});
+  sdb();fullRender();_impRenderLots();
+  toast("↩ Import annulé — "+cibles.length+" fiche"+(cibles.length>1?"s":"")+" retirée"+(cibles.length>1?"s":""));
 }
 
 // ─── Restauration d'un backup (UI Paramètres → Sauvegarde) ───
@@ -12928,6 +13095,7 @@ function _resetConfirm(){
   try{localStorage.removeItem("crmpro-taches");}catch(e){}db.taches=[];
   try{localStorage.removeItem("crmpro-tachecal");}catch(e){}db.tacheCal={};   // cl\u00e9 minuscule (cf. sdb)
   try{localStorage.removeItem("crmpro-collabchannels");}catch(e){}db.collabChannels=[]; // cl\u00e9 minuscule (cf. sdb)
+  try{localStorage.removeItem("crmpro-imports");}catch(e){}db.imports=[]; // [I-2] sinon la liste des lots survivrait a des fiches effacees
   // \u2500\u2500 Banques + gabarits + signature : SEULEMENT si la case est coch\u00e9e. \u2500\u2500
   if(incBanks){
     try{localStorage.removeItem("crmpro-courtiers");}catch(e){}db.courtiers=[];
@@ -12956,7 +13124,7 @@ document.getElementById("tbar").addEventListener("click",function(e){
   var card=document.querySelector(".card");
   card.classList.remove("settings-mode","accueil-mode","pancartes-mode","calendar-mode","dashboard-mode","demandes-mode","paev-mode","templates-mode","aide-mode");
   if(tab==="aide"){card.classList.add("aide-mode");renderAide();return;}
-  if(tab==="settings"){card.classList.add("settings-mode");var mps=document.getElementById('mailProviderSelect');if(mps)mps.value=_getMailProvider();var adt=document.getElementById('antidupToggle');if(adt)adt.checked=_isAntidupEnabled();_initSettingsTabs();smsRefreshStatus();outlookRefreshStatus();_syncRenderSettings();_collabRenderSettings();_adjKeyRender();_applyPosteProfil();return;}
+  if(tab==="settings"){card.classList.add("settings-mode");var mps=document.getElementById('mailProviderSelect');if(mps)mps.value=_getMailProvider();var adt=document.getElementById('antidupToggle');if(adt)adt.checked=_isAntidupEnabled();_initSettingsTabs();smsRefreshStatus();outlookRefreshStatus();_syncRenderSettings();_collabRenderSettings();_adjKeyRender();_impRenderLots();_applyPosteProfil();return;}
   if(tab==="templates"){card.classList.add("templates-mode");renderTemplates();return;}
   if(tab==="courtiers"){card.classList.add("templates-mode");renderBank('courtiers');return;}
   if(tab==="notaires"){card.classList.add("templates-mode");renderBank('notaires');return;}
