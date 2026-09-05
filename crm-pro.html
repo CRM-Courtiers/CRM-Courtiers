@@ -12648,11 +12648,19 @@ var IMP_ROLES=[
   {k:'nom',lbl:'Nom'},
   {k:'telephone',lbl:'Téléphone'},
   {k:'courriel',lbl:'Courriel'},
-  {k:'adresse',lbl:'Adresse'},
+  {k:'adresse',lbl:'Adresse (n° et rue)'},
+  {k:'ville',lbl:'Ville'},
+  {k:'codePostal',lbl:'Code postal'},
   {k:'notes',lbl:'Notes'},
   {k:'statut',lbl:'Statut ou type'},
   {k:'dateContact',lbl:'Date de dernier contact'}
 ];
+// Rôles qui acceptent PLUSIEURS colonnes. Une adresse est presque toujours éclatée
+// à la source (n° civique | rue | ville | code postal) : imposer une colonne unique
+// obligerait à en sacrifier trois, et l'adresse importée serait incomplète.
+// Les morceaux sont recollés dans l'ordre du fichier. Tous les autres rôles
+// restent à une seule colonne (deux « Prénom », ça n'existe pas).
+var IMP_MULTI={adresse:true};
 // Ordre de PRIORITÉ du rapprochement : le plus spécifique d'abord. « Adresse
 // courriel » doit tomber sur Courriel, pas sur Adresse — d'où courriel avant adresse.
 var IMP_INDICES=[
@@ -12661,7 +12669,9 @@ var IMP_INDICES=[
   {k:'prenom',mots:['prenom','first name','firstname','given name']},
   {k:'nom',mots:['nom','last name','lastname','surname','family name','nom de famille']},
   {k:'dateContact',mots:['date','dernier contact','dernier suivi','last contact','derniere activite']},
-  {k:'adresse',mots:['adresse','address','rue','street','civique']},
+  {k:'codePostal',mots:['code postal','postal','zip','cp']},
+  {k:'ville',mots:['ville','city','municipalite']},
+  {k:'adresse',mots:['adresse','address','rue','street','civique','no civique','numero']},
   {k:'statut',mots:['statut','status','type','categorie','category','labels','etiquette']},
   {k:'notes',mots:['notes','note','commentaires','commentaire','comments','remarques']}
 ];
@@ -12693,6 +12703,11 @@ function _impProposerRoles(entetes,lignes){
       for(var i=0;i<idx.mots.length;i++){if(_impAMot(norm,idx.mots[i])){cands.push(ci);break;}}
     });
     if(!cands.length)return;
+    if(IMP_MULTI[idx.k]){
+      // rôle composite : on prend TOUTES les colonnes qui matchent (n° + rue…)
+      cands.forEach(function(ci){roles[ci]=idx.k;});
+      return;
+    }
     var best=cands[0],bestN=remplissage(cands[0]);
     for(var i=1;i<cands.length;i++){var n=remplissage(cands[i]);if(n>bestN){best=cands[i];bestN=n;}}
     roles[best]=idx.k;
@@ -12803,14 +12818,32 @@ function _impRenderMap(){
   document.getElementById('impMapBody').innerHTML=h;
 }
 function _impSetRole(i,val){
-  // Un rôle ne peut servir qu'une fois : réattribuer le libère ailleurs.
-  if(val){for(var j=0;j<_imp.roles.length;j++){if(j!==i&&_imp.roles[j]===val)_imp.roles[j]='';}}
+  // Un rôle simple ne sert qu'une fois : le réassigner le libère ailleurs.
+  // Un rôle composite (adresse) accepte au contraire plusieurs colonnes.
+  if(val&&!IMP_MULTI[val]){for(var j=0;j<_imp.roles.length;j++){if(j!==i&&_imp.roles[j]===val)_imp.roles[j]='';}}
   _imp.roles[i]=val;
   _impRenderMap();
 }
+// Rôle simple : la valeur de sa colonne. Rôle composite : les morceaux recollés
+// dans l'ordre des colonnes du fichier.
 function _impVal(ligne,role){
+  if(IMP_MULTI[role]){
+    var bouts=[];
+    _imp.roles.forEach(function(r,i){
+      if(r!==role)return;
+      var v=String(ligne[i]||'').trim();
+      if(v)bouts.push(v);
+    });
+    return bouts.join(' ');
+  }
   var i=_imp.roles.indexOf(role);
   return i===-1?'':String(ligne[i]||'').trim();
+}
+// L'adresse affichée = « n° et rue, ville, code postal » — un seul champ à
+// l'arrivée, puisque TRI-ANGLE n'a qu'un champ `adresse`.
+function _impAdresse(ligne){
+  return [_impVal(ligne,'adresse'),_impVal(ligne,'ville'),_impVal(ligne,'codePostal')]
+    .filter(function(x){return x;}).join(', ');
 }
 function _impRenderPreview(){
   var c=_impCompte();
@@ -12826,7 +12859,7 @@ function _impRenderPreview(){
       +'<div style="font-size:14px;font-weight:700;color:#0F172A">'+esc(nom)+'</div>'
       +li('&#128222;',_impVal(L,'telephone'))
       +li('&#9993;',_impVal(L,'courriel'))
-      +li('&#127968;',_impVal(L,'adresse'))
+      +li('&#127968;',_impAdresse(L))
       +li('&#128221;',_impVal(L,'notes'))
       +li('&#127991;',_impVal(L,'statut'))
       +li('&#128197;',_impVal(L,'dateContact'))
