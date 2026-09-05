@@ -2077,8 +2077,19 @@ body.app-readonly th .rz{pointer-events:none}
       <div id="impSteps" style="display:flex;gap:8px;margin-bottom:18px;font-size:11px;font-weight:700;letter-spacing:.02em">
         <div class="imp-step" data-step="1" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">1 &middot; Le fichier</div>
         <div class="imp-step" data-step="2" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">2 &middot; Les colonnes</div>
-        <div class="imp-step" data-step="3" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">3 &middot; L'aper&ccedil;u</div>
-        <div class="imp-step" data-step="4" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">4 &middot; Le r&eacute;sultat</div>
+        <div class="imp-step" data-step="3" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">3 &middot; Les questions</div>
+        <div class="imp-step" data-step="4" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">4 &middot; L'aper&ccedil;u</div>
+        <div class="imp-step" data-step="5" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">5 &middot; Le r&eacute;sultat</div>
+      </div>
+
+      <!-- ── Écran 3 : les questions groupées ── -->
+      <div id="impScreen3" style="display:none">
+        <div style="font-size:13px;color:#475569;margin-bottom:14px">Quelques questions &mdash; <strong>une par groupe de fiches</strong>, jamais une par ligne.</div>
+        <div id="impQuestions"></div>
+        <div class="settings-actions" style="margin-top:16px">
+          <button class="tpl-btn muted" onclick="_impGo(2)">&#8592; Retour aux colonnes</button>
+          <button class="btn-export" onclick="_impGo(4)">Voir l'aper&ccedil;u &#8594;</button>
+        </div>
       </div>
 
       <!-- ── Écran 1 : le fichier ── -->
@@ -2108,26 +2119,26 @@ body.app-readonly th .rz{pointer-events:none}
         </div>
         <div class="settings-actions" style="margin-top:16px">
           <button class="tpl-btn muted" onclick="_impGo(1)">&#8592; Retour</button>
-          <button class="btn-export" onclick="_impGo(3)">Voir l'aper&ccedil;u &#8594;</button>
+          <button class="btn-export" onclick="_impGo(3)">Continuer &#8594;</button>
         </div>
       </div>
 
-      <!-- ── Écran 3 : l'aperçu (lecture seule) ── -->
-      <div id="impScreen3" style="display:none">
+      <!-- ── Écran 4 : l'aperçu ── -->
+      <div id="impScreen4" style="display:none">
         <div id="impPreviewHead" style="font-size:13px;color:#475569;margin-bottom:12px"></div>
         <div id="impPreview"></div>
         <div style="margin-top:18px;padding:12px 14px;background:#F0F9FF;border:1px solid #BAE6FD;border-left:4px solid #0EA5E9;border-radius:6px;font-size:13px;color:#0C4A6E">
           Tout ira dans <strong>Autres contacts</strong>. Rien n'est class&eacute; en prospect et <strong>aucune relance ne sera d&eacute;clench&eacute;e</strong> : tu ranges ensuite qui tu veux, quand tu veux. Une copie de s&eacute;curit&eacute; est prise juste avant, et cet import pourra &ecirc;tre annul&eacute; d'un clic.
         </div>
         <div class="settings-actions" style="margin-top:16px">
-          <button class="tpl-btn muted" onclick="_impGo(2)">&#8592; Retour aux colonnes</button>
+          <button class="tpl-btn muted" id="impRetourApercu" onclick="_impGo(3)">&#8592; Retour</button>
           <button class="btn-export" id="impBtnEcrire" onclick="_impEcrire()">&#128229; Importer</button>
           <button class="tpl-btn muted" onclick="closeImportExterne()">Annuler</button>
         </div>
       </div>
 
-      <!-- ── Écran 4 : le rapport ── -->
-      <div id="impScreen4" style="display:none">
+      <!-- ── Écran 5 : le rapport ── -->
+      <div id="impScreen5" style="display:none">
         <div id="impRapport"></div>
       </div>
 
@@ -12666,7 +12677,7 @@ function importData(input){
 // et montre un aperçu. L'écriture des fiches est le mandat suivant (I-2).
 // Le classeur est lu dans le processus principal (electron-app/main.js) : le
 // fichier du courtier ne transite jamais en base64 par le renderer.
-var _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0};
+var _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false};
 
 // Les rôles proposables. 'statut' et 'dateContact' sont RELEVÉS ici mais ne servent
 // qu'à l'aperçu : leur exploitation (destination, avalanche de relances) est I-3.
@@ -12744,7 +12755,7 @@ function _impProposerRoles(entetes,lignes){
 }
 
 function openImportExterne(){
-  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0};
+  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false};
   document.getElementById('impFileInfo').style.display='none';
   document.getElementById('impSheetPick').style.display='none';
   document.getElementById('impErr1').style.display='none';
@@ -12754,20 +12765,155 @@ function openImportExterne(){
 function closeImportExterne(){
   document.getElementById('importExterneOv').classList.remove('on');
   // On relâche les lignes lues : rien ne doit survivre à la fermeture.
-  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0};
+  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0,dest:{},importerDates:false};
 }
 function _impGo(n){
-  [1,2,3,4].forEach(function(i){
+  // L'écran des questions n'a de sens que s'il y a quelque chose à demander.
+  // Rien à demander = on ne le montre pas : une question dont la réponse se
+  // déduit sans risque est une question de trop.
+  if(n===3&&!_impAQuestions())n=4;
+  [1,2,3,4,5].forEach(function(i){
     var el=document.getElementById('impScreen'+i);if(el)el.style.display=(i===n?'block':'none');
   });
   document.querySelectorAll('#impSteps .imp-step').forEach(function(s){
-    var on=parseInt(s.getAttribute('data-step'),10)===n;
+    var e=parseInt(s.getAttribute('data-step'),10),on=(e===n);
+    var mort=(e===3&&!_impAQuestions());
     s.style.background=on?'#0F172A':'#F1F5F9';
-    s.style.color=on?'#fff':'#94A3B8';
+    s.style.color=on?'#fff':(mort?'#CBD5E1':'#94A3B8');
   });
+  var ret=document.getElementById('impRetourApercu');
+  if(ret)ret.setAttribute('onclick','_impGo('+(_impAQuestions()?3:2)+')');
   if(n===2)_impRenderMap();
-  if(n===3)_impRenderPreview();
-  if(n===4)_impRenderRapport();
+  if(n===3)_impRenderQuestions();
+  if(n===4)_impRenderPreview();
+  if(n===5)_impRenderRapport();
+}
+
+// ─── [I-3] Les questions groupées ────────────────────────────────────────
+// Destinations offertes. `ca` d'abord et par défaut : c'est la seule collection
+// qui n'entre dans AUCUN moteur de relance. Un contact rangé trop bas est un
+// non-événement ; rangé trop haut, il fabrique une alerte que le courtier n'a
+// pas méritée — et le bruit d'alertes est ce qui fait abandonner un CRM.
+var IMP_DEST=[
+  {k:'ca',lbl:'Autres contacts'},
+  {k:'cp',lbl:'Prospects acheteurs'},
+  {k:'vp',lbl:'Prospects vendeurs'},
+  {k:'a',lbl:'Mes acheteurs'}
+];
+var IMP_SEUIL_RARE=3;   // en dessous, les statuts sont regroupés en une seule question
+var IMP_VIDE='\u0000vide';  // clé interne des lignes sans statut (Q4)
+
+// Regroupe les lignes par VALEUR DISTINCTE de la colonne « Statut ou type ».
+// C'est l'axe qui rend le nombre de questions fonction de la STRUCTURE du
+// fichier et non de son VOLUME : 6 valeurs = 6 réponses, que le fichier ait
+// 30 ou 30 000 lignes.
+function _impGroupes(){
+  if(_imp.roles.indexOf('statut')===-1)return {gros:[],rares:[],vides:0};
+  var cpt={};
+  _imp.lignes.forEach(function(L){
+    var v=_impVal(L,'statut');
+    var k=v||IMP_VIDE;
+    cpt[k]=(cpt[k]||0)+1;
+  });
+  var gros=[],rares=[],vides=cpt[IMP_VIDE]||0;
+  Object.keys(cpt).forEach(function(k){
+    if(k===IMP_VIDE)return;
+    (cpt[k]<IMP_SEUIL_RARE?rares:gros).push({valeur:k,n:cpt[k]});
+  });
+  gros.sort(function(a,b){return b.n-a.n;});
+  rares.sort(function(a,b){return b.n-a.n;});
+  return {gros:gros,rares:rares,vides:vides};
+}
+function _impAQuestions(){
+  var g=_impGroupes();
+  return !!(g.gros.length||g.rares.length||g.vides||_imp.roles.indexOf('dateContact')!==-1);
+}
+// Destination retenue pour une ligne. Défaut ca, TOUJOURS : une ligne n'en sort
+// que si le courtier a assigné explicitement SA valeur de statut. Aucun
+// rapprochement par mot-clé — « Acheteur actif » ne présélectionne pas
+// « Mes acheteurs », ce serait exactement le guess que LP a interdit.
+function _impDestLigne(L){
+  if(_imp.roles.indexOf('statut')===-1)return 'ca';
+  var v=_impVal(L,'statut')||IMP_VIDE;
+  return (_imp.dest&&_imp.dest[v])||'ca';
+}
+// Le nombre annoncé DOIT être le nombre réel. On applique le vrai comparateur du
+// moteur de relance (dsince > seuil de l'onglet), destination par destination.
+// `ca` n'a pas de moteur : ses lignes ne comptent jamais.
+function _impCompteRelances(){
+  var n=0;
+  if(_imp.roles.indexOf('dateContact')===-1)return 0;
+  _imp.lignes.forEach(function(L){
+    var d=_impVal(L,'dateContact');if(!d)return;
+    var dest=_impDestLigne(L);if(dest==='ca')return;
+    var seuil=_thrTab(dest);
+    if(seuil&&dsince(d)>seuil)n++;
+  });
+  return n;
+}
+function _impSetDest(cle,val){
+  if(!_imp.dest)_imp.dest={};
+  if(cle==='__rares'){
+    _impGroupes().rares.forEach(function(r){_imp.dest[r.valeur]=val;});
+  }else{
+    _imp.dest[cle]=val;
+  }
+  _impRenderQuestions();
+}
+function _impSetDates(v){_imp.importerDates=(v==='1');_impRenderQuestions();}
+
+function _impRenderQuestions(){
+  var g=_impGroupes(),h='',q=0;
+  var carte=function(titre,corps){
+    return '<div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#fff">'
+      +'<div style="font-size:13px;font-weight:700;color:#0F172A;margin-bottom:8px">'+titre+'</div>'+corps+'</div>';
+  };
+  var menu=function(cle,courant){
+    return '<select onchange="_impSetDest(\''+esc(cle).replace(/'/g,"\\'")+'\',this.value)" style="padding:6px 10px;border:1px solid #CBD5E1;border-radius:6px;font-family:inherit;font-size:13px;min-width:210px">'
+      +IMP_DEST.map(function(d){return '<option value="'+d.k+'"'+(d.k===courant?' selected':'')+'>'+esc(d.lbl)+'</option>';}).join('')+'</select>';
+  };
+  // Q3 — une question par valeur distincte assez fréquente
+  g.gros.forEach(function(gr){
+    q++;
+    h+=carte(gr.n+' ligne'+(gr.n>1?'s':'')+' ont le statut &laquo; '+esc(gr.valeur)+' &raquo; &mdash; o&ugrave; vont-elles ?',
+      menu(gr.valeur,(_imp.dest||{})[gr.valeur]||'ca'));
+  });
+  // Q3 bis — tous les statuts rares en UNE question
+  if(g.rares.length){
+    q++;
+    var nR=0;g.rares.forEach(function(r){nR+=r.n;});
+    var courantR=(_imp.dest||{})[g.rares[0].valeur]||'ca';
+    h+=carte('Et '+g.rares.length+' statut'+(g.rares.length>1?'s':'')+' rare'+(g.rares.length>1?'s':'')+' ('+nR+' ligne'+(nR>1?'s':'')+' en tout) &mdash; o&ugrave; vont-elles ?',
+      '<div style="font-size:11px;color:#94A3B8;margin-bottom:8px">'+esc(g.rares.map(function(r){return r.valeur+' ('+r.n+')';}).join(' &middot; '))+'</div>'+menu('__rares',courantR));
+  }
+  // Q4 — les orphelines
+  if(g.vides){
+    q++;
+    h+=carte(g.vides+' ligne'+(g.vides>1?'s':'')+" n'ont rien dans cette colonne &mdash; o&ugrave; vont-elles ?",
+      menu(IMP_VIDE,(_imp.dest||{})[IMP_VIDE]||'ca'));
+  }
+  // Q5 — les dates. Posée seulement si au moins une ligne part vers un onglet
+  // qui a un moteur de relance : sinon la réponse ne change rien.
+  if(_imp.roles.indexOf('dateContact')!==-1){
+    var horsCa=_imp.lignes.filter(function(L){return _impDestLigne(L)!=='ca'&&_impVal(L,'dateContact');}).length;
+    if(horsCa){
+      q++;
+      var nRel=_impCompteRelances();
+      var sel=function(v,lbl,sub){
+        var on=((_imp.importerDates?'1':'0')===v);
+        return '<label style="display:block;padding:8px 10px;border:1px solid '+(on?'#0EA5E9':'#E2E8F0')+';border-radius:6px;margin-top:6px;cursor:pointer;background:'+(on?'#F0F9FF':'#fff')+'">'
+          +'<input type="radio" name="impDates" value="'+v+'"'+(on?' checked':'')+' onchange="_impSetDates(this.value)" style="margin-right:8px">'
+          +'<strong style="font-size:13px">'+lbl+'</strong>'
+          +'<div style="font-size:11px;color:#64748B;margin-left:22px">'+sub+'</div></label>';
+      };
+      h+=carte('Ton fichier contient une date de dernier contact.',
+        '<div style="font-size:13px;color:#475569">Si je l\'importe, <strong>'+nRel+' fiche'+(nRel>1?'s':'')+'</strong> appara&icirc;tra'+(nRel>1?'ient':'')+' imm&eacute;diatement dans &laquo; &Agrave; relancer &raquo;.</div>'
+        +sel('0','Ne pas importer ces dates &mdash; je repars &agrave; neuf','Recommand&eacute;. La date reste inscrite dans les notes de chaque fiche : rien n\'est perdu.')
+        +sel('1','Les importer quand m&ecirc;me &mdash; je veux voir mon retard r&eacute;el','Les fiches envoy&eacute;es vers Autres contacts ne d&eacute;clenchent jamais de relance, quoi qu\'il arrive.'));
+    }
+  }
+  if(!h)h='<div style="font-size:13px;color:#94A3B8">Rien à demander pour ce fichier : tout ira dans Autres contacts.</div>';
+  document.getElementById('impQuestions').innerHTML=h;
 }
 function _impErr1(msg){
   var el=document.getElementById('impErr1');
@@ -12896,6 +13042,11 @@ function _impRenderPreview(){
   }
   if(!n)h='<div style="font-size:13px;color:#94A3B8">Aucune ligne à montrer.</div>';
   h+='<div style="font-size:13px;font-weight:700;color:#0F172A;margin-top:6px">'+_imp.total+' ligne'+(_imp.total>1?'s':'')+' pr&ecirc;te'+(_imp.total>1?'s':'')+'.</div>';
+  // Où va quoi — le récapitulatif des réponses de l'écran 3, en clair.
+  var rep=_impRepartition(),lignes=[];
+  IMP_DEST.forEach(function(d){if(rep[d.k])lignes.push(rep[d.k]+' &rarr; <strong>'+esc(d.lbl)+'</strong>');});
+  if(lignes.length>1||(_imp.dest&&Object.keys(_imp.dest).length))
+    h+='<div style="margin-top:8px;font-size:12px;color:#475569">'+lignes.join(' &middot; ')+'</div>';
   document.getElementById('impPreview').innerHTML=h;
   var btn=document.getElementById('impBtnEcrire');
   if(btn){btn.disabled=false;btn.innerHTML='&#128229; Importer '+_imp.total+' fiche'+(_imp.total>1?'s':'');}
@@ -12910,7 +13061,61 @@ function _impRenderPreview(){
 // Mémoire du dernier import, pour l'écran de rapport uniquement.
 var _impDernier=null;
 
-// TOUT-OU-RIEN. Tout est construit à part, puis posé en DEUX affectations qui ne
+// Combien de fiches par destination, d'après les réponses de l'écran 3.
+function _impRepartition(){
+  var r={};
+  _imp.lignes.forEach(function(L){
+    var prenom=_impVal(L,'prenom'),nom=_impVal(L,'nom');
+    var tel=_impVal(L,'telephone'),co=_impVal(L,'courriel');
+    if(!prenom&&!nom&&!tel&&!co)return;
+    var d=_impDestLigne(L);r[d]=(r[d]||0)+1;
+  });
+  return r;
+}
+// Les notes d'une fiche importée. `ca` n'ayant pas de champ adresse, l'adresse y
+// va ; ailleurs elle a son propre champ. La date source y va toujours SAUF si le
+// courtier a demandé qu'elle serve vraiment — sinon elle serait écrite deux fois.
+function _impNotes(L,dest,avecDate){
+  var t=[];
+  var n0=_impVal(L,'notes');if(n0)t.push(n0);
+  var adr=_impAdresse(L);
+  if(adr&&dest==='ca')t.push('Adresse : '+adr);
+  var dc=_impVal(L,'dateContact');
+  if(dc&&!avecDate)t.push('Dernier contact selon l\'ancien logiciel : '+dc);
+  return t.join('\n');
+}
+// Une fiche reçoit EXACTEMENT les champs que son onglet connaît, avec les mêmes
+// défauts qu'une fiche créée par les transferts maison (transferCpToA & co.) :
+// une fiche importée doit être indiscernable d'une fiche saisie à la main.
+function _impConstruireFiche(L,dest,lot){
+  var prenom=_impVal(L,'prenom'),nom=_impVal(L,'nom');
+  var tel=_impVal(L,'telephone'),co=_impVal(L,'courriel');
+  var cat=_impVal(L,'statut'),adr=_impAdresse(L);
+  var dc=_impVal(L,'dateContact');
+  var avecDate=!!(_imp.importerDates&&dc&&dest!=='ca');
+  var notes=_impNotes(L,dest,avecDate);
+  var base={id:newId(),prenom:prenom,nom:nom,telephone:tel,courriel:co,notes:notes,_importLot:lot};
+  // Les clés sont l'UNION de ce que produit le formulaire (saveEntry) et de ce que
+  // produisent les transferts maison (transferCpToA & co.) : rien de ce que le
+  // formulaire attend ne doit manquer, sinon la première ouverture de la fiche
+  // écrirait des undefined.
+  if(dest==='cp')return Object.assign(base,{prequal:'',prequalMnt:'',typeBat:'',
+    prixMin:'',prixMax:'',secteur:'',dateContact:avecDate?dc:'',alerte:false,linkId:''});
+  if(dest==='vp')return Object.assign(base,{adresse:adr,typeProp:'',prix:'',
+    dateContact:avecDate?dc:'',linkId:''});
+  if(dest==='a')return Object.assign(base,{etat:'',adresse:adr,alerte:false,cca:false,
+    loi25:false,consSec:false,canafe:false,mls:false,declVend:false,prequal2:false,
+    inspection:'',financement:'',r21:'',r22:'',assurImm:'',fosseSept:'',testEau:'',
+    notaire:'',montant:'',commission:'',linkId:'',
+    prequal:'',prequalMnt:'',typeBat:'',prixMin:'',prixMax:'',secteur:'',
+    // `a` se relance sur lastModified, pas sur dateContact : c'est CE champ qui
+    // doit porter la date source, sinon le nombre annoncé à l'écran 3 serait faux.
+    dateContact:avecDate?dc:'',lastModified:avecDate?dc:_todayStr()});
+  // ca — le déversoir : 6 champs, aucun moteur de relance
+  return Object.assign(base,{categorie:cat});
+}
+
+// TOUT-OU-RIEN. Tout est construit à part, puis posé en affectations qui ne
 // peuvent pas lever. Une exception pendant la construction laisse donc db
 // strictement identique — il n'existe aucun état intermédiaire à rattraper.
 // Le filet (writeAutoSave → backupNow → pushUndo) est celui de
@@ -12922,32 +13127,29 @@ async function _impEcrire(){
   try{
     // ── 1. Construction en mémoire ──
     var lot='lot'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-    var fiches=[],sautees=0;
+    var parDest={},total=0,sautees=0,troisPremieres=[];
     _imp.lignes.forEach(function(L){
       var prenom=_impVal(L,'prenom'),nom=_impVal(L,'nom');
       var tel=_impVal(L,'telephone'),co=_impVal(L,'courriel');
       // Une ligne sans aucun moyen d'identifier ni de joindre quelqu'un n'est pas
       // un contact. On la saute et on le DIT au rapport.
       if(!prenom&&!nom&&!tel&&!co){sautees++;return;}
-      // `ca` n'a pas de champ adresse : l'adresse et la date source vont dans les
-      // notes. Rien n'est perdu, et surtout la date n'atterrit PAS dans un champ
-      // qui déclencherait une relance (amendement 2).
-      var notes=[];
-      var n0=_impVal(L,'notes');if(n0)notes.push(n0);
-      var adr=_impAdresse(L);if(adr)notes.push('Adresse : '+adr);
-      var dc=_impVal(L,'dateContact');
-      if(dc)notes.push('Dernier contact selon l\'ancien logiciel : '+dc);
-      fiches.push({id:newId(),prenom:prenom,nom:nom,telephone:tel,courriel:co,
-        categorie:_impVal(L,'statut'),notes:notes.join('\n'),_importLot:lot});
+      var dest=_impDestLigne(L);
+      var f=_impConstruireFiche(L,dest,lot);
+      (parDest[dest]=parDest[dest]||[]).push(f);
+      total++;if(troisPremieres.length<3)troisPremieres.push(f);
     });
-    if(!fiches.length){
+    if(!total){
       alert("Aucune fiche à créer : aucune ligne de ce fichier n'a de nom, de téléphone ni de courriel.");
       if(btn){btn.disabled=false;btn.innerHTML=libelle;}
       return;
     }
-    var nouveauCa=db.ca.concat(fiches);
+    // Les nouvelles collections sont construites À PART, avant toute écriture.
+    var nouvelles={};
+    Object.keys(parDest).forEach(function(d){nouvelles[d]=(db[d]||[]).concat(parDest[d]);});
+    var compte={};Object.keys(parDest).forEach(function(d){compte[d]=parDest[d].length;});
     var nouveauImports=[{id:lot,date:new Date().toISOString(),fichier:_imp.nom,
-      feuille:_imp.feuille,nb:fiches.length,
+      feuille:_imp.feuille,nb:total,compte:compte,
       colonnes:_imp.roles.filter(function(r){return r;}).length}].concat(db.imports||[]);
     var ignorees=_imp.entetes.filter(function(h,i){return !_imp.roles[i];});
     // ── 2. Filet, identique à celui de la restauration ──
@@ -12960,12 +13162,12 @@ async function _impEcrire(){
     }
     // ── 3. Écriture ──
     pushUndo('Import '+_imp.nom);
-    db.ca=nouveauCa;
+    Object.keys(nouvelles).forEach(function(d){db[d]=nouvelles[d];});
     db.imports=nouveauImports;
     sdb();fullRender();
-    _impDernier={lot:lot,nb:fiches.length,sautees:sautees,ignorees:ignorees,
-      fichier:_imp.nom,fiches:fiches.slice(0,3)};
-    _impGo(4);
+    _impDernier={lot:lot,nb:total,sautees:sautees,ignorees:ignorees,compte:compte,
+      fichier:_imp.nom,fiches:troisPremieres,dates:!!_imp.importerDates};
+    _impGo(5);
   }catch(e){
     alert("Import interrompu : "+e.message+"\n\nAucune fiche n'a été créée.");
     if(btn){btn.disabled=false;btn.innerHTML=libelle;}
@@ -12983,7 +13185,10 @@ function _impRenderRapport(){
     : d.nb+' fiche'+(d.nb>1?'s':'')+' ajoutée'+(d.nb>1?'s':'')+'.';
   var h='<div style="padding:16px 18px;background:#F0FDFA;border:1px solid #99F6E4;border-left:4px solid #0FBFAB;border-radius:8px">'
     +'<div style="font-size:15px;color:#0F172A;line-height:1.5">'+phrase+'</div>'
-    +'<div style="font-size:12px;color:#475569;margin-top:8px">'+d.nb+' fiche'+(d.nb>1?'s':'')+' ajoutée'+(d.nb>1?'s':'')+' à <strong>Autres contacts</strong>.</div></div>';
+    +'<div style="font-size:12px;color:#475569;margin-top:8px">'
+    +IMP_DEST.filter(function(x){return d.compte&&d.compte[x.k];})
+      .map(function(x){return d.compte[x.k]+' &rarr; <strong>'+esc(x.lbl)+'</strong>';}).join(' &middot; ')
+    +'</div></div>';
   var reste=[];
   if(d.sautees)reste.push(d.sautees+' ligne'+(d.sautees>1?'s':'')+' sautée'+(d.sautees>1?'s':'')+' (ni nom, ni téléphone, ni courriel)');
   if(d.ignorees.length)reste.push(d.ignorees.length+' colonne'+(d.ignorees.length>1?'s':'')+' non reprise'+(d.ignorees.length>1?'s':'')+' : '+d.ignorees.join(', '));
@@ -12992,24 +13197,38 @@ function _impRenderRapport(){
       +'<div style="font-weight:700;color:#0F172A;margin-bottom:5px">Ce qui n\'a pas été pris</div>'
       +reste.map(function(r){return '<div>&middot; '+esc(r)+'</div>';}).join('')+'</div>';
   }
+  // UN seul bouton, vers l'onglet qui a reçu le plus de fiches.
+  var gros='ca',n0=-1;
+  IMP_DEST.forEach(function(x){var v=(d.compte&&d.compte[x.k])||0;if(v>n0){n0=v;gros=x.k;}});
+  var lblGros='';IMP_DEST.forEach(function(x){if(x.k===gros)lblGros=x.lbl;});
   h+='<div style="margin-top:14px;font-size:11px;color:#94A3B8">Import '+esc(d.lot)+' &mdash; annulable depuis Param&egrave;tres &rarr; Sauvegarde.</div>'
     +'<div class="settings-actions" style="margin-top:16px">'
-    +'<button class="btn-export" onclick="_impVoirContacts()">Voir mes contacts</button></div>';
+    +'<button class="btn-export" onclick="_impVoirContacts(\''+gros+'\')">Voir '+esc(lblGros)+'</button></div>';
   document.getElementById('impRapport').innerHTML=h;
 }
-function _impVoirContacts(){
+function _impVoirContacts(tab){
   closeImportExterne();
-  var b=document.querySelector('.tbtn[data-tab="ca"]');if(b)b.click();
+  var b=document.querySelector('.tbtn[data-tab="'+(tab||'ca')+'"]');if(b)b.click();
 }
 
 // ─── [I-2] Les lots : liste et annulation ────────────────────────────────
+// Depuis I-3 un lot peut être réparti sur plusieurs onglets : on balaie TOUTES
+// les collections. Chercher dans `ca` seul laisserait derrière les fiches
+// envoyées vers cp / vp / a — un « annuler » qui n'annule qu'en partie.
+function _impFichesDuLot(id){
+  var out=[];
+  TABS.forEach(function(t){
+    (db[t]||[]).forEach(function(x){if(x._importLot===id)out.push(x);});
+  });
+  return out;
+}
 function _impRenderLots(){
   var z=document.getElementById('impLotsZone');if(!z)return;
   var lots=db.imports||[];
   if(!lots.length){z.innerHTML='';return;}
   var h=lots.map(function(l){
     var d='';try{d=new Date(l.date).toLocaleString('fr-CA',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){}
-    var vivantes=(db.ca||[]).filter(function(x){return x._importLot===l.id;}).length;
+    var vivantes=_impFichesDuLot(l.id).length;
     return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EEF2F7">'
       +'<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#0F172A">'+esc(l.fichier||'(fichier)')+'</div>'
       +'<div style="font-size:10px;color:#94A3B8">'+esc(d)+' &mdash; '+l.nb+' fiche'+(l.nb>1?'s':'')+' import&eacute;e'+(l.nb>1?'s':'')
@@ -13025,13 +13244,13 @@ function _impRenderLots(){
 function _impAnnulerLot(id){
   var lot=null;(db.imports||[]).forEach(function(l){if(l.id===id)lot=l;});
   if(!lot)return;
-  var cibles=(db.ca||[]).filter(function(x){return x._importLot===id;});
+  var cibles=_impFichesDuLot(id);
   var msg="Retirer les "+cibles.length+" fiche"+(cibles.length>1?"s":"")+" importée"+(cibles.length>1?"s":"")+" de « "+(lot.fichier||'ce fichier')+" » ?";
   if(cibles.length<lot.nb)msg+="\n\n("+(lot.nb-cibles.length)+" fiche(s) de ce lot ont déjà été retirées ou déplacées.)";
   msg+="\n\nLes fiches que tu aurais modifiées depuis l'import seront retirées elles aussi.\nCtrl+Z / Cmd+Z peut annuler cette opération.";
   if(!confirm(msg))return;
   pushUndo("Annuler l'import "+(lot.fichier||''));
-  db.ca=(db.ca||[]).filter(function(x){return x._importLot!==id;});
+  TABS.forEach(function(t){db[t]=(db[t]||[]).filter(function(x){return x._importLot!==id;});});
   db.imports=(db.imports||[]).filter(function(l){return l.id!==id;});
   sdb();fullRender();_impRenderLots();
   toast("↩ Import annulé — "+cibles.length+" fiche"+(cibles.length>1?"s":"")+" retirée"+(cibles.length>1?"s":""));
