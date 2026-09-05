@@ -5213,6 +5213,7 @@ var TUTORIELS=[
     +'<h2>Aucune relance ne va se d\u00e9clencher</h2>'
     +'<p>C\u2019est la crainte l\u00e9gitime quand on importe 300 fiches d\u2019un coup : se retrouver le lendemain matin avec 300 alertes rouges pour des appels qu\u2019on n\u2019a pas manqu\u00e9s. \u00c7a n\u2019arrivera pas.</p>'
     +'<p>Les <strong>dates de dernier contact de ton ancien logiciel ne sont pas import\u00e9es par d\u00e9faut</strong> : elles sont recopi\u00e9es dans les <strong>notes</strong> de chaque fiche, o\u00f9 tu peux les lire, mais elles n\u2019allument rien. Si tu pr\u00e9f\u00e8res les garder pour voir ton retard r\u00e9el, la question te le propose \u2014 <strong>en te disant d\u2019avance combien de fiches tomberaient dans \u00ab \u00c0 relancer \u00bb</strong> si tu acceptes. Le chiffre est calcul\u00e9 sur ton vrai fichier, pas approximatif.</p>'
+    +'<p>Une nuance selon l\u2019endroit o\u00f9 tu envoies tes fiches. Celles qui vont dans <strong>Mes acheteurs</strong> suivent le rythme normal de cet onglet : leur premi\u00e8re relance arrive <strong>environ 21 jours apr\u00e8s l\u2019import</strong>, pas le lendemain. Celles qui vont dans <strong>Prospects acheteurs</strong> ou <strong>Prospects vendeurs</strong> n\u2019ont aucune date de dernier contact : elles restent <strong>silencieuses tant que tu n\u2019en inscris pas une</strong>, ce que tu fais d\u2019un clic dans la colonne <strong>Dernier contact</strong> le jour o\u00f9 tu les appelles.</p>'
     +'<h2>Si des contacts sont d\u00e9j\u00e0 dans TRI-ANGLE</h2>'
     +'<p>L\u2019application les rep\u00e8re par <strong>courriel ou par num\u00e9ro de t\u00e9l\u00e9phone</strong> \u2014 <strong>jamais par le nom seul</strong> : deux \u00ab Jean Tremblay \u00bb sont deux personnes diff\u00e9rentes bien plus souvent qu\u2019une seule. Une question group\u00e9e te propose trois choix :</p>'
     +'<ul>'
@@ -5224,6 +5225,7 @@ var TUTORIELS=[
     +'<h2>Si tu changes d\u2019avis</h2>'
     +'<p>Chaque import est un <strong>lot</strong>. Dans <strong>Param\u00e8tres &rarr; Sauvegarde</strong>, juste sous le bouton d\u2019import, tes imports pr\u00e9c\u00e9dents sont list\u00e9s \u2014 nom du fichier, date, nombre de fiches \u2014 avec un bouton <strong>\u21bb Annuler cet import</strong>.</p>'
     +'<p>Il retire <strong>exactement ce que cet import a ajout\u00e9</strong>, et rien d\u2019autre : les fiches qu\u2019il a cr\u00e9\u00e9es, sur tous les onglets o\u00f9 tu les avais envoy\u00e9es \u2014 et, si tu avais choisi \u00ab compl\u00e9ter \u00bb, <strong>les champs qu\u2019il avait remplis sur tes fiches existantes redeviennent vides, sans toucher au reste de la fiche</strong>. Une fiche que tu avais depuis deux ans ne dispara\u00eet pas parce qu\u2019un import l\u2019avait compl\u00e9t\u00e9e.</p>'
+    +'<p>Une nuance \u00e0 conna\u00eetre : ces champs redeviennent vides <strong>m\u00eame si tu les as corrig\u00e9s depuis l\u2019import</strong>. C\u2019est la valeur d\u2019aujourd\u2019hui qui part, pas seulement celle qui venait du fichier \u2014 si tu as retouch\u00e9 un num\u00e9ro que l\u2019import avait rempli, ta correction s\u2019en va avec.</p>'
     +'<p>Une copie de s\u00e9curit\u00e9 est prise avant chaque import, et <span class="aide-kbd">Ctrl</span>+<span class="aide-kbd">Z</span> reste possible juste apr\u00e8s.</p>'
     +'<h2>Rien n\u2019est perdu en chemin</h2>'
     +'<p>Les colonnes que tu as mises sur <em>Ignorer</em> mais qui contiennent des donn\u00e9es sont <strong>recopi\u00e9es \u00e0 la fin des notes</strong> de chaque fiche, une ligne chacune, avec le nom de la colonne devant \u2014 par exemple \u00ab Source interne : Salon 2024 \u00bb. Tu d\u00e9cides plus tard quoi en faire ; en attendant, c\u2019est \u00e9crit noir sur blanc.</p>'
@@ -13475,7 +13477,8 @@ function _impAnnulerLot(id){
   var cibles=_impFichesDuLot(id),majs=_impMajDuLot(id);
   var msg="Retirer les "+cibles.length+" fiche"+(cibles.length>1?"s":"")+" importée"+(cibles.length>1?"s":"")+" de « "+(lot.fichier||'ce fichier')+" » ?";
   if(cibles.length<lot.nb)msg+="\n\n("+(lot.nb-cibles.length)+" fiche(s) de ce lot ont déjà été retirées ou déplacées.)";
-  if(majs.length)msg+="\n\n"+majs.length+" fiche(s) que cet import avait COMPLÉTÉES retrouveront leur état d'avant : seuls les champs qu'il avait remplis seront revidés, le reste ne bouge pas.";
+  if(majs.length)msg+="\n\n"+majs.length+" fiche(s) que cet import avait COMPLÉTÉES retrouveront leur état d'avant : seuls les champs qu'il avait remplis seront revidés, le reste ne bouge pas."
+    +"\nLes champs que cet import avait complétés sur tes fiches existantes redeviennent vides — même si tu les as corrigés depuis.";
   msg+="\n\nLes fiches que tu aurais modifiées depuis l'import seront retirées elles aussi.\nCtrl+Z / Cmd+Z peut annuler cette opération.";
   if(!confirm(msg))return;
   pushUndo("Annuler l'import "+(lot.fichier||''));
