@@ -98,7 +98,8 @@
   "dependencies": {
     "electron-updater": "^6.8.3",
     "googleapis": "^171.4.0",
-    "node-machine-id": "^1.1.12"
+    "node-machine-id": "^1.1.12",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "electron": "^41.2.0",

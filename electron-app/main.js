@@ -663,6 +663,110 @@ function _buildAppleMailScript(subject, body, recipients, isBcc, attPaths) {
   return L.join('\n');
 }
 
+// ─── IMPORT [I-1] : lire un tableau produit par un autre logiciel ───────
+// Le lecteur vit DANS main.js et pas dans un fichier à part : `build.files` du
+// package.json est une LISTE BLANCHE (main.js, preload.js, google-calendar.js,
+// outlook-calendar.js, package.json). Un nouveau fichier source ne serait PAS
+// empaqueté — l'import marcherait en dev et mourrait chez les clients, sans
+// erreur au build. Le module `xlsx`, lui, est une dépendance de production :
+// electron-builder l'embarque dans l'asar (prouvé au mandat, paquet --dir).
+// Lire ici plutôt que dans le renderer évite aussi de faire transiter le fichier
+// du courtier en base64. Rien n'est écrit sur disque : tout reste en mémoire.
+const IMPORT_EXTS = ['xlsx', 'xls', 'csv'];
+
+// Un .xlsx porte son encodage ; un .csv ne le porte pas. Les exports Excel FR sont
+// très souvent en Windows-1252 : lus en UTF-8, « Bussière » devient « Bussiï¿½re ».
+function _importDecodeCsv(buf) {
+  if (buf.length >= 3 && buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF) {
+    return { text: new TextDecoder('utf-8').decode(buf.subarray(3)), encodage: 'UTF-8 (BOM)' };
+  }
+  try {
+    // `fatal` : un octet invalide lève au lieu de produire des U+FFFD silencieux
+    return { text: new TextDecoder('utf-8', { fatal: true }).decode(buf), encodage: 'UTF-8' };
+  } catch (e) {
+    return { text: new TextDecoder('windows-1252').decode(buf), encodage: 'Windows-1252' };
+  }
+}
+
+// Date -> "AAAA-MM-JJ" en heure LOCALE. toISOString() reculerait d'un jour dans un
+// fuseau négatif (une date de minuit local devient 05:00Z, mais l'inverse coupe).
+function _importFmtDate(d) {
+  const m = d.getMonth() + 1, j = d.getDate();
+  return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (j < 10 ? '0' : '') + j;
+}
+
+function _importCellToText(v) {
+  if (v === null || v === undefined) return '';
+  if (v instanceof Date) return _importFmtDate(v);
+  return String(v);
+}
+
+function _importReadWorkbook(filePath) {
+  const XLSX = require('xlsx');   // require paresseux — même patron que node-machine-id
+  const ext = path.extname(filePath).toLowerCase().replace('.', '');
+  const buf = fs.readFileSync(filePath);
+  if (ext === 'csv') {
+    const d = _importDecodeCsv(buf);
+    // SheetJS déduit le séparateur (virgule / point-virgule / tabulation) et gère
+    // les guillemets — écrire un analyseur CSV maison, c'est se tromper sur les
+    // champs entre guillemets contenant le séparateur.
+    return { wb: XLSX.read(d.text, { type: 'string', cellDates: true, raw: true }), encodage: d.encodage };
+  }
+  return { wb: XLSX.read(buf, { type: 'buffer', cellDates: true }), encodage: 'binaire' };
+}
+
+// Ouvre la boîte de dialogue système et rend la liste des feuilles du classeur.
+ipcMain.handle('import-pick-file', async () => {
+  try {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: 'Choisir le fichier à importer',
+      properties: ['openFile'],
+      filters: [{ name: 'Tableaux (Excel, CSV)', extensions: IMPORT_EXTS }],
+      buttonLabel: 'Choisir ce fichier'
+    });
+    if (result.canceled || !result.filePaths.length) return { ok: false, canceled: true };
+    const full = result.filePaths[0];
+    const XLSX = require('xlsx');
+    const r = _importReadWorkbook(full);
+    const sheets = r.wb.SheetNames.map(function (n) {
+      const aoa = XLSX.utils.sheet_to_json(r.wb.Sheets[n], { header: 1, defval: '', blankrows: false, raw: true });
+      return { nom: n, lignes: Math.max(0, aoa.length - 1), colonnes: aoa.length ? aoa[0].length : 0 };
+    });
+    return { ok: true, path: full, nom: path.basename(full), encodage: r.encodage, sheets: sheets };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
+// Rend les en-têtes + toutes les lignes d'UNE feuille. Rien n'est conservé côté
+// principal : le renderer garde le tableau et le jette à la fermeture.
+ipcMain.handle('import-read-sheet', async (event, args) => {
+  try {
+    const filePath = (args && args.path) || '';
+    if (!filePath) return { ok: false, error: 'Aucun fichier sélectionné.' };
+    const XLSX = require('xlsx');
+    const r = _importReadWorkbook(filePath);
+    const demande = (args && args.sheet) || '';
+    const nom = (demande && r.wb.Sheets[demande]) ? demande : r.wb.SheetNames[0];
+    const ws = r.wb.Sheets[nom];
+    if (!ws) return { ok: false, error: 'Feuille introuvable dans ce fichier.' };
+    const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false, raw: true });
+    // ⚠ SheetJS ne lève PAS sur un fichier de texte quelconque : il le lit comme un
+    // CSV d'une seule colonne. La garde doit donc être explicite — elle ne peut pas
+    // reposer sur une exception. (Un vrai binaire étranger, lui, lève bien.)
+    if (!aoa.length) return { ok: false, error: 'Ce fichier ne contient aucune donnée.' };
+    const entetes = aoa[0].map(_importCellToText);
+    if (entetes.filter(function (h) { return h.trim(); }).length < 2) {
+      return { ok: false, error: "Ce fichier ne ressemble pas à un tableau : une seule colonne a été détectée. Vérifie qu'il s'agit bien d'un export de contacts (.xlsx, .xls ou .csv)." };
+    }
+    const lignes = aoa.slice(1).map(function (row) {
+      const out = [];
+      for (var i = 0; i < entetes.length; i++) out.push(_importCellToText(row[i]));
+      return out;
+    });
+    if (!lignes.length) return { ok: false, error: 'Ce fichier contient des en-têtes mais aucune ligne de données.' };
+    return { ok: true, feuille: nom, encodage: r.encodage, entetes: entetes, lignes: lignes, total: lignes.length };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
 ipcMain.handle('pick-folder', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: 'Choisir le dossier de sauvegarde',

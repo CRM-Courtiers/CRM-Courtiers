@@ -1888,6 +1888,14 @@ body.app-readonly th .rz{pointer-events:none}
           <div id="restoreListZone" style="margin-top:10px"></div>
         </div>
 
+        <div class="settings-group" id="importExterneGroup">
+          <div class="settings-group-title">&#128229; Importer depuis un autre logiciel</div>
+          <div class="settings-group-desc">Reprends tes contacts d'un ancien CRM, d'Outlook, de Google Contacts ou d'un fichier Excel. Formats accept&eacute;s : <strong>.xlsx, .xls, .csv</strong>. Ton fichier est lu sur ton poste et n'est envoy&eacute; nulle part. &#8212; &Agrave; ne pas confondre avec <em>Restaurer une sauvegarde</em> ci-dessus, qui REMPLACE toutes tes donn&eacute;es par une copie TRI-ANGLE.</div>
+          <div class="settings-actions">
+            <button class="btn-import" onclick="openImportExterne()">&#128229; Importer des contacts&hellip;</button>
+          </div>
+        </div>
+
         </div><!-- /sauvegarde -->
 
         <div class="settings-tab-content" data-stab-content="equipe">
@@ -2052,6 +2060,69 @@ body.app-readonly th .rz{pointer-events:none}
     <div class="mf">
       <button class="bc" id="btnc">Annuler</button>
       <button class="bs" id="btns">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── [I-1] Import depuis un autre logiciel — LECTURE SEULE, n'écrit rien ── -->
+<div class="tpl-modal-ov" id="importExterneOv">
+  <div class="tpl-modal" style="width:min(1100px,96vw)">
+    <div class="tpl-modal-head">
+      <div class="tpl-modal-title">&#128229; Importer depuis un autre logiciel</div>
+      <button class="tpl-btn muted" onclick="closeImportExterne()">&#10005;</button>
+    </div>
+    <div class="tpl-modal-body">
+
+      <div id="impSteps" style="display:flex;gap:8px;margin-bottom:18px;font-size:11px;font-weight:700;letter-spacing:.02em">
+        <div class="imp-step" data-step="1" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">1 &middot; Le fichier</div>
+        <div class="imp-step" data-step="2" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">2 &middot; Les colonnes</div>
+        <div class="imp-step" data-step="3" style="flex:1;padding:8px 10px;border-radius:6px;text-align:center">3 &middot; L'aper&ccedil;u</div>
+      </div>
+
+      <!-- ── Écran 1 : le fichier ── -->
+      <div id="impScreen1">
+        <div style="padding:18px 0 6px">
+          <button class="btn-import" onclick="_impPickFile()" style="font-size:14px;padding:10px 18px">&#128193; Choisir un fichier&hellip;</button>
+          <div style="font-size:12px;color:#64748B;margin-top:10px">Excel (.xlsx, .xls) ou CSV. <strong>Rien ne sera &eacute;crit avant ton accord.</strong></div>
+        </div>
+        <div id="impFileInfo" style="display:none;margin-top:16px;padding:12px 14px;background:#F8FAFC;border:1px solid #E2E8F0;border-left:4px solid #0EA5E9;border-radius:6px"></div>
+        <div id="impSheetPick" style="display:none;margin-top:14px"></div>
+        <div id="impErr1" style="display:none;margin-top:14px;padding:12px 14px;background:#FEF2F2;border:1px solid #FECACA;border-left:4px solid #DC2626;border-radius:6px;font-size:13px;color:#991B1B"></div>
+      </div>
+
+      <!-- ── Écran 2 : la correspondance des colonnes ── -->
+      <div id="impScreen2" style="display:none">
+        <div style="font-size:13px;color:#475569;margin-bottom:4px">Voici les colonnes de ton fichier. Les &eacute;videntes sont d&eacute;j&agrave; propos&eacute;es &mdash; <strong>v&eacute;rifie-les</strong>, rien n'est devin&eacute; en silence.</div>
+        <div id="impCount" style="font-size:12px;font-weight:700;color:#0F172A;margin-bottom:12px"></div>
+        <div style="max-height:46vh;overflow:auto;border:1px solid #E2E8F0;border-radius:8px">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="position:sticky;top:0;background:#F8FAFC;z-index:1">
+              <th style="text-align:left;padding:9px 12px;border-bottom:1px solid #E2E8F0;font-weight:700">Colonne du fichier</th>
+              <th style="text-align:left;padding:9px 12px;border-bottom:1px solid #E2E8F0;font-weight:700">Exemples</th>
+              <th style="text-align:left;padding:9px 12px;border-bottom:1px solid #E2E8F0;font-weight:700;width:230px">Contient</th>
+            </tr></thead>
+            <tbody id="impMapBody"></tbody>
+          </table>
+        </div>
+        <div class="settings-actions" style="margin-top:16px">
+          <button class="tpl-btn muted" onclick="_impGo(1)">&#8592; Retour</button>
+          <button class="btn-export" onclick="_impGo(3)">Voir l'aper&ccedil;u &#8594;</button>
+        </div>
+      </div>
+
+      <!-- ── Écran 3 : l'aperçu (lecture seule) ── -->
+      <div id="impScreen3" style="display:none">
+        <div id="impPreviewHead" style="font-size:13px;color:#475569;margin-bottom:12px"></div>
+        <div id="impPreview"></div>
+        <div style="margin-top:18px;padding:12px 14px;background:#FFFBEB;border:1px solid #FDE68A;border-left:4px solid #D97706;border-radius:6px;font-size:13px;color:#78350F">
+          <strong>Rien n'a &eacute;t&eacute; &eacute;crit dans ton CRM.</strong> Cette &eacute;tape lit ton fichier et te montre ce qu'il contient. L'&eacute;criture des fiches arrive &agrave; la prochaine &eacute;tape du chantier.
+        </div>
+        <div class="settings-actions" style="margin-top:16px">
+          <button class="tpl-btn muted" onclick="_impGo(2)">&#8592; Retour aux colonnes</button>
+          <button class="btn-import" onclick="closeImportExterne()">Fermer</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -12560,6 +12631,212 @@ function importData(input){
     input.value="";
   };r.readAsText(file);
 }
+
+// ─── [I-1] Import depuis un AUTRE logiciel — lecture seule ───────────────
+// ⚠ CE BLOC N'ÉCRIT RIEN : aucun db.*, aucun sdb(), aucun writeAutoSave(),
+// aucun pushUndo(). Il lit un fichier, propose une correspondance de colonnes
+// et montre un aperçu. L'écriture des fiches est le mandat suivant (I-2).
+// Le classeur est lu dans le processus principal (electron-app/main.js) : le
+// fichier du courtier ne transite jamais en base64 par le renderer.
+var _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0};
+
+// Les rôles proposables. 'statut' et 'dateContact' sont RELEVÉS ici mais ne servent
+// qu'à l'aperçu : leur exploitation (destination, avalanche de relances) est I-3.
+var IMP_ROLES=[
+  {k:'',lbl:'— Ignorer —'},
+  {k:'prenom',lbl:'Prénom'},
+  {k:'nom',lbl:'Nom'},
+  {k:'telephone',lbl:'Téléphone'},
+  {k:'courriel',lbl:'Courriel'},
+  {k:'adresse',lbl:'Adresse'},
+  {k:'notes',lbl:'Notes'},
+  {k:'statut',lbl:'Statut ou type'},
+  {k:'dateContact',lbl:'Date de dernier contact'}
+];
+// Ordre de PRIORITÉ du rapprochement : le plus spécifique d'abord. « Adresse
+// courriel » doit tomber sur Courriel, pas sur Adresse — d'où courriel avant adresse.
+var IMP_INDICES=[
+  {k:'courriel',mots:['courriel','email','e mail','mail','courriels']},
+  {k:'telephone',mots:['telephone','tel','phone','mobile','cellulaire','cell','portable']},
+  {k:'prenom',mots:['prenom','first name','firstname','given name']},
+  {k:'nom',mots:['nom','last name','lastname','surname','family name','nom de famille']},
+  {k:'dateContact',mots:['date','dernier contact','dernier suivi','last contact','derniere activite']},
+  {k:'adresse',mots:['adresse','address','rue','street','civique']},
+  {k:'statut',mots:['statut','status','type','categorie','category','labels','etiquette']},
+  {k:'notes',mots:['notes','note','commentaires','commentaire','comments','remarques']}
+];
+// Normalise un en-tête : minuscules sans accents (norm() du dépôt), puis toute
+// ponctuation devient un espace — « Tél. cellulaire » → « tel cellulaire ».
+function _impNorm(s){
+  return norm(s).replace(/[^a-z0-9]+/g,' ').trim();
+}
+// Un mot-clé compte s'il apparaît comme MOT ENTIER (« tel » ne doit pas capturer
+// « telecopieur », mais « tel cellulaire » oui).
+function _impAMot(norm,mot){
+  return (' '+norm+' ').indexOf(' '+mot+' ')!==-1;
+}
+// PROPOSER, PAS DEVINER : on ne pré-règle que sur un mot-clé franc, on l'affiche,
+// et l'utilisateur peut tout corriger. Tout le reste part sur « Ignorer ».
+// Quand plusieurs colonnes visent le même rôle (Outlook : Home Phone ET Mobile
+// Phone), on retient CELLE QUI EST LE PLUS REMPLIE — sinon on proposerait une
+// colonne vide et l'aperçu paraîtrait cassé. Les colonnes multiples sont I-4.
+function _impProposerRoles(entetes,lignes){
+  var roles=entetes.map(function(){return '';});
+  var ech=lignes.slice(0,50);
+  function remplissage(ci){var n=0;ech.forEach(function(r){if(String(r[ci]||'').trim())n++;});return n;}
+  IMP_INDICES.forEach(function(idx){
+    var cands=[];
+    entetes.forEach(function(h,ci){
+      if(roles[ci])return;                       // déjà pris par un rôle plus spécifique
+      var norm=_impNorm(h);
+      if(!norm)return;
+      for(var i=0;i<idx.mots.length;i++){if(_impAMot(norm,idx.mots[i])){cands.push(ci);break;}}
+    });
+    if(!cands.length)return;
+    var best=cands[0],bestN=remplissage(cands[0]);
+    for(var i=1;i<cands.length;i++){var n=remplissage(cands[i]);if(n>bestN){best=cands[i];bestN=n;}}
+    roles[best]=idx.k;
+  });
+  return roles;
+}
+
+function openImportExterne(){
+  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0};
+  document.getElementById('impFileInfo').style.display='none';
+  document.getElementById('impSheetPick').style.display='none';
+  document.getElementById('impErr1').style.display='none';
+  _impGo(1);
+  document.getElementById('importExterneOv').classList.add('on');
+}
+function closeImportExterne(){
+  document.getElementById('importExterneOv').classList.remove('on');
+  // On relâche les lignes lues : rien ne doit survivre à la fermeture.
+  _imp={path:'',nom:'',encodage:'',feuille:'',sheets:[],entetes:[],lignes:[],roles:[],total:0};
+}
+function _impGo(n){
+  [1,2,3].forEach(function(i){
+    var el=document.getElementById('impScreen'+i);if(el)el.style.display=(i===n?'block':'none');
+  });
+  document.querySelectorAll('#impSteps .imp-step').forEach(function(s){
+    var on=parseInt(s.getAttribute('data-step'),10)===n;
+    s.style.background=on?'#0F172A':'#F1F5F9';
+    s.style.color=on?'#fff':'#94A3B8';
+  });
+  if(n===2)_impRenderMap();
+  if(n===3)_impRenderPreview();
+}
+function _impErr1(msg){
+  var el=document.getElementById('impErr1');
+  el.innerHTML='&#9888; '+esc(msg);el.style.display='block';
+}
+async function _impPickFile(){
+  if(!(window.electronAPI&&window.electronAPI.importPickFile)){
+    _impErr1("L'import de fichiers n'est disponible que dans l'application installée.");return;
+  }
+  document.getElementById('impErr1').style.display='none';
+  var res;
+  try{res=await window.electronAPI.importPickFile();}catch(e){res={ok:false,error:e.message};}
+  if(!res||res.canceled)return;
+  if(!res.ok){_impErr1(res.error||'Lecture impossible.');return;}
+  _imp.path=res.path;_imp.nom=res.nom;_imp.encodage=res.encodage||'';_imp.sheets=res.sheets||[];
+  var info=document.getElementById('impFileInfo');
+  var enc=(_imp.encodage&&_imp.encodage!=='binaire')?' &middot; encodage '+esc(_imp.encodage):'';
+  info.innerHTML='<div style="font-size:13px;font-weight:700;color:#0F172A">&#128196; '+esc(_imp.nom)+'</div>'
+    +'<div style="font-size:11px;color:#64748B;margin-top:3px">'+_imp.sheets.length+' feuille(s)'+enc+'</div>';
+  info.style.display='block';
+  // Le choix de feuille est UNE question pour tout le fichier, jamais plus.
+  var pick=document.getElementById('impSheetPick');
+  var utiles=_imp.sheets.filter(function(s){return s.lignes>0;});
+  if(_imp.sheets.length>1){
+    var opts=_imp.sheets.map(function(s){
+      return '<option value="'+esc(s.nom)+'"'+(s.lignes?'':' disabled')+'>'+esc(s.nom)+' ('+s.lignes+' ligne'+(s.lignes>1?'s':'')+')</option>';
+    }).join('');
+    pick.innerHTML='<div style="font-size:13px;color:#475569;margin-bottom:8px">Ce fichier contient plusieurs feuilles. <strong>Laquelle contient tes contacts ?</strong></div>'
+      +'<div class="settings-actions"><select id="impSheetSel" style="padding:7px 10px;border:1px solid #CBD5E1;border-radius:6px;font-family:inherit;font-size:13px;min-width:260px">'+opts+'</select>'
+      +'<button class="btn-export" onclick="_impLoadSheet()">Continuer &#8594;</button></div>';
+    pick.style.display='block';
+    var sel=document.getElementById('impSheetSel');
+    if(sel&&utiles.length)sel.value=utiles[0].nom;
+  }else{
+    pick.innerHTML='<div class="settings-actions"><button class="btn-export" onclick="_impLoadSheet()">Continuer &#8594;</button></div>';
+    pick.style.display='block';
+  }
+}
+async function _impLoadSheet(){
+  var sel=document.getElementById('impSheetSel');
+  var nom=sel?sel.value:(_imp.sheets[0]&&_imp.sheets[0].nom)||'';
+  var res;
+  try{res=await window.electronAPI.importReadSheet(_imp.path,nom);}catch(e){res={ok:false,error:e.message};}
+  if(!res||!res.ok){_impErr1((res&&res.error)||'Lecture impossible.');return;}
+  _imp.feuille=res.feuille;_imp.entetes=res.entetes||[];_imp.lignes=res.lignes||[];
+  _imp.total=res.total||0;_imp.encodage=res.encodage||_imp.encodage;
+  _imp.roles=_impProposerRoles(_imp.entetes,_imp.lignes);
+  _impGo(2);
+}
+function _impCompte(){
+  var pris=0;_imp.roles.forEach(function(r){if(r)pris++;});
+  return {pris:pris,ignorees:_imp.roles.length-pris};
+}
+function _impRenderMap(){
+  var c=_impCompte();
+  document.getElementById('impCount').innerHTML=
+    '<span style="color:#0FBFAB">'+c.pris+' colonne'+(c.pris>1?'s':'')+' reprise'+(c.pris>1?'s':'')+'</span> &middot; '
+    +'<span style="color:#94A3B8">'+c.ignorees+' ignor&eacute;e'+(c.ignorees>1?'s':'')+'</span>'
+    +' &mdash; '+_imp.total+' ligne'+(_imp.total>1?'s':'')+' dans &laquo; '+esc(_imp.feuille)+' &raquo;';
+  var h='';
+  _imp.entetes.forEach(function(hd,i){
+    var ex=[];
+    for(var r=0;r<_imp.lignes.length&&ex.length<3;r++){
+      var v=String(_imp.lignes[r][i]||'').trim();
+      if(v)ex.push(v.length>34?v.slice(0,34)+'…':v);
+    }
+    var opts=IMP_ROLES.map(function(o){
+      return '<option value="'+o.k+'"'+(o.k===_imp.roles[i]?' selected':'')+'>'+esc(o.lbl)+'</option>';
+    }).join('');
+    var pris=!!_imp.roles[i];
+    h+='<tr style="border-bottom:1px solid #F1F5F9'+(pris?';background:#F0FDFA':'')+'">'
+      +'<td style="padding:8px 12px;font-weight:700;color:#0F172A">'+esc(hd||'(sans titre)')+'</td>'
+      +'<td style="padding:8px 12px;color:#64748B">'+(ex.length?esc(ex.join(' · ')):'<span style="color:#CBD5E1">(vide)</span>')+'</td>'
+      +'<td style="padding:6px 12px"><select onchange="_impSetRole('+i+',this.value)" style="width:100%;padding:5px 8px;border:1px solid #CBD5E1;border-radius:5px;font-family:inherit;font-size:12px;background:#fff">'+opts+'</select></td>'
+      +'</tr>';
+  });
+  document.getElementById('impMapBody').innerHTML=h;
+}
+function _impSetRole(i,val){
+  // Un rôle ne peut servir qu'une fois : réattribuer le libère ailleurs.
+  if(val){for(var j=0;j<_imp.roles.length;j++){if(j!==i&&_imp.roles[j]===val)_imp.roles[j]='';}}
+  _imp.roles[i]=val;
+  _impRenderMap();
+}
+function _impVal(ligne,role){
+  var i=_imp.roles.indexOf(role);
+  return i===-1?'':String(ligne[i]||'').trim();
+}
+function _impRenderPreview(){
+  var c=_impCompte();
+  document.getElementById('impPreviewHead').innerHTML=
+    'Voici les 3 premi&egrave;res fiches <strong>telles qu\'elles seraient cr&eacute;&eacute;es</strong>, &agrave; partir des '
+    +c.pris+' colonne'+(c.pris>1?'s':'')+' reprise'+(c.pris>1?'s':'')+'.';
+  var n=Math.min(3,_imp.lignes.length),h='';
+  var li=function(icone,txt){return txt?'<div style="font-size:12px;color:#475569;margin-top:3px">'+icone+' '+esc(txt)+'</div>':'';};
+  for(var k=0;k<n;k++){
+    var L=_imp.lignes[k];
+    var nom=((_impVal(L,'prenom')+' '+_impVal(L,'nom')).trim())||'(sans nom)';
+    h+='<div style="border:1px solid #E2E8F0;border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#fff">'
+      +'<div style="font-size:14px;font-weight:700;color:#0F172A">'+esc(nom)+'</div>'
+      +li('&#128222;',_impVal(L,'telephone'))
+      +li('&#9993;',_impVal(L,'courriel'))
+      +li('&#127968;',_impVal(L,'adresse'))
+      +li('&#128221;',_impVal(L,'notes'))
+      +li('&#127991;',_impVal(L,'statut'))
+      +li('&#128197;',_impVal(L,'dateContact'))
+      +'</div>';
+  }
+  if(!n)h='<div style="font-size:13px;color:#94A3B8">Aucune ligne à montrer.</div>';
+  h+='<div style="font-size:13px;font-weight:700;color:#0F172A;margin-top:6px">'+_imp.total+' ligne'+(_imp.total>1?'s':'')+' pr&ecirc;te'+(_imp.total>1?'s':'')+'.</div>';
+  document.getElementById('impPreview').innerHTML=h;
+}
+
 // ─── Restauration d'un backup (UI Paramètres → Sauvegarde) ───
 function _fmtBackupSize(n){var kb=n/1024;return kb<1024?(kb.toFixed(kb<10?1:0)+' Ko'):((kb/1024).toFixed(1)+' Mo');}
 function _fmtBackupDate(ms){try{return new Date(ms).toLocaleString('fr-CA',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}

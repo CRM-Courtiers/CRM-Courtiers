@@ -46,6 +46,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   attachmentDeleteProperty: (propertyId) => ipcRenderer.invoke('attachment-delete-property', { propertyId }),
   attachmentOpenFolder: (propertyId) => ipcRenderer.invoke('attachment-open-folder', { propertyId }),
   emailCreateEml: (payload) => ipcRenderer.invoke('email-create-eml', payload),
+  // [I-1] Import depuis un autre logiciel — lecture seule, tout reste sur le poste
+  importPickFile: () => ipcRenderer.invoke('import-pick-file'),
+  importReadSheet: (path, sheet) => ipcRenderer.invoke('import-read-sheet', { path, sheet }),
   // Étape 32 — Sync 2 postes : journaux par appareil dans <dossier sauvegarde>/TRI-ANGLE-sync
   syncAppend: (fileName, text) => ipcRenderer.invoke('sync-append', { fileName, text }),
   syncList: () => ipcRenderer.invoke('sync-list'),
